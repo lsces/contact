@@ -2,7 +2,7 @@
 $tables = array(
 
 'contact' => "
-  content_id I8 PRIMARY,
+  contact_id I8 PRIMARY,
   usn I8 NOTNULL,
   parent_id I8,
   uprn I8,
@@ -11,11 +11,11 @@ $tables = array(
   opfl I8,
   cltype I4,
   prefix C(35),
-  forename C(35),
-  surname C(35),
+  forename C(128),
+  surname C(128),
   suffix C(35),
   organisation C(100),
-  last_update_date T DEFAULT 'NOW',
+  last_update_date T DEFAULT CURRENT_TIMESTAMP,
   note C(40),
   memo X,
   contact1 C(128),
@@ -27,16 +27,17 @@ $tables = array(
   tel2 C(128),
   key3 C(128),
   tel3 C(128),
-  passwd C(64),
-  prompt C(64),
-  start_date T DEFAULT 'NOW',
+  passwd C(128),
+  prompt C(128),
+  start_date T DEFAULT CURRENT_TIMESTAMP,
   payment C(64),
   maintain C(128),
-  code C(128)
+  code C(128),
+  full_start_date C(24)
 ",
 
 'contact_xref' => "
-  content_id I8 NOTNULL,
+  contact_id I8 NOTNULL,
   xref_key C(14),
   start_date T,
   last_update_date T,
@@ -44,7 +45,8 @@ $tables = array(
   end_date T,
   source C(20) PRIMARY,
   cross_reference C(22) PRIMARY,
-  data X
+  data X,
+  xorder I2
   ",
 
 'contact_type' => "
@@ -60,14 +62,14 @@ $tables = array(
   ",
 
 'contact_type_map' => "
-  content_id I4 PRIMARY,
+  contact_id I4 PRIMARY,
   contact_type_id I4 PRIMARY,
   type_value	I4
 ",
 
 'contact_address' => "
-  content_id I8 PRIMARY,
-  usn I8,
+  contact_id I8 PRIMARY,
+  address_id I8,
   uprn I8,
   postcode C(10),
   organisation C(100),
@@ -86,9 +88,9 @@ $tables = array(
 'postcode' => "
   postcode C(10),
   add1 C(32),
-  add2 C(32),
-  add3 C(32),
-  add4 C(32),
+  add2 C(64),
+  add3 C(64),
+  add4 C(40),
   town C(20),
   county C(20),
   grideast I4,
