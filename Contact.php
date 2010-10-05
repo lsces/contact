@@ -387,6 +387,78 @@ class Contact extends LibertyBase {
 	}
 
 	/**
+	 * ContactRecordLoad( $data ); 
+	 * phx seurity file import 
+	 */
+	function SageRecordLoad( &$data, $cltype = 1 ) {
+		$table = BIT_DB_PREFIX."contact_sage";
+		$atable = BIT_DB_PREFIX."contact_address";
+
+		$pDataHash['contact_store']['contact_id'] = $this->mDb->GenID('contact_id_seq');
+		$pDataHash['address_store']['contact_id'] = $pDataHash['contact_store']['contact_id'];
+		$pDataHash['contact_store']['cltype'] = $cltype;
+		$pDataHash['address_store']['cltype'] = $cltype;
+		$pDataHash['contact_store']['usn'] = $data[0];
+		$pDataHash['address_store']['sao'] = $data[0];
+		$pDataHash['contact_store']['surname'] = $data[1];
+		$pDataHash['contact_store']['organisation'] = $data[1];
+		$pDataHash['address_store']['organisation'] = $data[1];
+		$pDataHash['contact_store']['forename'] = '';
+		$pDataHash['contact_store']['prefix'] = '';
+		$pDataHash['address_store']['sao'] = '';
+		$pDataHash['address_store']['pao'] = '';
+		$pDataHash['address_store']['number'] = '';
+		$pDataHash['address_store']['street'] = $data[2];
+		$pDataHash['address_store']['locality'] = $data[3];
+		$pDataHash['address_store']['town'] = $data[4];
+		$pDataHash['address_store']['county'] = $data[5];
+		$pDataHash['address_store']['pao'] = $data[6];
+		$pDataHash['address_store']['postcode'] = substr( $data[6], 0, 9);
+		$pDataHash['contact_store']['contact_name'] = $data[7];
+		$pDataHash['contact_store']['telephone'] = $data[8];
+		$pDataHash['contact_store']['fax'] = $data[9];
+		$pDataHash['contact_store']['web'] = $data[9];
+		$pDataHash['contact_store']['analysis_1'] = $data[10];
+		$pDataHash['contact_store']['analysis_2'] = $data[11];
+		$pDataHash['contact_store']['analysis_3'] = $data[12];
+		$pDataHash['contact_store']['dept_number'] = $data[13];
+		$pDataHash['contact_store']['vat_reg_number'] = $data[14];
+		$pDataHash['contact_store']['turnover_mtd'] = $data[15];
+		$pDataHash['contact_store']['turnover_ytd'] = $data[16];
+		$pDataHash['contact_store']['turnover_prior'] = $data[17];
+		$pDataHash['contact_store']['credit_limit'] = $data[18];
+		$pDataHash['contact_store']['terms'] = $data[19];
+		$pDataHash['contact_store']['settlement_due_days'] = $data[20];
+		$pDataHash['contact_store']['settlement_disc_rate'] = $data[21];
+		$pDataHash['contact_store']['def_nom_code'] = $data[22];
+		$pDataHash['contact_store']['def_tax_code'] = $data[23];
+
+		$this->mDb->StartTrans();
+		$result = $this->mDb->associateInsert( $table, $pDataHash['contact_store'] );
+		$result = $this->mDb->associateInsert( $atable, $pDataHash['address_store'] );
+		$this->mDb->CompleteTrans();
+/*		} else {
+			$this->mDb->RollbackTrans();
+			$this->mErrors['store'] = 'Failed to store this contact.';
+		}				
+*/
+		return( count( $this->mErrors ) == 0 ); 
+	}
+	
+	/**
+	 * Delete contact object and all related records
+	 */
+	function SageDataExpunge()
+	{
+		$ret = FALSE;
+		$query = "DELETE FROM `".BIT_DB_PREFIX."contact_sage`";
+		$result = $this->mDb->query( $query );
+		$query = "DELETE FROM `".BIT_DB_PREFIX."contact_address` WHERE CLTYPE = 1 OR CLTYPE = 2";
+		$result = $this->mDb->query( $query );
+		return $ret;
+	}
+
+	/**
 	 * getContactList( &$pParamHash );
 	 * Get list of contact records 
 	 */
