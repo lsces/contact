@@ -21,7 +21,7 @@ $gBitSystem->verifyPackage( 'contact' );
 
 $gBitSystem->verifyPermission( 'p_contact_view' );
 
-$gContent = new Contact( );
+$gContact = new Contact( );
 
 if( !empty( $_REQUEST["find_org"] ) ) {
 	$_REQUEST["find_name"] = '';
@@ -35,7 +35,7 @@ if( !empty( $_REQUEST["find_org"] ) ) {
 //$gBitSmarty->assign_by_ref('contact_type', $contact_type);
 $listHash = $_REQUEST;
 // Get a list of matching contact entries
-$listcontacts = $gContent->getContactList( $listHash );
+$listcontacts = $gContact->getContactList( $listHash );
 
 $gBitSmarty->assign_by_ref( 'listcontacts', $listcontacts );
 $gBitSmarty->assign_by_ref( 'listInfo', $listHash['listInfo'] );

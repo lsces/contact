@@ -1,11 +1,10 @@
-<div class="load nlpg">
+<div class="load cvs_data">
 	<div class="header">
-		<h1>{tr}Loading Contact Data{/tr}</h1>
+		<h1>{tr}Loading PHX Contact Data{/tr}</h1>
 	</div>
 
 	<div class="body">
-		<p> {$golden} records in golden.cvs File <br /></p>
-		<p> {$xref} records in xref.cvs File <br /></p>
+		<p> {$count} records in database.cvs File <br /></p>
 	</div>
 </div>
 		
