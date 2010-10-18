@@ -12,6 +12,7 @@
 /**
  * required setup
  */
+require_once( CONTACT_PKG_PATH.'ContactXref.php' );
 require_once( LIBERTY_PKG_PATH.'LibertyContent.php' );		// Contact base class
 require_once( NLPG_PKG_PATH.'lib/phpcoord-2.3.php' );
 
@@ -20,19 +21,41 @@ define( 'CONTACT_CONTENT_TYPE_GUID', 'contact' );
 /**
  * @package contact
  */
-class Contact extends LibertyBase {
-	var $mContactId;
+class Contact extends LibertyContent {
 	var $mParentId;
+	var $mDate;
 
 	/**
 	 * Constructor 
 	 * 
 	 * Build a Contact object based on LibertyContent
 	 * @param integer Contact Id identifer
+	 * @param integer Base content_id identifier 
 	 */
-	function Contact( $pContactId = NULL ) {
-		LibertyBase::LibertyBase();
-		$this->mContactId = (int)$pContactId;
+	function Contact( $pContactId = NULL, $pContentId = NULL ) {
+		LibertyContent::LibertyContent();
+		$this->registerContentType( CONTACT_CONTENT_TYPE_GUID, array(
+				'content_type_guid' => CONTACT_CONTENT_TYPE_GUID,
+				'content_name' => 'Contact Entry',
+				'handler_class' => 'Contact',
+				'handler_package' => 'contact',
+				'handler_file' => 'Contact.php',
+				'maintainer_url' => 'http://lsces.co.uk'
+			) );
+		$this->mContentId = (int)$pContentId;
+		$this->mContentTypeGuid = CONTACT_CONTENT_TYPE_GUID;
+
+		// Date object to handle date and time display
+		$this->mDate = new BitDate();
+		$offset = $this->mDate->get_display_offset();
+
+		// Permission setup
+		$this->mViewContentPerm  = 'p_contact_view';
+		$this->mCreateContentPerm  = 'p_contact_create';
+		$this->mUpdateContentPerm  = 'p_contact_update';
+		$this->mExpungeContentPerm  = 'p_contact_expunge';
+		$this->mAdminContentPerm = 'p_contact_admin';
+		
 	}
 
 	/**
@@ -40,32 +63,41 @@ class Contact extends LibertyBase {
 	 *
 	 * (Describe Contact object here )
 	 */
-	function load($pContactId = NULL) {
-		if ( $pContactId ) $this->mContactId = (int)$pContactId;
-		if( $this->verifyId( $this->mContactId ) ) {
- 			$query = "select ci.usn AS contact_id, ci.*
-				FROM `".BIT_DB_PREFIX."contact` ci
-				LEFT JOIN `".BIT_DB_PREFIX."contact_address` a ON a.contact_id = ci.usn
-				LEFT JOIN `".BIT_DB_PREFIX."postcode` p ON p.`postcode` = a.`postcode`
-				WHERE ci.`contact_id`=?";
-/*
-*/
-			$result = $this->mDb->query( $query, array( $this->mContactId ) );
+	function load($pContentId = NULL) {
+		if ( $pContentId ) $this->mContentId = (int)$pContentId;
+		if( $this->verifyId( $this->mContentId ) ) {
+ 			$query = "select con.*, lc.*, ca.*,
+				uue.`login` AS modifier_user, uue.`real_name` AS modifier_real_name,
+				uuc.`login` AS creator_user, uuc.`real_name` AS creator_real_name
+				FROM `".BIT_DB_PREFIX."contact` con
+				LEFT JOIN `".BIT_DB_PREFIX."liberty_content` lc ON lc.content_id = con.content_id
+				LEFT JOIN `".BIT_DB_PREFIX."users_users` uue ON (uue.`user_id` = lc.`modifier_user_id`)
+				LEFT JOIN `".BIT_DB_PREFIX."users_users` uuc ON (uuc.`user_id` = lc.`user_id`)
+				LEFT JOIN `".BIT_DB_PREFIX."contact_address` ca ON ca.content_id = con.content_id
+				WHERE con.`content_id`=?";
+			$result = $this->mDb->query( $query, array( $this->mContentId ) );
+//				LEFT JOIN `".BIT_DB_PREFIX."contact` ci ON ci.contact_id = pro.owner_id
+//				LEFT JOIN `".BIT_DB_PREFIX."contact_address` a ON a.contact_id = pro.address_id
+//				LEFT JOIN `".BIT_DB_PREFIX."postcode` p ON p.`postcode` = a.`postcode`
 
 			if ( $result && $result->numRows() ) {
 				$this->mInfo = $result->fields;
-				$this->mContactId = (int)$result->fields['contact_id'];
-				$this->mParentId = (int)$result->fields['usn'];
+				$this->mContentId = (int)$result->fields['content_id'];
+//				$this->mParentId = (int)$result->fields['usn'];
 				$this->mContactName = $result->fields['title'];
 				$this->mInfo['creator'] = (isset( $result->fields['creator_real_name'] ) ? $result->fields['creator_real_name'] : $result->fields['creator_user'] );
 				$this->mInfo['editor'] = (isset( $result->fields['modifier_real_name'] ) ? $result->fields['modifier_real_name'] : $result->fields['modifier_user'] );
 				$this->mInfo['display_url'] = $this->getDisplayUrl();
-				$os1 = new OSRef($this->mInfo['x_coordinate'], $this->mInfo['y_coordinate']);
-				$ll1 = $os1->toLatLng();
-				$this->mInfo['prop_lat'] = $ll1->lat;
-				$this->mInfo['prop_lng'] = $ll1->lng;
+//				$os1 = new OSRef($this->mInfo['x_coordinate'], $this->mInfo['y_coordinate']);
+//				$ll1 = $os1->toLatLng();
+//				$this->mInfo['prop_lat'] = $ll1->lat;
+//				$this->mInfo['prop_lng'] = $ll1->lng;
+
+				$this->loadContentTypeList();
+				$this->loadXrefList();
 			}
 		}
+		LibertyContent::load();
 		return;
 	}
 
@@ -86,18 +118,23 @@ class Contact extends LibertyBase {
 			$pParamHash['content_type_guid'] = $this->mContentTypeGuid;
 		}
 
-		if( !empty( $this->mContactId ) ) {
-			$pParamHash['contact_id'] = $this->mContactId;
+		if( !empty( $this->mContentId ) ) {
+			$pParamHash['content_id'] = $this->mContentId;
+			$pParamHash['contact_store']['content_id'] = $this->mContentId;
 		} else {
-			unset( $pParamHash['contact_id'] );
+			unset( $pParamHash['content_id'] );
+			$pParamHash['contact_store']['content_id'] = NULL;
 		}
 
-		if ( empty( $pParamHash['parent_id'] ) )
-			$pParamHash['parent_id'] = $this->mContactId;
+//		$pParamHash['contact_store']['comment'] = $pParamHash['comment'];
+//		$pParamHash['contact_store']['surname'] = $pParamHash['surname'];
+
+//		if ( empty( $pParamHash['parent_id'] ) )
+//			$pParamHash['parent_id'] = $this->mContentId;
 			
 		// content store
 		// check for name issues, first truncate length if too long
-		if( empty( $pParamHash['surname'] ) || empty( $pParamHash['forename'] ) )  {
+/*		if( empty( $pParamHash['surname'] ) || empty( $pParamHash['forename'] ) )  {
 			$this->mErrors['names'] = 'You must enter a forename and surname for this contact.';
 		} else {
 			$pParamHash['title'] = substr( $pParamHash['prefix'].' '.$pParamHash['forename'].' '.$pParamHash['surname'].' '.$pParamHash['suffix'], 0, 160 );
@@ -115,7 +152,7 @@ class Contact extends LibertyBase {
 		if ( !empty( $pParamHash['dob'] ) ) $pParamHash['contact_store']['dob'] = $pParamHash['dob'];
 		if ( !empty( $pParamHash['eighteenth'] ) ) $pParamHash['contact_store']['eighteenth'] = $pParamHash['eighteenth'];
 		if ( !empty( $pParamHash['dod'] ) ) $pParamHash['contact_store']['dod'] = $pParamHash['dod'];
-
+*/
 		return( count( $this->mErrors ) == 0 );
 	}
 
@@ -131,26 +168,30 @@ class Contact extends LibertyBase {
 			// Start a transaction wrapping the whole insert into liberty 
 
 			$this->mDb->StartTrans();
-			$table = BIT_DB_PREFIX."contact";
+			if ( LibertyContent::store( $pParamHash ) ) {
+				$table = BIT_DB_PREFIX."contact";
 
-			if( $this->verifyId( $this->mContactId ) ) {
-				if( !empty( $pParamHash['contact_store'] ) ) {
-					$result = $this->mDb->associateUpdate( $table, $pParamHash['contact_store'], array( "contact_id" => $this->mContactId ) );
+				// mContentId will not be set until the secondary data has commited 
+				if( $this->verifyId( $this->mContentId ) ) {
+					if( !empty( $pParamHash['contact_store'] ) ) {
+						$result = $this->mDb->associateUpdate( $table, $pParamHash['contact_store'], array( "content_id" => $this->mContentId ) );
+					}
+				} else {
+					$pParamHash['contact_store']['content_id'] = $pParamHash['content_id'];
+					$pParamHash['contact_store']['parent_id'] = $pParamHash['content_id'];
+					$pParamHash['contact_store']['address_id'] = $pParamHash['content_id'];
+					$this->mParentId = $pParamHash['contact_store']['parent_id'];
+					$this->mContentId = $pParamHash['content_id'];
+					$result = $this->mDb->associateInsert( $table, $pParamHash['contact_store'] );
 				}
-				} else {
-				$pParamHash['contact_store']['contact_id'] = $pParamHash['contact_id'];
-				$pParamHash['contact_store']['usn'] = $pParamHash['contact_id'];
-				if( isset( $pParamHash['contact_id'] ) && is_numeric( $pParamHash['contact_id'] ) ) {
-					$pParamHash['contact_store']['usn'] = $pParamHash['contact_id'];
-				} else {
-					$pParamHash['contact_store']['usn'] = $this->mDb->GenID( 'contact_id_seq');
-				}	
-				$pParamHash['contact_store']['parent_id'] = $pParamHash['contact_store']['contact_id'];
-				$this->mContactId = $pParamHash['contact_store']['contact_id'];
-				$this->mParentId = $pParamHash['contact_store']['parent_id'];
-				$result = $this->mDb->associateInsert( $table, $pParamHash['contact_store'] );
-			}
-			if ( $result ) {
+				if( !empty( $pParamHash['contact_types'] ) ) {
+					$query = "DELETE FROM `".BIT_DB_PREFIX."contact_xref` WHERE `content_id` = ? AND `source` LIKE '$%'";
+					$result = $this->mDb->query($query, array($this->mContentId ) );
+					 foreach ( $pParamHash['contact_types'] as $key => $source ) {
+						$query = "INSERT INTO `".BIT_DB_PREFIX."contact_xref` (`content_id`, `source`, `last_update_date`) VALUES ( ?, ?, NULL )";
+						$result = $this->mDb->query($query, array( $this->mContentId, $source ) );
+					 }
+				}
 				// load before completing transaction as firebird isolates results
 				$this->load();
 				$this->mDb->CompleteTrans();
@@ -170,10 +211,8 @@ class Contact extends LibertyBase {
 		$ret = FALSE;
 		if ($this->isValid() ) {
 			$this->mDb->StartTrans();
-			$query = "DELETE FROM `".BIT_DB_PREFIX."contact` WHERE `contact_id` = ?";
-			$result = $this->mDb->query($query, array($this->mContactId ) );
-			$query = "DELETE FROM `".BIT_DB_PREFIX."contact_type_map` WHERE `contact_id` = ?";
-			$result = $this->mDb->query($query, array($this->mContactId ) );
+			$query = "DELETE FROM `".BIT_DB_PREFIX."contact_xref` WHERE `content_id` = ?";
+			$result = $this->mDb->query($query, array($this->mContentId ) );
 			if (LibertyContent::expunge() ) {
 			$ret = TRUE;
 				$this->mDb->CompleteTrans();
@@ -183,7 +222,15 @@ class Contact extends LibertyBase {
 		}
 		return $ret;
 	}
-    
+
+	/**
+	 * Check if the current post can have comments attached to it
+	 */
+	function isCommentable(){
+		global $gBitSystem;	
+		return $gBitSystem->isFeatureActive( 'contact_post_comments' );
+	}
+
 	/**
 	 * Returns Request_URI to a Contact content object
 	 *
@@ -191,13 +238,13 @@ class Contact extends LibertyBase {
 	 * @param array different possibilities depending on derived class
 	 * @return string the link to display the page.
 	 */
-	function getDisplayUrl( $pContactId=NULL ) {
+	function getDisplayUrl( $pContentId=NULL ) {
 		global $gBitSystem;
-		if( empty( $pContactId ) ) {
-			$pContactId = $this->mContactId;
+		if( empty( $pContentId ) ) {
+			$pContentId = $this->mContentId;
 		}
 
-		return CONTACT_PKG_URL.'index.php?contact_id='.$pContactId;
+		return CONTACT_PKG_URL.'index.php?content_id='.$pContentId;
 	}
 
 	/**
@@ -208,12 +255,12 @@ class Contact extends LibertyBase {
 	 * @return the link to display the page.
 	 */
 	function getDisplayLink( $pText, $aux ) {
-		if ( $this->mContactId != $aux['contact_id'] ) $this->load($aux['contact_id']);
+		if ( $this->mContentId != $aux['content_id'] ) $this->load($aux['content_id']);
 
-		if (empty($this->mInfo['contact_id']) ) {
-			$ret = '<a href="'.$this->getDisplayUrl($aux['contact_id']).'">'.$aux['title'].'</a>';
+		if (empty($this->mInfo['content_id']) ) {
+			$ret = '<a href="'.$this->getDisplayUrl($aux['content_id']).'">'.$aux['title'].'</a>';
 		} else {
-			$ret = '<a href="'.$this->getDisplayUrl($aux['contact_id']).'">'."Contact - ".$this->mInfo['title'].'</a>';
+			$ret = '<a href="'.$this->getDisplayUrl($aux['content_id']).'">'."Contact - ".$this->mInfo['title'].'</a>';
 		}
 		return $ret;
 	}
@@ -229,8 +276,8 @@ class Contact extends LibertyBase {
 		if( empty( $pHash ) ) {
 			$pHash = &$this->mInfo;
 		} else {
-			if ( $this->mContactId != $pHash['contact_id'] ) {
-				$this->load($pHash['contact_id']);
+			if ( $this->mContentId != $pHash['content_id'] ) {
+				$this->load($pHash['content_id']);
 				$pHash = &$this->mInfo;
 			}
 		}
@@ -244,230 +291,17 @@ class Contact extends LibertyBase {
 	}
 
 	/**
-	 * Returns list of contract entries
+	 * Returns list of contact entries
 	 *
 	 * @param integer 
-	 * @param integer 
-	 * @param integer 
-	 * @return string Text for the title description
+	 * @return array of contact entries
 	 */
-	function getList( &$pListHash ) {
-		LibertyContent::prepGetList( $pListHash );
-		
-		$whereSql = $joinSql = $selectSql = '';
-		$bindVars = array();
-		
-		if ( isset($pListHash['find']) ) {
-			$findesc = '%' . strtoupper( $pListHash['find'] ) . '%';
-			$whereSql .= " AND (UPPER(con.`SURNAME`) like ? or UPPER(con.`FORENAME`) like ?) ";
-			array_push( $bindVars, $findesc );
-		}
-
-		if ( isset($pListHash['add_sql']) ) {
-			$whereSql .= " AND $add_sql ";
-		}
-
-		$query = "SELECT con.*, 
-				FROM `".BIT_DB_PREFIX."contact` ci 
-				$joinSql
-				WHERE $whereSql  
-				order by ".$this->mDb->convertSortmode( $pListHash['sort_mode'] );
-		$query_cant = "SELECT COUNT(ci.`contact_id`) FROM `".BIT_DB_PREFIX."contact` ci
-				$joinSql
-				WHERE $whereSql";
-
-		$ret = array();
-		$this->mDb->StartTrans();
-		$result = $this->mDb->query( $query, $bindVars, $pListHash['max_records'], $pListHash['offset'] );
-		$cant = $this->mDb->getOne( $query_cant, $bindVars );
-		$this->mDb->CompleteTrans();
-
-		while ($res = $result->fetchRow()) {
-			$res['contact_url'] = $this->getDisplayUrl( $res['contact_id'] );
-			$ret[] = $res;
-		}
-
-		$pListHash['cant'] = $cant;
-		LibertyContent::postGetList( $pListHash );
-		return $ret;
-	}
-
-	/**
-	* Returns titles of the contact type table
-	*
-	* @return array List of contact type names from the contact mamanger in alphabetical order
-	*/
-	function getContactTypeList() {
-		$query = "SELECT `type_name` FROM `contact_type`
-				  ORDER BY `type_name`";
-		$result = $this->mDb->query($query);
-		$ret = array();
-
-		while ($res = $result->fetchRow()) {
-			$ret[] = trim($res["type_name"]);
-		}
-		return $ret;
-	}
-
-	/**
-	 * ContactRecordLoad( $data ); 
-	 * phx seurity file import 
-	 */
-	function ContactRecordLoad( &$data ) {
-		$table = BIT_DB_PREFIX."contact";
-		$atable = BIT_DB_PREFIX."contact_address";
-
-		$usn = 10000 + $data[0];
-		$pDataHash['contact_store']['contact_id'] = $data[0];
-		$pDataHash['address_store']['contact_id'] = $data[0];
-		$pDataHash['contact_store']['usn'] = $usn;
-		$pDataHash['address_store']['usn'] = $usn;
-		$pDataHash['contact_store']['surname'] = $data[1];
-		$pDataHash['contact_store']['organisation'] = $data[3].' '.$data[1];
-		$pDataHash['address_store']['organisation'] = $data[1];
-		if ( $data[2] == 'D' ) $type = 0; else $type = 1;
-		$pDataHash['contact_store']['uprn'] = $type;
-		$pDataHash['address_store']['uprn'] = $type;
-		$pDataHash['contact_store']['forename'] = $data[3];
-		$pDataHash['contact_store']['prefix'] = '';
-		$pDataHash['address_store']['sao'] = '';
-		$pDataHash['address_store']['pao'] = '';
-		$pDataHash['address_store']['number'] = '';
-		$pDataHash['address_store']['street'] = $data[4];
-		$pDataHash['address_store']['locality'] = $data[5];
-		$pDataHash['address_store']['town'] = $data[6];
-		$pDataHash['address_store']['county'] = $data[7];
-		$pDataHash['address_store']['postcode'] = $data[8];
-		$pDataHash['contact_store']['contact1'] = $data[9];
-		$pDataHash['contact_store']['contact2'] = $data[10];
-		$pDataHash['contact_store']['contact3'] = $data[11];
-		$pDataHash['contact_store']['key1'] = $data[12];
-		$pDataHash['contact_store']['tel1'] = $data[13];
-		$pDataHash['contact_store']['key2'] = $data[14];
-		$pDataHash['contact_store']['tel2'] = $data[15];
-		$pDataHash['contact_store']['key3'] = $data[16];
-		$pDataHash['contact_store']['tel3'] = $data[17];
-		$pDataHash['contact_store']['passwd'] = $data[18];
-		$pDataHash['contact_store']['prompt'] = $data[19];
-		$pDataHash['contact_store']['memo'] = $data[20];
-		$pDataHash['contact_store']['full_start_date'] = $data[21].'-'.$data[22].'-'.$data[23];
-		$pDataHash['contact_store']['payment'] = $data[24];
-		$pDataHash['contact_store']['maintain'] = $data[25];
-		$pDataHash['contact_store']['code'] = $data[26];
-
-		$this->mDb->StartTrans();
-		$this->mContactId = 0;
-//		$pDataHash['contact_store']['contact_id'] = $pDataHash['contact_id'];
-//		$pDataHash['address_store']['contact_id'] = $pDataHash['contact_id'];
-			
-		$result = $this->mDb->associateInsert( $table, $pDataHash['contact_store'] );
-		$result = $this->mDb->associateInsert( $atable, $pDataHash['address_store'] );
-		$this->mDb->CompleteTrans();
-/*		} else {
-			$this->mDb->RollbackTrans();
-			$this->mErrors['store'] = 'Failed to store this contact.';
-		}				
-*/
-		return( count( $this->mErrors ) == 0 ); 
-	}
-	
-	/**
-	 * Delete contact object and all related records
-	 */
-	function DataExpunge()
-	{
-		$ret = FALSE;
-		$query = "DELETE FROM `".BIT_DB_PREFIX."contact`";
-		$result = $this->mDb->query( $query );
-		$query = "DELETE FROM `".BIT_DB_PREFIX."contact_address`";
-		$result = $this->mDb->query( $query );
-		$query = "DELETE FROM `".BIT_DB_PREFIX."contact_xref`";
-		$result = $this->mDb->query( $query );
-		return $ret;
-	}
-
-	/**
-	 * ContactRecordLoad( $data ); 
-	 * phx seurity file import 
-	 */
-	function SageRecordLoad( &$data, $cltype = 1 ) {
-		$table = BIT_DB_PREFIX."contact_sage";
-		$atable = BIT_DB_PREFIX."contact_address";
-
-		$pDataHash['contact_store']['contact_id'] = $this->mDb->GenID('contact_id_seq');
-		$pDataHash['address_store']['contact_id'] = $pDataHash['contact_store']['contact_id'];
-		$pDataHash['contact_store']['cltype'] = $cltype;
-		$pDataHash['address_store']['cltype'] = $cltype;
-		$pDataHash['contact_store']['usn'] = $data[0];
-		$pDataHash['address_store']['sao'] = $data[0];
-		$pDataHash['contact_store']['surname'] = $data[1];
-		$pDataHash['contact_store']['organisation'] = $data[1];
-		$pDataHash['address_store']['organisation'] = $data[1];
-		$pDataHash['contact_store']['forename'] = '';
-		$pDataHash['contact_store']['prefix'] = '';
-		$pDataHash['address_store']['sao'] = '';
-		$pDataHash['address_store']['pao'] = '';
-		$pDataHash['address_store']['number'] = '';
-		$pDataHash['address_store']['street'] = $data[2];
-		$pDataHash['address_store']['locality'] = $data[3];
-		$pDataHash['address_store']['town'] = $data[4];
-		$pDataHash['address_store']['county'] = $data[5];
-		$pDataHash['address_store']['pao'] = $data[6];
-		$pDataHash['address_store']['postcode'] = substr( $data[6], 0, 9);
-		$pDataHash['contact_store']['contact_name'] = $data[7];
-		$pDataHash['contact_store']['telephone'] = $data[8];
-		$pDataHash['contact_store']['fax'] = $data[9];
-		$pDataHash['contact_store']['web'] = $data[9];
-		$pDataHash['contact_store']['analysis_1'] = $data[10];
-		$pDataHash['contact_store']['analysis_2'] = $data[11];
-		$pDataHash['contact_store']['analysis_3'] = $data[12];
-		$pDataHash['contact_store']['dept_number'] = $data[13];
-		$pDataHash['contact_store']['vat_reg_number'] = $data[14];
-		$pDataHash['contact_store']['turnover_mtd'] = $data[15];
-		$pDataHash['contact_store']['turnover_ytd'] = $data[16];
-		$pDataHash['contact_store']['turnover_prior'] = $data[17];
-		$pDataHash['contact_store']['credit_limit'] = $data[18];
-		$pDataHash['contact_store']['terms'] = $data[19];
-		$pDataHash['contact_store']['settlement_due_days'] = $data[20];
-		$pDataHash['contact_store']['settlement_disc_rate'] = $data[21];
-		$pDataHash['contact_store']['def_nom_code'] = $data[22];
-		$pDataHash['contact_store']['def_tax_code'] = $data[23];
-
-		$this->mDb->StartTrans();
-		$result = $this->mDb->associateInsert( $table, $pDataHash['contact_store'] );
-		$result = $this->mDb->associateInsert( $atable, $pDataHash['address_store'] );
-		$this->mDb->CompleteTrans();
-/*		} else {
-			$this->mDb->RollbackTrans();
-			$this->mErrors['store'] = 'Failed to store this contact.';
-		}				
-*/
-		return( count( $this->mErrors ) == 0 ); 
-	}
-	
-	/**
-	 * Delete contact object and all related records
-	 */
-	function SageDataExpunge()
-	{
-		$ret = FALSE;
-		$query = "DELETE FROM `".BIT_DB_PREFIX."contact_sage`";
-		$result = $this->mDb->query( $query );
-		$query = "DELETE FROM `".BIT_DB_PREFIX."contact_address` WHERE CLTYPE = 1 OR CLTYPE = 2";
-		$result = $this->mDb->query( $query );
-		return $ret;
-	}
-
-	/**
-	 * getContactList( &$pParamHash );
-	 * Get list of contact records 
-	 */
-	function getContactList( &$pParamHash ) {
+	function getList( &$pParamHash ) {
 		global $gBitSystem, $gBitUser;
 		
 		if ( empty( $pParamHash['sort_mode'] ) ) {
 			if ( empty( $_REQUEST["sort_mode"] ) ) {
-				$pParamHash['sort_mode'] = 'surname_asc';
+				$pParamHash['sort_mode'] = 'title_asc';
 			} else {
 			$pParamHash['sort_mode'] = $_REQUEST['sort_mode'];
 			}
@@ -480,18 +314,19 @@ class Contact extends LibertyBase {
 		$joinSql = '';
 		$whereSql = '';
 		$bindVars = array();
-		$type = 'surname';
+		array_push( $bindVars, $this->mContentTypeGuid );
+		$this->getServicesSql( 'content_list_sql_function', $selectSql, $joinSql, $whereSql, $bindVars, NULL, $pParamHash );
 		
 		// this will set $find, $sort_mode, $max_records and $offset
 		extract( $pParamHash );
 
 		if( isset( $find_org ) and is_string( $find_org ) and $find_org <> '' ) {
-			$whereSql .= " AND UPPER( ci.`organisation` ) like ? ";
+			$whereSql .= " AND UPPER( con.`organisation` ) like ? ";
 			$bindVars[] = '%' . strtoupper( $find_org ). '%';
 			$type = 'organisation';
 			$pParamHash["listInfo"]["ihash"]["find_org"] = $find_org;
 		}
-		if( isset( $find_name ) and is_string( $find_name ) and $find_name <> '' ) {
+/*		if( isset( $find_name ) and is_string( $find_name ) and $find_name <> '' ) {
 		    $split = preg_split('|[,. ]|', $find_name, 2);
 			$whereSql .= " AND UPPER( ci.`surname` ) STARTING ? ";
 			$bindVars[] = strtoupper( $split[0] );
@@ -512,18 +347,22 @@ class Contact extends LibertyBase {
 			$bindVars[] = '%' . strtoupper( $find_postcode ). '%';
 			$pParamHash["listInfo"]["ihash"]["find_postcode"] = $find_postcode;
 		}
-		$query = "SELECT ci.*, a.UPRN, a.POSTCODE, a.SAO, a.PAO, a.NUMBER, a.STREET, a.LOCALITY, a.TOWN, a.COUNTY, ci.parent_id as uprn,
-			(SELECT COUNT(*) FROM `".BIT_DB_PREFIX."contact_xref` x WHERE x.contact_id = ci.contact_id ) AS links, 
-			(SELECT COUNT(*) FROM `".BIT_DB_PREFIX."task_ticket` e WHERE e.usn = ci.usn ) AS enquiries $selectSql 
-			FROM `".BIT_DB_PREFIX."contact` ci 
-			LEFT JOIN `".BIT_DB_PREFIX."contact_address` a ON a.contact_id = ci.contact_id $findSql
+*/
+		$query = "SELECT con.*, lc.*, ca.*,
+			(SELECT COUNT(*) FROM `".BIT_DB_PREFIX."contact_xref` x WHERE x.content_id = con.content_id ) AS refs,
+			(SELECT COUNT(*) FROM `".BIT_DB_PREFIX."contact_address` x WHERE x.content_id = con.content_id ) AS addresses
+			FROM `".BIT_DB_PREFIX."contact` con
+			LEFT JOIN `".BIT_DB_PREFIX."liberty_content` lc ON lc.content_id = con.content_id
+			LEFT JOIN `".BIT_DB_PREFIX."contact_address` ca ON ca.content_id = con.content_id
+			$findSql
 			$joinSql 
-			WHERE ci.`".$type."` <> '' $whereSql ORDER BY ".$this->mDb->convertSortmode( $sort_mode );
+			WHERE lc.`content_type_guid` = ? $whereSql
+			ORDER BY ".$this->mDb->convertSortmode( $sort_mode );
+//			(SELECT COUNT(*) FROM `".BIT_DB_PREFIX."task_ticket` e WHERE e.usn = ci.usn ) AS enquiries $selectSql 
 		$query_cant = "SELECT COUNT( * )
-			FROM `".BIT_DB_PREFIX."contact` ci
-			LEFT JOIN `".BIT_DB_PREFIX."contact_address` a ON a.contact_id = ci.contact_id $findSql
-			$joinSql WHERE ci.`".$type."` <> '' $whereSql ";
-//			INNER JOIN `".BIT_DB_PREFIX."contact_address` a ON a.contact_id = ci.contact_id 
+			FROM `".BIT_DB_PREFIX."contact` con
+			LEFT JOIN `".BIT_DB_PREFIX."liberty_content` lc ON lc.content_id = con.content_id
+			$joinSql WHERE lc.`content_type_guid` = ? $whereSql ";
 		$result = $this->mDb->query( $query, $bindVars, $max_records, $offset );
 		$ret = array();
 		while( $res = $result->fetchRow() ) {
@@ -538,97 +377,178 @@ class Contact extends LibertyBase {
 		return $ret;
 	}
 
-
 	/**
-	 * loadContact( &$pParamHash );
-	 * Get contact record 
-	 */
-	function loadContact( &$pParamHash = NULL ) {
-		if( $this->isValid() ) {
-		$sql = "SELECT ci.*, a.*, p.*
-			FROM `".BIT_DB_PREFIX."contact` ci 
-			LEFT JOIN `".BIT_DB_PREFIX."contact_address` a ON a.usn = ci.usn
-			LEFT JOIN `".BIT_DB_PREFIX."postcode` p ON p.`postcode` = a.`postcode`
-			WHERE ci.`contact_id` = ?";
-			if( $rs = $this->mDb->query( $sql, array( $this->mContactId ) ) ) {
-				if(	$this->mInfo = $rs->fields ) {
-/*					if(	$this->mInfo['local_custodian_code'] == 0 ) {
-						global $gBitSystem;
-						$gBitSystem->fatalError( tra( 'You do not have permission to access this contact record' ), 'error.tpl', tra( 'Permission denied.' ) );
-					}
-*/
-
-					$sql = "SELECT x.`last_update_date`, x.`source`, x.`cross_reference` 
-							FROM `".BIT_DB_PREFIX."contact_xref` x
-							WHERE x.contact_id = ?";
-/* Link to legacy system
-							CASE
-							WHEN x.`source` = 'POSTFIELD' THEN (SELECT `USN` FROM `".BIT_DB_PREFIX."caller` c WHERE ci.`caller_id` = x.`cross_reference`)
-							ELSE '' END AS USN 
-							
- */
-
-					$result = $this->mDb->query( $sql, array( $this->mContactId ) );
-
-					while( $res = $result->fetchRow() ) {
-						$this->mInfo['xref'][] = $res;
-						if ( $res['source'] == 'POSTFIELD' ) $ticket[] = $res['cross_reference'];
-					}
-					if ( isset( $ticket ) )
-					{ $sql = "SELECT t.* FROM `".BIT_DB_PREFIX."task_ticket` t 
-							WHERE t.caller_id IN(". implode(',', array_fill(0, count($ticket), '?')) ." )";
-						$result = $this->mDb->query( $sql, $ticket );
-						while( $res = $result->fetchRow() ) {
-							$this->mInfo['tickets'][] = $res;
-						}
-					}
-					$os1 = new OSRef($this->mInfo['x_coordinate'], $this->mInfo['y_coordinate']);
-					$ll1 = $os1->toLatLng();
-					$this->mInfo['prop_lat'] = $ll1->lat;
-					$this->mInfo['prop_lng'] = $ll1->lng;
-//					$this->mInfo['display_usrn'] = $this->getUsrnEntryUrl( $this->mInfo['usrn'] );
-//					$this->mInfo['display_uprn'] = $this->getUprnEntryUrl( $this->mInfo['uprn'] );
-//vd($this->mInfo);
-				} else {
-					global $gBitSystem;
-					$gBitSystem->fatalError( tra( 'Contact record does not exist' ), 'error.tpl', tra( 'Not found.' ) );
-				}
-			}
+	* Returns titles of the contact type table
+	*
+	* @return array List of contact type names from the contact mamager in alphabetical order
+	*/
+	function getContactGroupList() {
+		$query = "SELECT g.* FROM `".BIT_DB_PREFIX."contact_xref_type` g WHERE g.`xref_type` > 0
+				  ORDER BY g.`xref_type`";
+		$result = $this->mDb->query($query);
+		$ret = array();
+		while ($res = $result->fetchRow()) {
+			$ret[] = $res;
 		}
-		return( count( $this->mInfo ) );
+		return $ret;
 	}
 
+	/**
+	* Returns titles of the contact type table
+	*
+	* @return array List of contact type names from the contact mamager in alphabetical order
+	*/
+	function getContactSourceList() {
+		$query = "SELECT `cross_ref_title` AS `type_name`, `source` FROM `".BIT_DB_PREFIX."contact_xref_source`
+				  WHERE `xref_type` = 0
+				  ORDER BY `cross_ref_title`";
+		$result = $this->mDb->query($query);
+		$ret = array();
+
+		while ($res = $result->fetchRow()) {
+			$ret[$res["source"]] = trim($res["type_name"]);
+		}
+		return $ret;
+	}
+
+	/**
+	* Returns titles of the xref type table
+	* @param $xrefGroup selects a single group of xref types
+	* @return array List of xref type names from the contact mamager in alphabetical order
+	*/
+	function getXrefTypeList( $xrefGroup = 0 ) {
+		if ( $xrefGroup > -1 ) {
+			$query = "SELECT s.`cross_ref_title` AS `type_name`, s.`source`  FROM `".BIT_DB_PREFIX."contact_xref_source` s
+					  LEFT JOIN `".BIT_DB_PREFIX."contact_xref` x ON x.`source` = s.`source` AND x.`content_id` = ? 
+					  WHERE s.`xref_type` = ? AND ( x.`xref_id` IS NULL OR x.`xorder` > 0 )
+					  ORDER BY s.`cross_ref_title`";
+			$result = $this->mDb->query($query, array( $this->mContentId, $xrefGroup ) );
+		} else {
+			$query = "SELECT s.`cross_ref_title` AS `type_name`, s.`source`  FROM `".BIT_DB_PREFIX."contact_xref_source` s
+					  LEFT JOIN `".BIT_DB_PREFIX."contact_xref` x ON x.`source` = s.`source` AND x.`content_id` = ? 
+					  WHERE s.`xref_type` > 0 AND ( x.`xref_id` IS NULL OR x.`xorder` > 0 )
+					  ORDER BY s.`cross_ref_title`";
+			$result = $this->mDb->query($query, array( $this->mContentId ) );
+		}
+		$ret = array();
+
+		while ($res = $result->fetchRow()) {
+			$ret[$res["source"]] = trim($res["type_name"]);
+		}
+		return $ret;
+	}
+
+	/**
+	 * getXrefList( &$pParamHash );
+	 * Get list of xref records for this contact record
+	 */
+	function loadContentTypeList() {
+		if( $this->isValid() && empty( $this->mInfo['contact_types'] ) ) {
+			global $gBitUser;
+		
+			$roles = array_keys($gBitUser->mRoles);
+			$bindVars = array();
+			array_push( $bindVars, $this->mContentId );
+			$bindVars = array_merge( $bindVars, $roles, array( $gBitUser->mUserId ) );
+
+			$sql = "SELECT r.`source`, r.`cross_ref_title`, d.`content_id`
+					FROM `".BIT_DB_PREFIX."contact_xref_source` r
+					LEFT JOIN `".BIT_DB_PREFIX."contact_xref` d ON d.`content_id` = ? AND d.`source` = r.`source` 
+					LEFT OUTER JOIN `".BIT_DB_PREFIX."users_roles_map` purm ON ( purm.`user_id`=".$gBitUser->mUserId." ) AND ( purm.`role_id`=r.`role_id` )
+					WHERE r.xref_type = 0 AND (r.`role_id` IN(". implode(',', array_fill(0, count($roles), '?')) ." ) OR purm.`user_id`=?)
+					ORDER BY r.`source`";
+					
+			$result = $this->mDb->query( $sql, $bindVars );
+
+			while( $res = $result->fetchRow() ) {
+				$this->mInfo['contact_types'][] = $res;
+			}
+		}
+	}
 
 	/**
 	 * getXrefList( &$pParamHash );
 	 * Get list of xref records for this contact record
 	 */
 	function loadXrefList() {
-		if( empty( $this->mInfo['xref'] ) ) {
+		if( $this->isValid() && empty( $this->mInfo['xref'] ) ) {
+			global $gBitUser;
 		
-			$sql = "SELECT x.`last_update_date`, x.`source`, s.`cross_ref_title` || '-' || x.`xorder` AS source_title, x.`cross_reference`, x.`data`, x.`xref_key` AS usn 
-				FROM `".BIT_DB_PREFIX."contact_xref` x
-				JOIN `".BIT_DB_PREFIX."contact_xref_source` s 
-				ON s.`source` = x.`source`
-				WHERE x.contact_id = ?
-				ORDER BY x.`source`, x.`xorder`";
+			$roles = array_keys($gBitUser->mRoles);
+			$bindVars = array();
+			array_push( $bindVars, $this->mContentId );
+			$bindVars = array_merge( $bindVars, $roles, array( $gBitUser->mUserId ) );
 
-			$result = $this->mDb->query( $sql, array( $this->mContactId ) );
+			$sql = "SELECT s.xref_type, x.`xref_id`, x.`last_update_date`, x.`source`, t.`title` AS type_title, t.`source` as type_source,
+					CASE
+					WHEN x.`xorder` = 0 THEN s.`cross_ref_title`
+					ELSE s.`cross_ref_title` || '-' || x.`xorder` END
+					AS source_title,
+					x.`xkey` AS cross_reference, x.`xkey`, x.`xkey_ext`, x.`data`
+					FROM `".BIT_DB_PREFIX."contact_xref` x
+					JOIN `".BIT_DB_PREFIX."contact_xref_source` s ON s.`source` = x.`source`
+					JOIN `".BIT_DB_PREFIX."contact_xref_type` t ON t.`xref_type` = s.`xref_type`
+					LEFT OUTER JOIN `".BIT_DB_PREFIX."users_roles_map` purm ON ( purm.`user_id`=".$gBitUser->mUserId." ) AND ( purm.`role_id`=s.`role_id` )
+					WHERE x.content_id = ? AND (s.`role_id` IN(". implode(',', array_fill(0, count($roles), '?')) ." ) OR purm.`user_id`=?)
+					ORDER BY x.`source`, x.`xorder`";
+
+			$result = $this->mDb->query( $sql, $bindVars );
 
 			while( $res = $result->fetchRow() ) {
-				$this->mInfo['xref'][] = $res;
-				if ( $res['source'] == 'POSTFIELD' ) $caller[] = $res['cross_reference'];
+				$this->mInfo[$res['type_source']][] = $res;
 			}
-
-			$sql = "SELECT t.* FROM `".BIT_DB_PREFIX."task_ticket` t 
-				WHERE t.usn = ?";
-			$result = $this->mDb->query( $sql, array( '9000000001' ) ); //$this->mContactId ) );
-			while( $res = $result->fetchRow() ) {
-				$this->mInfo['tickets'][] = $res;
-			}
-
 		}
 	}
+
+	/**
+	 * loadXref( &$pParamHash );
+	 * find contact record that matches the supplied xref record
+	 */
+	function loadXref( $pXrefId = NULL ) {
+		if( @BitBase::verifyId( $pXrefId ) ) {
+			$xref = new ContactXref( $pXrefId );
+			if( $xref->mContentId ) {
+				$this->load( $xref->mContentId );
+				$this->mInfo['xref_title'] = $xref->mContentId;
+				$this->mInfo['xref_store'] = $xref->mInfo;
+				$this->mInfo['format_guid'] = 'text';
+			}
+		}
+	}
+
+	/**
+	 * storeXref( &$pParamHash );
+	 * store or update xref records for this contact record
+	 */
+	function storeXref( &$pParamHash ) {
+		$xref = new ContactXref( $pParamHash['xref_id'] );
+		if ( $xref->store( $pParamHash ) ) {
+				$this->mInfo['xref_title'] = $xref->mContentId;
+				$this->mInfo['xref_store'] = $xref->mInfo;
+				return true;
+		} else return false;
+	}
+	
+		/**
+	 * ContactRecordLoad( $data );
+	 * simple csv contact list import 
+	 * Uncomment to enable
+	 */
+//   require( CONTENT_PKG_PATH.'import/ImportContact.php');
+
+	/**
+	 * SageRecordLoad( $data ); 
+	 * sage csv data import 
+	 * Uncomment to enable
+	 */
+//   require( CONTENT_PKG_PATH.'import/ImportSage.php');
+
+	/**
+	 * PhxRecordLoad( $data ); 
+	 * phoenix security csv data import 
+	 * Uncomment to enable
+	 */
+//   require( CONTENT_PKG_PATH.'import/ImportPhx.php');
 
 }
 ?>

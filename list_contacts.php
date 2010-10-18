@@ -12,10 +12,10 @@ $gBitSystem->isPackageActive('contact', TRUE);
 // Now check permissions to access this page
 $gBitSystem->verifyPermission('p_read_contact');
 
-$contacts = new Contacts( 0 );
+$contacts = new Contact();
 
 if ( empty( $_REQUEST["sort_mode"] ) ) {
-	$sort_mode = 'title_asc';
+	$sort_mode = 'organisation_asc';
 }
 
 // Get a list of Contacts 

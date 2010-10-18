@@ -16,19 +16,9 @@
 require_once( '../kernel/setup_inc.php' );
 
 $gBitSystem->verifyPackage( 'contact' );
-
 $gBitSystem->verifyPermission( 'p_contact_update' );
 
-include_once( CONTACT_PKG_PATH.'Contact.php' );
-
-$gContent = new Contact();
-
-if( !empty( $_REQUEST['content_id'] ) ) {
-	$gContent->load($_REQUEST['content_id']);
-}
-
-// Get plugins with descriptions
-global $gLibertySystem;
+include_once( CONTACT_PKG_PATH.'lookup_contact_inc.php' );
 
 if( !empty( $gContent->mInfo ) ) {
 	$formInfo = $gContent->mInfo;
@@ -72,20 +62,14 @@ if (isset($_REQUEST["fCancel"])) {
 		$formInfo['data'] = &$_REQUEST['edit'];
 	}
 } 
-// Configure quicktags list
-if ($gBitSystem->isPackageActive( 'quicktags' ) ) {
-	include_once( QUICKTAGS_PKG_PATH.'quicktags_inc.php' );
-}
-
-// WYSIWYG and Quicktag variable
-$gBitSmarty->assign( 'textarea_id', 'editwiki' );
 
 // formInfo might be set due to a error on submit
 if( empty( $formInfo ) ) {
 	$formInfo = &$gContent->mInfo;
 }
-$formInfo['contact_type_list'] = $gContent->getContactTypeList();
-$gBitSmarty->assign_by_ref( 'contactInfo', $formInfo );
+
+$formInfo['contact_type_list'] = $gContent->getContactSourceList();
+$gBitSmarty->assign_by_ref( 'pageInfo', $formInfo );
 
 $gBitSmarty->assign_by_ref( 'errors', $gContent->mErrors );
 $gBitSmarty->assign( (!empty( $_REQUEST['tab'] ) ? $_REQUEST['tab'] : 'body').'TabSelect', 'tdefault' );

@@ -1,6 +1,6 @@
 
 
-		{assign var=ticketscnt value=$contactInfo.tickets|@count}
+		{assign var=ticketscnt value=$pageInfo.tickets|@count}
 		{jstab title="Ticket History ($ticketscnt)"}
 		{legend legend="Ticket History"}
 		<div class="row">
@@ -16,20 +16,20 @@
 					</tr>
 				</thead>
 				<tbody>
-					{section name=ticket loop=$contactInfo.tickets}
-						<tr class="{cycle values="even,odd"}" title="{$contactInfo.ticket[ticket].title|escape}">
+					{section name=ticket loop=$pageInfo.tickets}
+						<tr class="{cycle values="even,odd"}" title="{$pageInfo.ticket[ticket].title|escape}">
 							<td>
-								{$contactInfo.tickets[ticket].ticket_ref|bit_long_date} - {$contactInfo.tickets[ticket].ticket_no}
+								{$pageInfo.tickets[ticket].ticket_ref|bit_long_date} - {$pageInfo.tickets[ticket].ticket_no}
 							</td>
 							<td>
-								{$contactInfo.tickets[ticket].tags|escape}
+								{$pageInfo.tickets[ticket].tags|escape}
 							</td>
 							<td>
 								<span class="actionicon">
-									{smartlink ititle="View" ifile="view_ticket.php" ibiticon="icons/accessories-text-editor" ticket_id=$contactInfo.tickets[ticket].ticket_id}
+									{smartlink ititle="View" ifile="view_ticket.php" ibiticon="icons/accessories-text-editor" ticket_id=$pageInfo.tickets[ticket].ticket_id}
 								</span>
-								<label for="ev_{$contactInfo.tickets[ticket].ticket_no}">	
-									{$contactInfo.tickets[ticket].staff_id}
+								<label for="ev_{$pageInfo.tickets[ticket].ticket_no}">	
+									{$pageInfo.tickets[ticket].staff_id}
 								</label>
 							</td>
 						</tr>

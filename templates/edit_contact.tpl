@@ -17,14 +17,14 @@
 	{if $preview}
 		<h2>Preview - {$pageInfo.title}</h2>
 		<div class="preview">
-			{include file="bitpackage:contact/contact_display.tpl" page=`$contactInfo.content_id`}
+			{include file="bitpackage:contact/contact_display.tpl" page=`$pageInfo.content_id`}
 		</div>
 	{/if}
 
 	<div class="header">
 		<h1>
-		{if $contactInfo.content_id}
-			{tr}{tr}Edit - {/tr} {$contactInfo.title}{/tr}
+		{if $pageInfo.content_id}
+			{tr}{tr}Edit - {/tr} {$pageInfo.title}{/tr}
 		{else}
 			{tr}Create New Record{/tr}
 		{/if}
@@ -33,57 +33,59 @@
 
 	<div class="body">
 		{form legend="Edit/Create Contact Record" enctype="multipart/form-data" id="editpageform"}
-			<input type="hidden" name="content_id" value="{$contactInfo.content_id}" />
+			<input type="hidden" name="content_id" value="{$pageInfo.content_id}" />
 
-			<div class="row">
+			{include file="bitpackage:contact/edit_type_header.tpl"}
+
+{*			<div class="row">
 				{formlabel label="Title" for="title"}
 				{forminput}
-					<input size="60" type="text" name="prefix" id="prefix" value="{$contactInfo.prefix|escape}" />
+					<input size="60" type="text" name="prefix" id="prefix" value="{$pageInfo.prefix|escape}" />
 				{/forminput}
 			</div>
 			<div class="row">
 				{formlabel label="Forename" for="forename"}
 				{forminput}
-					<input size="60" type="text" name="forename" id="forename" value="{$contactInfo.forename|escape}" />
+					<input size="60" type="text" name="forename" id="forename" value="{$pageInfo.forename|escape}" />
 				{/forminput}
 			</div>
 			<div class="row">
 				{formlabel label="Surname" for="surname"}
 				{forminput}
-					<input size="60" type="text" name="surname" id="surname" value="{$contactInfo.surname|escape}" />
+					<input size="60" type="text" name="surname" id="surname" value="{$pageInfo.surname|escape}" />
 				{/forminput}
 			</div>
 			<div class="row">
 				{formlabel label="Suffix" for="suffix"}
 				{forminput}
-					<input size="60" type="text" name="suffix" id="suffix" value="{$contactInfo.suffix|escape}" />
+					<input size="60" type="text" name="suffix" id="suffix" value="{$pageInfo.suffix|escape}" />
 				{/forminput}
 			</div>
 			<div class="row">
 				{formlabel label="Organisation" for="organisation"}
 				{forminput}
-					<input size="60" type="text" name="organisation" id="organisation" value="{$contactInfo.organisation|escape}" />
+					<input size="60" type="text" name="organisation" id="organisation" value="{$pageInfo.organisation|escape}" />
 				{/forminput}
 			</div>
 			<div class="row">
 				{formlabel label="NI Number" for="nino"}
 				{forminput}
-					<input size="10" type="text" name="nino" id="nino" value="{$contactInfo.nino|escape}" />
+					<input size="10" type="text" name="nino" id="nino" value="{$pageInfo.nino|escape}" />
 				{/forminput}
 			</div>
+*}
 			<div class="row">
 				{formlabel label="Note" for="description"}
 				{forminput}
-					<input size="60" type="text" name="description" id="description" value="{$contactInfo.description|escape}" />
+					<input size="60" type="text" name="description" id="description" value="{$pageInfo.description|escape}" />
 				{/forminput}
 			</div>
-
 			<div class="row">
 				{formlabel label="Memo" for="$textarea_id"}
 				{forminput}
 					<input type="hidden" name="rows" value="{$rows}" />
 					<input type="hidden" name="cols" value="{$cols}" />
-					<textarea id="{$textarea_id}" name="edit" rows="{$rows|default:20}" cols="{$cols|default:80}">{if !$preview}{$contactInfo.data|escape}{else}{$edit}{/if}</textarea>
+					<textarea id="{$textarea_id}" name="edit" rows="{$rows|default:20}" cols="{$cols|default:80}">{if !$preview}{$pageInfo.data|escape}{else}{$edit}{/if}</textarea>
 				{/forminput}
 			</div>
 

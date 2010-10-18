@@ -15,26 +15,32 @@
  */
 require_once( '../kernel/setup_inc.php' );
 
-include_once( CONTACT_PKG_PATH.'Contact.php' );
-
 $gBitSystem->verifyPackage( 'contact' );
-
 $gBitSystem->verifyPermission( 'p_contact_view' );
 
-if( !empty( $_REQUEST['contact_id'] ) ) {
-	$gContact = new Contact( $_REQUEST['contact_id'] );
-	$gContact->load();
-	$gContact->loadXrefList();
-} else {
-	$gContact = new Contact();
+include_once( CONTACT_PKG_PATH.'lookup_contact_inc.php' );
+
+if ( !$gContent->isValid() ) {
+	header ("location: ".CONTACT_PKG_URL."list.php");
+	die;
 }
 
-$gBitSmarty->assign_by_ref( 'contactInfo', $gContact->mInfo );
-//if ( $gContact->isValid() ) {
-	$gBitSystem->setBrowserTitle("Contact Information");
-	$gBitSystem->display( 'bitpackage:contact/show_contact.tpl');
-//} else {
-//	header ("location: ".CONTACT_PKG_URL."index.php");
-//	die;
-//}
+if( $gContent->isCommentable() ) {
+	$commentsParentId = $gContent->mContentId;
+	$comments_vars = Array('contact');
+	$comments_prefix_var='contact:';
+	$comments_object_var='contact';
+	$comments_return_url = $_SERVER['PHP_SELF']."?content_id=".$gContent->mContentId;
+	include_once( LIBERTY_PKG_PATH.'comments_inc.php' );
+
+	if ( !$_REQUEST[post_comment_submit] == 'Post' ) {
+		header ("location: ".CONTACT_PKG_URL."index.php?content_id=".$gContent->mContentId );
+		die;
+	}
+}
+
+$gContent->mInfo['type'] = $gContent->getContactGroupList();
+
+$gBitSystem->setBrowserTitle("Contact Information");
+$gBitSystem->display( 'bitpackage:contact/show_contact.tpl');
 ?>

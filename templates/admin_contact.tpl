@@ -16,5 +16,4 @@
 		<input type="submit" name="contactlistfeatures" value="{tr}Change preferences{/tr}" />
 	</div>
 {/form}
-
 {/strip}

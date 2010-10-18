@@ -1,112 +1,48 @@
 <?php
 $tables = array(
 
-'contact_phx' => "
-  contact_id I8 PRIMARY,
-  usn I8 NOTNULL,
-  parent_id I8,
-  organisation C(100),
-  last_update_date T DEFAULT CURRENT_TIMESTAMP,
-  start_date T DEFAULT CURRENT_TIMESTAMP,
-",
-
-'contact_phx' => "
-  contact_id I8 PRIMARY,
-  usn I8 NOTNULL,
-  parent_id I8,
-  uprn I8,
-  nlpg I8,
-  ctax I8,
-  opfl I8,
-  cltype I4,
-  prefix C(35),
-  forename C(128),
-  surname C(128),
-  suffix C(35),
-  organisation C(100),
-  last_update_date T DEFAULT CURRENT_TIMESTAMP,
-  note C(40),
-  memo X,
-  contact1 C(128),
-  contact2 C(128),
-  contact3 C(128),
-  key1 C(128),
-  tel1 C(128),
-  key2 C(128),
-  tel2 C(128),
-  key3 C(128),
-  tel3 C(128),
-  passwd C(128),
-  prompt C(128),
-  start_date T DEFAULT CURRENT_TIMESTAMP,
-  payment C(64),
-  maintain C(128),
-  code C(128),
-  full_start_date C(24)
-",
-
-'contact_sage' => "
-  contact_id I8 PRIMARY,
-  usn C(16) NOTNULL,
-  cltype I4,
-  prefix C(35),
-  forename C(128),
-  surname C(128),
-  suffix C(35),
-  organisation C(100),
-  contact_name C(64),
-  telephone C(16),
-  fax C(32),
-  web C(32),
-  analysis_1 C(16),
-  analysis_2 C(16),
-  analysis_3 C(16),
-  dept_number C(8),
-  vat_reg_number C(16),
-  turnover_mtd C(16),
-  turnover_ytd C(16),
-  turnover_prior C(16),
-  credit_limit C(16),
-  terms C(32),
-  settlement_due_days C(32),
-  settlement_disc_rate C(32),
-  def_nom_code C(32),
-  def_tax_code C(32)
+'contact' => "
+  content_id I8 PRIMARY,
+  parent_id I8 DEFAULT 0,
+  address_id I8 DEFAULT 0,
+  role_id I4,
+  xkey C(32)
 ",
 
 'contact_xref' => "
-  contact_id I8 NOTNULL,
-  xref_key C(14),
+  xref_id I8 PRIMARY,
+  content_id I8 NOTNULL,
+  source C(20) PRIMARY,
+  xorder I2
+  xref I8,
+  xkey C(32),
+  xkey_ext C(250),
+  data X,
   start_date T,
   last_update_date T,
   entry_date T,
   end_date T,
-  source C(20) PRIMARY,
-  cross_reference C(22) PRIMARY,
-  data X,
-  xorder I2
   ",
 
-'contact_type' => "
-  contact_type_id I4 PRIMARY,
-  type_name	C(64)
-",
+'contact_xref_type' => "
+  xref_type I2 PRIMARY,
+  source C(20),
+  title C(64),
+  role_id I4,
+  type_href C(256)
+  ",
 
 'contact_xref_source' => "
-  source C(6) PRIMARY,
+  source C(20) PRIMARY,
   cross_ref_title C(64),
+  xref_type I2,
+  role_id I4,
   cross_ref_href C(256),
   data X
   ",
 
-'contact_type_map' => "
-  contact_id I4 PRIMARY,
-  contact_type_id I4 PRIMARY,
-  type_value	I4
-",
-
 'contact_address' => "
-  contact_id I8 PRIMARY,
+  content_id I8 PRIMARY,
   address_id I8,
   uprn I8,
   postcode C(10),
@@ -119,24 +55,9 @@ $tables = array(
   town C(80),
   county C(80),
   zone_id I4,
+  country C(80),
   country_id I4,
   last_update_date T DEFAULT CURRENT_TIMESTAMP
-",
-
-'postcode' => "
-  postcode C(10),
-  add1 C(32),
-  add2 C(64),
-  add3 C(64),
-  add4 C(40),
-  town C(20),
-  county C(20),
-  grideast I4,
-  gridnorth I4,
-  w_id C(6),
-  p_id C(7),
-  NHS C(3),
-  PCG C(5)
 ",
 
 );

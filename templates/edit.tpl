@@ -7,9 +7,9 @@
 	<div class="header">
 		<h1>
 		{* this weird dual assign thing is cause smarty wont interpret backticks to object in assign tag - spiderr *}
-		{if $contactInfo.content_id}
+		{if $pageInfo.content_id}
 			{assign var=editLabel value="{tr}Edit{/tr} $conDescr"}
-			{tr}{tr}Edit{/tr} {$contactInfo.title}{/tr}
+			{tr}{tr}Edit{/tr} {$pageInfo.title}{/tr}
 		{else}
 			{assign var=editLabel value="{tr}Create{/tr} $conDescr"}
 			{tr}{$editLabel}{/tr}
@@ -33,88 +33,85 @@
 			{jstabs}
 				{jstab title="$editLabel Body"}
 					{legend legend="`$editLabel` Details"}
-						<input type="hidden" name="content_id" value="{$contactInfo.content_id}" />
+						<input type="hidden" name="content_id" value="{$pageInfo.content_id}" />
 						
 						<div class="row">
 							{formfeedback warning=`$errors.names`}
 							{formfeedback warning=`$errors.store`}
 
 							{formlabel label="$conDescr Contact" for="contentno"}
-							{if !$contactInfo.contact_id}
+							{if !$pageInfo.contact_id}
 								{forminput}
 									New Contact Entry
 								{/forminput}
 							{else}
 								{forminput}
-									Edit Contact Entry No : {$contactInfo.contact_id}
+									Edit Contact Entry No : {$pageInfo.contact_id}
 								{/forminput}
 							{/if}
-
-							{formlabel label="Contact Type" for="contact_type"}
-							{forminput}
-								{html_options name="$contactInfo.contact_type_list[$contactInfo.contact_type]" options=$contactInfo.contact_type_list selected=`$contactInfo.contact_type`}
-								{formhelp note="Users of only this group can view the content of this category."}
-							{/forminput}
-							
 						</div>
-						<div class="row">
+
+						{include file="bitpackage:contact/edit_type_header.tpl"}
+							
+{*						<div class="row">
 							{formlabel label="Title" for="prefix"}
 							{forminput}
-								<input size="60" type="text" name="prefix" id="prefix" value="{$contactInfo.prefix|escape}" />
+								<input size="60" type="text" name="prefix" id="prefix" value="{$pageInfo.prefix|escape}" />
 							{/forminput}
 						</div>
 						<div class="row">
 							{formlabel label="Forename" for="forename"}
 							{forminput}
-								<input size="60" type="text" name="forename" id="forename" value="{$contactInfo.forename|escape}" />
+								<input size="60" type="text" name="forename" id="forename" value="{$pageInfo.forename|escape}" />
 							{/forminput}
 						</div>
 						<div class="row">
 							{formlabel label="Surname" for="surname"}
 							{forminput}
-								<input size="60" type="text" name="surname" id="surname" value="{$contactInfo.surname|escape}" />
+								<input size="60" type="text" name="surname" id="surname" value="{$pageInfo.surname|escape}" />
 							{/forminput}
 						</div>
 						<div class="row">
 							{formlabel label="Suffix" for="suffix"}
 							{forminput}
-								<input size="60" type="text" name="suffix" id="suffix" value="{$contactInfo.suffix|escape}" />
+								<input size="60" type="text" name="suffix" id="suffix" value="{$pageInfo.suffix|escape}" />
 							{/forminput}
 						</div>
 						<div class="row">
 							{formlabel label="Organisation" for="organisation"}
 							{forminput}
-								<input size="60" type="text" name="organisation" id="organisation" value="{$contactInfo.organisation|escape}" />
+								<input size="60" type="text" name="organisation" id="organisation" value="{$pageInfo.organisation|escape}" />
 							{/forminput}
 						</div>
 						<div class="row">
 							{formlabel label="NI Number" for="nino"}
 							{forminput}
-								<input size="10" type="text" name="nino" id="nino" value="{$contactInfo.nino|escape}" />
+								<input size="10" type="text" name="nino" id="nino" value="{$pageInfo.nino|escape}" />
 							{/forminput}
 						</div>
 						<div class="row">
 							{formlabel label="Date of Birth" for="dob"}
 							{forminput}
-								<input size="10" type="text" name="dob" id="dob" value="{$contactInfo.dob|escape}" />
+								<input size="10" type="text" name="dob" id="dob" value="{$pageInfo.dob|escape}" />
 							{/forminput}
 						</div>
 						<div class="row">
 							{formlabel label="Date of eighteen" for="eighteenth"}
 							{forminput}
-								<input size="10" type="text" name="eighteenth" id="eighteenth" value="{$contactInfo.eighteenth|escape}" />
+								<input size="10" type="text" name="eighteenth" id="eighteenth" value="{$pageInfo.eighteenth|escape}" />
 							{/forminput}
 						</div>
 						<div class="row">
 							{formlabel label="Date of Death" for="dod"}
 							{forminput}
-								<input size="10" type="text" name="dod" id="dod" value="{$contactInfo.dod|escape}" />
+								<input size="10" type="text" name="dod" id="dod" value="{$pageInfo.dod|escape}" />
 							{/forminput}
 						</div>
+*}
 						<div class="row">
 							{formlabel label="Note" for="description"}
 							{forminput}
-								<input size="60" type="text" name="description" id="description" value="{$contactInfo.description|escape}" />
+								<input size="60" type="text" name="description" id="description" value="{$pageInfo.description|escape}" />
 							{/forminput}
 						</div>
 					{/legend}
@@ -127,16 +124,14 @@
 				{jstab title="Contact Notes"}
 					{legend legend="Notes Body"}
 						<div class="row">
-							{forminput}
-								<textarea id="{$textarea_id}" name="edit" rows="{$rows|default:20}" cols="{$cols|default:80}">{$contactInfo.data|escape:html}</textarea>
-							{/forminput}
+							{textarea rows=30 noformat=1}{$pageInfo.edit}{/textarea}
 						</div>
 
 						{if $page ne 'SandBox'}
 							<div class="row">
 								{formlabel label="Comment" for="comment"}
 								{forminput}
-									<input size="50" type="text" name="comment" id="comment" value="{$contactInfo.comment}" />
+									<input size="50" type="text" name="comment" id="comment" value="{$pageInfo.comment}" />
 									{formhelp note="Add a comment to illustrate your most recent changes."}
 								{/forminput}
 							</div>
@@ -151,10 +146,10 @@
 							{include file=$serviceEditTpls.categorization}
 						{/legend}
 					{/if}
+					{include file="bitpackage:liberty/edit_services_inc.tpl" serviceFile="content_edit_mini_tpl"}
+
 				{/jstab}
 			{/jstabs}
-
-			{include file="bitpackage:liberty/edit_services_inc.tpl" serviceFile="content_edit_mini_tpl"}
 
 			<div class="row submit">
 				<input type="submit" name="fCancel" value="{tr}Cancel{/tr}" />&nbsp;
