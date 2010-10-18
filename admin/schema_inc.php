@@ -21,15 +21,7 @@ $tables = array(
   start_date T,
   last_update_date T,
   entry_date T,
-  end_date T,
-  ",
-
-'contact_xref_type' => "
-  xref_type I2 PRIMARY,
-  source C(20),
-  title C(64),
-  role_id I4,
-  type_href C(256)
+  end_date T
   ",
 
 'contact_xref_source' => "
@@ -41,12 +33,19 @@ $tables = array(
   data X
   ",
 
+'contact_xref_type' => "
+  xref_type I2 PRIMARY,
+  source C(20),
+  title C(64),
+  role_id I4,
+  type_href C(256)
+  ",
+
 'contact_address' => "
   content_id I8 PRIMARY,
   address_id I8,
   uprn I8,
   postcode C(10),
-  organisation C(100),
   sao C(80),
   pao C(80),
   number C(80),
@@ -57,7 +56,8 @@ $tables = array(
   zone_id I4,
   country C(80),
   country_id I4,
-  last_update_date T DEFAULT CURRENT_TIMESTAMP
+  last_update_date T DEFAULT CURRENT_TIMESTAMP,
+  cltype I2
 ",
 
 );
@@ -75,13 +75,14 @@ $gBitInstaller->registerPackageInfo( CONTACT_PKG_NAME, array(
 
 // ### Indexes
 $indices = array (
-	'contact_contact_id_idx' => array( 'table' => 'contact', 'cols' => 'usn', 'opts' => NULL ),
+	'contact_parent_id_idx' => array( 'table' => 'contact', 'cols' => 'parent_id', 'opts' => NULL ),
+	'contact_address_id_idx' => array( 'table' => 'contact', 'cols' => 'address_id', 'opts' => NULL ),
 );
 $gBitInstaller->registerSchemaIndexes( CONTACT_PKG_NAME, $indices );
 
 // ### Sequences
 $sequences = array (
-	'contact_id_seq' => array( 'start' => 1 ),
+	'contact_xref_seq' => array( 'start' => 1 ),
 );
 $gBitInstaller->registerSchemaSequences( CONTACT_PKG_NAME, $sequences );
 
@@ -107,25 +108,43 @@ $gBitInstaller->registerPreferences( CONTACT_PKG_NAME, array(
 ) );
 
 $gBitInstaller->registerSchemaDefault( CONTACT_PKG_NAME, array(
-"INSERT INTO `".BIT_DB_PREFIX."contact_type` VALUES (0, 'Personal')",
-"INSERT INTO `".BIT_DB_PREFIX."contact_type` VALUES (1, 'Business')",
-"INSERT INTO `".BIT_DB_PREFIX."contact_type` VALUES (2, 'Manufacturer')",
-"INSERT INTO `".BIT_DB_PREFIX."contact_type` VALUES (3, 'Distributor')",
-"INSERT INTO `".BIT_DB_PREFIX."contact_type` VALUES (4, 'Supplier')",
-"INSERT INTO `".BIT_DB_PREFIX."contact_type` VALUES (5, 'Record Company')",
-"INSERT INTO `".BIT_DB_PREFIX."contact_type` VALUES (6, 'Record Artist')",
-"INSERT INTO `".BIT_DB_PREFIX."contact_type` VALUES (7, 'Cartographer')",
-
-"INSERT INTO `".BIT_DB_PREFIX."contact_xref_source`( `source`, `cross_ref_title`, `cross_ref_href` )  VALUES ('0' , 'Free format information', '../contact/?xref=')",
-"INSERT INTO `".BIT_DB_PREFIX."contact_xref_source`( `source`, `cross_ref_title`, `cross_ref_href` )  VALUES ('#R', 'Residential Address', '../nlpg/?uprn=')",
-"INSERT INTO `".BIT_DB_PREFIX."contact_xref_source`( `source`, `cross_ref_title`, `cross_ref_href` )  VALUES ('#T', 'Tenant Address', '../nlpg/?uprn=')",
-"INSERT INTO `".BIT_DB_PREFIX."contact_xref_source`( `source`, `cross_ref_title`, `cross_ref_href` )  VALUES ('#C', 'Correspondence Address', '../nlpg/?uprn=')",
-"INSERT INTO `".BIT_DB_PREFIX."contact_xref_source`( `source`, `cross_ref_title`, `cross_ref_href` )  VALUES ('#O', 'Owner Address', '../nlpg/?uprn=')",
-"INSERT INTO `".BIT_DB_PREFIX."contact_xref_source`( `source`, `cross_ref_title`, `cross_ref_href` )  VALUES ('#K', 'Keyholder', '../nlpg/?uprn=')",
-"INSERT INTO `".BIT_DB_PREFIX."contact_xref_source`( `source`, `cross_ref_title`, `cross_ref_href` )  VALUES ('HBEN', 'Housing Benefit', '../nlpg/?uprn=')",
-"INSERT INTO `".BIT_DB_PREFIX."contact_xref_source`( `source`, `cross_ref_title`, `cross_ref_href` )  VALUES ('CTAX', 'Council Tax', '../nlpg/?uprn=')",
-"INSERT INTO `".BIT_DB_PREFIX."contact_xref_source`( `source`, `cross_ref_title`, `cross_ref_href` )  VALUES ('NNDR', 'National Non-domestic Rates', '../nlpg/?uprn=')",
-"INSERT INTO `".BIT_DB_PREFIX."contact_xref_source`( `source`, `cross_ref_title`, `cross_ref_href` )  VALUES ('ER', 'Electoral Roll', '../nlpg/?uprn=')",
+"INSERT INTO `".BIT_DB_PREFIX."contact_xref_type` VALUES ('0', 'type', 'Contact Type List', '3', '')",
+"INSERT INTO `".BIT_DB_PREFIX."contact_xref_type` VALUES ('1', 'contact', 'General Contact Details', '3', '')",
+"INSERT INTO `".BIT_DB_PREFIX."contact_xref_type` VALUES ('2', 'links', 'Linked Contact Items', '3', '')",
+"INSERT INTO `".BIT_DB_PREFIX."contact_xref_type` VALUES ('3', 'alarm', 'Security System Links', '3', '')",
+"INSERT INTO `".BIT_DB_PREFIX."contact_xref_type` VALUES ('4', 'council', 'Council reference links', '3', '')",
+"INSERT INTO `".BIT_DB_PREFIX."contact_xref_type` VALUES ('5', 'account', 'Account Details', '4', '')",
+"INSERT INTO `".BIT_DB_PREFIX."contact_xref_source`  VALUES ('$00', 'Personal', '0', '3', '/contact/?type=0', NULL)",
+"INSERT INTO `".BIT_DB_PREFIX."contact_xref_source`  VALUES ('$01', 'Business', '0', '3', '/contact/?type=1', NULL)",
+"INSERT INTO `".BIT_DB_PREFIX."contact_xref_source`  VALUES ('$02', 'Manufacturer', '0', '3', '/contact/?type=2', NULL)",
+"INSERT INTO `".BIT_DB_PREFIX."contact_xref_source`  VALUES ('$03', 'Distributor', '0', '3', '/contact/?type=3', NULL)",
+"INSERT INTO `".BIT_DB_PREFIX."contact_xref_source`  VALUES ('$04', 'Supplier', '0', '3', '/contact/?type=4', NULL)",
+"INSERT INTO `".BIT_DB_PREFIX."contact_xref_source`  VALUES ('$05', 'Record Company', '0', '3', '/contact/?type=5', NULL)",
+"INSERT INTO `".BIT_DB_PREFIX."contact_xref_source`  VALUES ('$06', 'Record Artist', '0', '3', '/contact/?type=6', NULL)",
+"INSERT INTO `".BIT_DB_PREFIX."contact_xref_source`  VALUES ('$07', 'Cartographer', '0', '3', '/contact/?type=7', NULL)",
+"INSERT INTO `".BIT_DB_PREFIX."contact_xref_source`  VALUES ('$08', 'PHX Client', '0', '3', '/contact/?type=8', NULL)",
+"INSERT INTO `".BIT_DB_PREFIX."contact_xref_source`  VALUES ('$09', 'LSCES Supplier', '0', '3', '/contact/?type=9', NULL)",
+"INSERT INTO `".BIT_DB_PREFIX."contact_xref_source`  VALUES ('$10', 'Paypal Client', '0', '3', '/contact/?type=10', NULL)",
+"INSERT INTO `".BIT_DB_PREFIX."contact_xref_source`  VALUES ('#C', 'Correspondence Address', '1', '3', '../nlpg/?uprn=', NULL)",
+"INSERT INTO `".BIT_DB_PREFIX."contact_xref_source`  VALUES ('#E', 'eMail Address', '1', '3', '../contact/?contact_id=', NULL)",
+"INSERT INTO `".BIT_DB_PREFIX."contact_xref_source`  VALUES ('#F', 'Fax', '1', '3', '../contact/?contact_id=', NULL)",
+"INSERT INTO `".BIT_DB_PREFIX."contact_xref_source`  VALUES ('#O', 'Owner Address', '1', '3', '../nlpg/?uprn=', NULL)",
+"INSERT INTO `".BIT_DB_PREFIX."contact_xref_source`  VALUES ('#P', 'Telephone', '1', '3', '../contact/?contact_id=', NULL)",
+"INSERT INTO `".BIT_DB_PREFIX."contact_xref_source`  VALUES ('#R', 'Residential Address', '1', '3', '../nlpg/?uprn=', NULL)",
+"INSERT INTO `".BIT_DB_PREFIX."contact_xref_source`  VALUES ('#T', 'Tenant Address', '1', '3', '../nlpg/?uprn=', NULL)",
+"INSERT INTO `".BIT_DB_PREFIX."contact_xref_source`  VALUES ('#W', 'Web Site Url', '1', '3', '../contact/?contact_id=', NULL)",
+"INSERT INTO `".BIT_DB_PREFIX."contact_xref_source`  VALUES ('0', 'Free format information', '1', '3', '../contact/?xref=', NULL)",
+"INSERT INTO `".BIT_DB_PREFIX."contact_xref_source`  VALUES ('CON', 'Contact', '1', '3', '../nlpg/?uprn=', NULL)",
+"INSERT INTO `".BIT_DB_PREFIX."contact_xref_source`  VALUES ('#A', 'Alarm Maintainer', '3', '3', '../nlpg/?uprn=', NULL)",
+"INSERT INTO `".BIT_DB_PREFIX."contact_xref_source`  VALUES ('#K', 'Keyholder', '3', '3', '../nlpg/?uprn=', NULL)",
+"INSERT INTO `".BIT_DB_PREFIX."contact_xref_source`  VALUES ('ALARM', 'Alarm System', '3', '3', '../nlpg/?uprn=', NULL)",
+"INSERT INTO `".BIT_DB_PREFIX."contact_xref_source`  VALUES ('CTAX', 'Council Tax', '4', '3', '../nlpg/?uprn=', NULL)",
+"INSERT INTO `".BIT_DB_PREFIX."contact_xref_source`  VALUES ('ER', 'Electoral Roll', '4', '3', '../nlpg/?uprn=', NULL)",
+"INSERT INTO `".BIT_DB_PREFIX."contact_xref_source`  VALUES ('HBEN', 'Housing Benefit', '4', '3', '../nlpg/?uprn=', NULL)",
+"INSERT INTO `".BIT_DB_PREFIX."contact_xref_source`  VALUES ('NNDR', 'National Non-domestic Rates', '4', '3', '../nlpg/?uprn=', NULL)",
+"INSERT INTO `".BIT_DB_PREFIX."contact_xref_source`  VALUES ('ACC_TO', 'Account Turnover', '5', '3', '../vat/?vat=', NULL)",
+"INSERT INTO `".BIT_DB_PREFIX."contact_xref_source`  VALUES ('SAGEID', 'SAGE Account Reference', '5', '3', '''sage''', NULL)",
+"INSERT INTO `".BIT_DB_PREFIX."contact_xref_source`  VALUES ('VAT_NO', 'VAT Number', '5', '3', '../vat/?vat=', NULL)",
 ) );
 
 
