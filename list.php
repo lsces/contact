@@ -28,8 +28,21 @@ if( empty( $_REQUEST["find_org"] ) ) {
 	$_REQUEST["sort_mode"] = 'title_asc';
 } 
 
-//$contact_type = $gContent->getContactsTypeList();
-//$gBitSmarty->assign_by_ref('contact_type', $contact_type);
+// Handle the request hash storing into the session.
+$gContent->mTypes->processRequestHash($_REQUEST, $_SESSION['contact']);
+
+// Setup which contact types we want to view.
+$contactTypes = $gContent->getContactTypes();
+if( $gBitUser->hasPermission("p_contact_view_changes") && $_SESSION['contact']['contact_type_guid'] ) {
+	$listHash = $_SESSION['contact'];
+} else {
+	foreach ($contactTypes as $key => $val) {
+		if ($gBitSystem->isFeatureActive('contact_default_'.$key)) {
+			$listHash['contact_type_guid'][] = $key;
+		}
+	}
+}
+
 $listHash = $_REQUEST;
 // Get a list of matching contact entries
 $listcontacts = $gContent->getList( $listHash );
