@@ -9,11 +9,9 @@
 			<input type="submit" name="refresh" value="{tr}Update Contact Filter{/tr}" /><br /><br />
 
 			{biticon ipackage="icons" iname="edit-find" iexplain="Search"} &nbsp;
-			<label>{tr}Name{/tr}:&nbsp;<input size="20" type="text" name="find_name" value="{$find_name|default:$smarty.request.find_name|escape}" /></label> &nbsp;
-			<label>{tr}Organisation{/tr}:&nbsp;<input size="20" type="text" name="find_org" value="{$find_org|default:$smarty.request.find_org|escape}" /></label> &nbsp;
-			<label>{tr}Street{/tr}:&nbsp;<input size="20" type="text" name="find_street" value="{$find_street|default:$smarty.request.find_street|escape}" /></label> &nbsp;
+			<label>{tr}Title{/tr}:&nbsp;<input size="30" type="text" name="find_title" value="{$find_title|default:$smarty.request.find_title|escape}" /></label> &nbsp;
+			<label>{tr}Location{/tr}:&nbsp;<input size="30" type="text" name="find_location" value="{$find_location|default:$smarty.request.find_location|escape}" /></label> &nbsp;
 			<label>{tr}Postcode{/tr}:&nbsp;<input size="10" type="text" name="find_postcode" value="{$find_postcode|default:$smarty.request.find_postcode|escape}" /></label> &nbsp;
-			<br />
 			<input type="submit" name="search" value="{tr}Find{/tr}" />&nbsp;
 			<input type="button" onclick="location.href='{$smarty.server.PHP_SELF}{if $hidden}?{/if}{foreach from=$hidden item=value key=name}{$name}={$value}&amp;{/foreach}'" value="{tr}Reset{/tr}" />
 		{/form}
