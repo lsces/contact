@@ -13,6 +13,7 @@
  * required setup
  */
 require_once( CONTACT_PKG_PATH.'ContactXref.php' );
+require_once( CONTACT_PKG_PATH.'ContactType.php' );
 require_once( LIBERTY_PKG_PATH.'LibertyContent.php' );		// Contact base class
 require_once( NLPG_PKG_PATH.'lib/phpcoord-2.3.php' );
 
@@ -24,6 +25,7 @@ define( 'CONTACT_CONTENT_TYPE_GUID', 'contact' );
 class Contact extends LibertyContent {
 	var $mParentId;
 	var $mDate;
+	var $mTypes;
 
 	/**
 	 * Constructor 
@@ -56,6 +58,8 @@ class Contact extends LibertyContent {
 		$this->mExpungeContentPerm  = 'p_contact_expunge';
 		$this->mAdminContentPerm = 'p_contact_admin';
 		
+		$this->mTypes = new ContactType();
+		$this->mTypes->setup();
 	}
 
 	/**
@@ -438,6 +442,14 @@ class Contact extends LibertyContent {
 		return $ret;
 	}
 
+	/**
+	 * getXrefList( &$pParamHash );
+	 * Get list of xref records for this contact record
+	 */
+	function getContactTypes() {
+		return $this->mTypes->mContactType;
+	}
+	
 	/**
 	 * getXrefList( &$pParamHash );
 	 * Get list of xref records for this contact record
