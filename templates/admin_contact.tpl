@@ -12,6 +12,14 @@
 		</div>
 	{/foreach}
 
+		<div class="row">
+			{formlabel label="Default Contact Types"}
+			{forminput}
+				{html_checkboxes name="defaultTypes" options=$contactTypeDefaults selected=$contactTypesSelected separator="<br />"}
+				{formhelp note="Default contact types to show on the contact filter when users do not have permission to change types of content viewed."}
+			{/forminput}
+		</div>
+
 	<div class="row submit">
 		<input type="submit" name="contactlistfeatures" value="{tr}Change preferences{/tr}" />
 	</div>

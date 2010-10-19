@@ -6,6 +6,8 @@
 // Licensed under the GNU LESSER GENERAL PUBLIC LICENSE. See http://www.gnu.org/copyleft/lesser.html for details.
 
 include_once( CONTACT_PKG_PATH.'Contact.php' );
+$mTypes = new ContactType();
+$mTypes->setup();
 
 $formContactListFeatures = array(
 	"contact_list_id" => array(
@@ -38,11 +40,30 @@ $formContactListFeatures = array(
 );
 $gBitSmarty->assign( 'formContactListFeatures',$formContactListFeatures );
 
+foreach( $mTypes->mContactType as $key => $type ) {
+	$option = 'contact_default_'.$key;
+	$contactChecks[] = $option;
+	$contactTypeDefaults[$option] = $type;
+}
+asort($contactTypeDefaults);
+$gBitSmarty->assign('contactTypeDefaults', $contactTypeDefaults);
+
 if (isset($_REQUEST["contactlistfeatures"])) {
 	
 	foreach( $formContactListFeatures as $item => $data ) {
 		simple_set_toggle( $item, CONTACT_PKG_NAME );
 	}
+
+	foreach( $contactTypeDefaults as $key => $val ) {
+		simple_set_toggle_array( 'defaultTypes', $key, CONTACT_PKG_NAME);
+	}	
 }
+
+foreach( $contactTypeDefaults as $key => $val) {
+	if ($gBitSystem->isFeatureActive($key) ){
+		$contactTypesSelected[] = $key;
+	}
+}
+$gBitSmarty->assign('contactTypesSelected', $contactTypesSelected);
 
 ?>
