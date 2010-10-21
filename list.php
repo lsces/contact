@@ -23,18 +23,14 @@ $gBitSystem->verifyPermission( 'p_contact_view' );
 $gContent = new Contact( );
 $gContent->invokeServices( 'content_list_function', $_REQUEST );
 
-if( empty( $_REQUEST["find_org"] ) ) {
-	$_REQUEST["find_name"] = '';
-	$_REQUEST["sort_mode"] = 'title_asc';
-} 
-
 // Handle the request hash storing into the session.
 $gContent->mTypes->processRequestHash($_REQUEST, $_SESSION['contact']);
 
+$listHash = $_REQUEST;
 // Setup which contact types we want to view.
 $contactTypes = $gContent->getContactTypes();
 if( $gBitUser->hasPermission("p_contact_view_changes") && $_SESSION['contact']['contact_type_guid'] ) {
-	$listHash = $_SESSION['contact'];
+	$listHash['contact_type_guid'] = $_SESSION['contact']['contact_type_guid'];
 } else {
 	foreach ($contactTypes as $key => $val) {
 		if ($gBitSystem->isFeatureActive('contact_default_'.$key)) {
@@ -42,10 +38,14 @@ if( $gBitUser->hasPermission("p_contact_view_changes") && $_SESSION['contact']['
 		}
 	}
 }
-
-$listHash = $_REQUEST;
 // Get a list of matching contact entries
 $listcontacts = $gContent->getList( $listHash );
+
+
+if ( $listHash['listInfo']['count'] == 1 ){
+	header ("location: ".CONTACT_PKG_URL."display_contact.php?content_id=".$listcontacts[0]['content_id'] );
+	die;
+}
 
 $gBitSmarty->assign_by_ref( 'listcontacts', $listcontacts );
 $gBitSmarty->assign_by_ref( 'listInfo', $listHash['listInfo'] );
