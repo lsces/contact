@@ -14,12 +14,13 @@
 		<div class="navbar">
 			<ul>
 				<li>{biticon ipackage="icons" iname="emblem-symbolic-link" iexplain="sort by"}</li>
-		{*		<li>{smartlink ititle="Contact Number" isort="content_id" idefault=1 iorder=desc ihash=$listInfo.ihash}</li>		
-				<li>{smartlink ititle="Forename" isort="forename" ihash=$listInfo.ihash}</li>		*}
-				<li>{smartlink ititle="Surname" isort="surname" ihash=$listInfo.ihash}</li>
-				<li>{smartlink ititle="Organisation" isort="organisation" ihash=$listInfo.ihash}</li>
-				<li>{smartlink ititle="Address" isort="street" ihash=$listInfo.ihash}</li>
-				<li>{smartlink ititle="Town" isort="town" ihash=$listInfo.ihash}</li>
+				<li>{smartlink ititle="Contract" isort="xkey" ihash=$listInfo.ihash}</li>		
+		{*		<li>{smartlink ititle="Forename" isort="forename" ihash=$listInfo.ihash}</li>
+				<li>{smartlink ititle="Surname" isort="surname" ihash=$listInfo.ihash}</li>		*}
+				<li>{smartlink ititle="Title" isort="title" idefault=1 iorder=desc ihash=$listInfo.ihash}</li>
+		{*		<li>{smartlink ititle="Address" isort="street" ihash=$listInfo.ihash}</li>
+				<li>{smartlink ititle="Town" isort="town" ihash=$listInfo.ihash}</li>			*}
+				<li>{smartlink ititle="Location" isort="location" ihash=$listInfo.ihash}</li>
 				<li>{smartlink ititle="Postcode" isort="postcode" ihash=$listInfo.ihash}</li>
 			</ul>
 		</div>
@@ -28,14 +29,8 @@
 			{section name=content loop=$listcontacts}
 				<li class="item {cycle values='odd,even'}">
 						<a href="display_contact.php?content_id={$listcontacts[content].content_id}" title="ci_{$listcontacts[content].content_id}">
-						{$listcontacts[content].content_id}&nbsp;-&nbsp;
-						{if isset($listcontacts[content].surname) && ($listcontacts[content].surname <> '') }
-							{$listcontacts[content].prefix}&nbsp;
-							{$listcontacts[content].forename}&nbsp;
-							{$listcontacts[content].surname}
-						{else}
-							{$listcontacts[content].title}
-						{/if}	 
+						{$listcontacts[content].xkey}&nbsp;-&nbsp;
+						{$listcontacts[content].title}
 						</a>&nbsp;&nbsp;&nbsp;
 						{if isset($listcontacts[content].organisation) && ($listcontacts[content].organisation <> '') }Company: {$listcontacts[content].organisation}&nbsp;&nbsp;{/if} 
 						{if isset($listcontacts[content].dob) && ($listcontacts[content].dob <> '')  }DOB: {$listcontacts[content].dob}&nbsp;&nbsp;{/if}
