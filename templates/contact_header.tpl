@@ -5,16 +5,16 @@
 </div> {* end category *}
 {/if}
 
-	<h1>{$pageInfo.content_id}&nbsp;-&nbsp;
-		{if isset($pageInfo.organisation) && ($pageInfo.organisation <> '') }
+	<h1>{$pageInfo.xkey}&nbsp;-&nbsp;
+{*		{if isset($pageInfo.organisation) && ($pageInfo.organisation <> '') }
 			{$pageInfo.organisation}
 		{elseif isset($pageInfo.surname) && ($pageInfo.surname <> '') }
 			{$pageInfo.prefix}&nbsp;
 			{$pageInfo.forename}&nbsp;
 			{$pageInfo.surname}
-		{else}
+		{else}  *}
 			{$pageInfo.title}
-		{/if}</h1>
+{*		{/if}</h1>    *}
 	<div class="description">{$pageInfo.description}</div>
 
 </div> {* end .header *}
