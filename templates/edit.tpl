@@ -40,13 +40,13 @@
 							{formfeedback warning=`$errors.store`}
 
 							{formlabel label="$conDescr Contact" for="contentno"}
-							{if !$pageInfo.contact_id}
+							{if !$pageInfo.content_id}
 								{forminput}
 									New Contact Entry
 								{/forminput}
 							{else}
 								{forminput}
-									Edit Contact Entry No : {$pageInfo.contact_id}
+									Edit Contact Entry No : {$pageInfo.content_id}
 								{/forminput}
 							{/if}
 						</div>
