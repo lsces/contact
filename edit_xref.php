@@ -31,7 +31,7 @@ if (isset($_REQUEST["fCancel"])) {
 		header("Location: ".CONTACT_PKG_URL );
 	}
 	die;
-} elseif (isset($_REQUEST["fSaveXref"])) {
+} else if(isset($_REQUEST["fSaveXref"])) {
 	if( $gContent->storeXref( $_REQUEST ) ) {
 		header("Location: ".$gContent->getDisplayUrl() );
 		die;
@@ -39,6 +39,13 @@ if (isset($_REQUEST["fCancel"])) {
 		$xrefInfo = $_REQUEST;
 		$xrefInfo['data'] = &$_REQUEST['edit'];
 	}
+} else if(isset( $_REQUEST["expunge"] ) ) {
+	if( $gContent->stepXref( $_REQUEST ) ) {
+		if ( $_REQUEST['expunge'] > 2) {
+			header("Location: ".$gContent->getDisplayUrl() );
+			die;
+		}
+	} 
 } 
 
 // formInfo might be set due to a error on submit

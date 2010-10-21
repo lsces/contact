@@ -82,26 +82,27 @@ class ContactXref extends BitBase {
 				$pParamHash['xref_store']['content_id'] = $pParamHash['content_id'];
 				$pParamHash['xref_store']['xorder'] = 0;
 			} 
-			if ( isset( $pParamHash['xref'] )) {
-				$pParamHash['xref_store']['xref'] = $pParamHash['xref'];
-			} else {
-				$pParamHash['xref_store']['xref'] = '';
+
+			if ( isset ( $pParamHash['fStepXref']  ) ) {
+				$pParamHash['xref_store']['source'] = $this->mSource;
+				$pParamHash['xref_store']['xorder'] = $this->mInfo['data']['xorder'] + 1;
+				$pParamHash['xref_store']['content_id'] =  $this->mContentId;
+				$pParamHash['start_date'] = $this->mDb->NOW();
+				$pParamHash['ignore_end_date'] = 'on';
+				$pParamHash['xref_store']['xkey'] = '';
+				$pParamHash['xref_store']['xkey_ext'] = '';
+				$pParamHash['xref_store']['data'] = '';
 			}
+			
 			if ( isset( $pParamHash['xkey'] )) {
 				$pParamHash['xref_store']['xkey'] = $pParamHash['xkey'];
-			} else {
-				$pParamHash['xref_store']['xref'] = '';
-			}
+			} 
 			if ( isset( $pParamHash['xkey_ext'] )) {
 				$pParamHash['xref_store']['xkey_ext'] = $pParamHash['xkey_ext'];
-			} else {
-				$pParamHash['xref_store']['xref'] = '';
-			}
+			} 
 			if ( isset( $pParamHash['edit'] )) {
 				$pParamHash['xref_store']['data'] = $pParamHash['edit'];
-			} else {
-				$pParamHash['xref_store']['xref'] = '';
-			}
+			} 
 			$pParamHash['xref_store']['last_update_date'] = $this->mDb->NOW();
 
 			// If start and/or end dates are supplied these are updated as well
@@ -123,7 +124,7 @@ class ContactXref extends BitBase {
 			if( !empty( $pParamHash['start_date'] ) ) {
 				$pParamHash['xref_store']['start_date'] = $pParamHash['start_date'];
 			}
-			if( $pParamHash['ignore_start_date'] == 'on' ) {
+			if( isset ($pParamHash['ignore_start_date']) && $pParamHash['ignore_start_date'] == 'on' ) {
 				$pParamHash['xref_store']['start_date'] = '';
 			}
 	
@@ -145,7 +146,7 @@ class ContactXref extends BitBase {
 			if( !empty( $pParamHash['end_date'] ) ) {
 				$pParamHash['xref_store']['end_date'] = $pParamHash['end_date'];
 			}
-			if( $pParamHash['ignore_end_date'] == 'on' ) {
+			if( isset ($pParamHash['ignore_end_date']) && $pParamHash['ignore_end_date'] == 'on' ) {
 				$pParamHash['xref_store']['end_date'] = '';
 			}
 //		}
@@ -160,10 +161,11 @@ class ContactXref extends BitBase {
 			if( isset( $pParamHash['xref_id'] ) ) {
 				$result = $this->mDb->associateUpdate( $table, $pParamHash['xref_store'], array( "xref_id" => $pParamHash['xref_id'] ) );
 			} else {
+				$this->mXrefId = $pParamHash['ref_id'] = $pParamHash['xref_store']['xref_id'] = $this->mDb->GenID( 'contact_xref_seq' );
 				$result = $this->mDb->associateInsert( $table, $pParamHash['xref_store'] );
 			}
 			// load before completing transaction as firebird isolates results
-			$this->load();
+			$this->load( $this->mXrefId );
 			$this->mDb->CompleteTrans();
 			return true;
 		} else {
@@ -171,5 +173,20 @@ class ContactXref extends BitBase {
 		}
 	}
 
+	function stepXref( &$pParamHash = NULL ) {
+		if ( $pParamHash["expunge"] == 2 ) {
+			$pParamHash['end_date'] = $this->mDb->NOW();
+			$this->store( $pParamHash );
+			unset($pParamHash['xref_id']);
+			$pParamHash['fStepXref'] = 1;
+		} else if ( $pParamHash["expunge"] == 1 ) {
+			$pParamHash['end_date'] = $this->mDb->NOW();
+		} else {
+			$pParamHash['ignore_end_date'] = 'on';
+		}
+		$this->store( $pParamHash );
+		return true;
+	}
+	
 }
 ?>
