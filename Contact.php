@@ -303,14 +303,6 @@ class Contact extends LibertyContent {
 	function getList( &$pParamHash ) {
 		global $gBitSystem, $gBitUser;
 		
-		if ( empty( $pParamHash['sort_mode'] ) ) {
-			if ( empty( $_REQUEST["sort_mode"] ) ) {
-				$pParamHash['sort_mode'] = 'title_asc';
-			} else {
-			$pParamHash['sort_mode'] = $_REQUEST['sort_mode'];
-			}
-		}
-		
 		LibertyContent::prepGetList( $pParamHash );
 
 		$findSql = '';
@@ -318,18 +310,48 @@ class Contact extends LibertyContent {
 		$joinSql = '';
 		$whereSql = '';
 		$bindVars = array();
+
+		if ( isset( $pParamHash['contact_type_guid'][0] ) ) {
+			$joinSql .= "JOIN `".BIT_DB_PREFIX."contact_xref` cx ON cx.`content_id` = con.`content_id` AND cx.`source` = ? ";
+			$bindVars[] = $pParamHash['contact_type_guid'][0];
+		}
+		
 		array_push( $bindVars, $this->mContentTypeGuid );
 		$this->getServicesSql( 'content_list_sql_function', $selectSql, $joinSql, $whereSql, $bindVars, NULL, $pParamHash );
-		
+
 		// this will set $find, $sort_mode, $max_records and $offset
 		extract( $pParamHash );
 
-		if( isset( $find_org ) and is_string( $find_org ) and $find_org <> '' ) {
-			$whereSql .= " AND UPPER( con.`organisation` ) like ? ";
-			$bindVars[] = '%' . strtoupper( $find_org ). '%';
-			$type = 'organisation';
-			$pParamHash["listInfo"]["ihash"]["find_org"] = $find_org;
+//		$pParamHash["listInfo"]["ihash"]['contact_type_guid'] = $contact_type_guid;
+
+		$t = $gBitSystem->getUTCTime();
+		if ( isset( $active ) ) {
+			if ( $active === 'Inactive' ) {
+				$whereSql .= " AND ( lc.`event_time` > 0 AND lc.`event_time` < $t ) ";
+			} 
+		} else {
+			$active = 'Active';
 		}
+		if ( $active == 'Active' ) {
+			$whereSql .= " AND ( lc.`event_time` = 0 OR lc.`event_time` > $t ) ";
+		} 
+		$pParamHash["listInfo"]["active"] = $active;
+
+		if( isset( $find_key ) and is_string( $find_key ) and $find_key <> '' ) {
+			$whereSql .= " AND UPPER( con.`xkey` ) = ? ";
+			$bindVars[] = strtoupper( $find_key );
+			$pParamHash["listInfo"]["ihash"]["find_key"] = $find_key;
+			$find_title = '';
+			$find_location = '';
+			$find_postcode = '';
+		}
+
+		if( isset( $find_title ) and is_string( $find_title ) and $find_title <> '' ) {
+			$whereSql .= " AND UPPER( lc.`title` ) like ? ";
+			$bindVars[] = '%' . strtoupper( $find_title ). '%';
+			$pParamHash["listInfo"]["ihash"]["find_title"] = $find_title;
+		}
+
 /*		if( isset( $find_name ) and is_string( $find_name ) and $find_name <> '' ) {
 		    $split = preg_split('|[,. ]|', $find_name, 2);
 			$whereSql .= " AND UPPER( ci.`surname` ) STARTING ? ";
@@ -341,31 +363,38 @@ class Contact extends LibertyContent {
 			}
 			$pParamHash["listInfo"]["ihash"]["find_name"] = $find_name;
 		}
-		if( isset( $find_street ) and is_string( $find_street ) and $find_street <> '' ) {
-			$whereSql .= " AND UPPER( a.`street` ) like ? ";
-			$bindVars[] = '%' . strtoupper( $find_street ). '%';
-			$pParamHash["listInfo"]["ihash"]["find_street"] = $find_street;
+*/
+		if( isset( $find_location ) and is_string( $find_location ) and $find_location <> '' ) {
+			$whereSql .= " AND ( UPPER( ca.`street` ) like ? OR UPPER( ca.`locality` ) like ? OR UPPER( ca.`town` ) like ? )";
+			$uploc = '%' . strtoupper( $find_location ). '%';;
+			$bindVars[] = $uploc;
+			$bindVars[] = $uploc;
+			$bindVars[] = $uploc;
+			$pParamHash["listInfo"]["ihash"]["find_location"] = $find_location;
 		}
-		if( isset( $find_org ) and is_string( $find_postcode ) and $find_postcode <> '' ) {
-			$whereSql .= " AND UPPER( `a.postcode` ) LIKE ? ";
+
+		if( isset( $find_postcode ) and is_string( $find_postcode ) and $find_postcode <> '' ) {
+			$whereSql .= " AND UPPER( `ca.postcode` ) LIKE ? ";
 			$bindVars[] = '%' . strtoupper( $find_postcode ). '%';
 			$pParamHash["listInfo"]["ihash"]["find_postcode"] = $find_postcode;
 		}
-*/
+
 		$query = "SELECT con.*, lc.*, ca.*,
-			(SELECT COUNT(*) FROM `".BIT_DB_PREFIX."contact_xref` x WHERE x.content_id = con.content_id ) AS refs,
-			(SELECT COUNT(*) FROM `".BIT_DB_PREFIX."contact_address` x WHERE x.content_id = con.content_id ) AS addresses
+			(SELECT COUNT(*) FROM `".BIT_DB_PREFIX."contact_xref` x WHERE x.content_id = con.content_id AND x.source NOT STARTING WITH '$' ) AS refs,
+			(SELECT COUNT(*) FROM `".BIT_DB_PREFIX."contact_address` a WHERE a.content_id = con.content_id ) AS addresses
 			FROM `".BIT_DB_PREFIX."contact` con
-			LEFT JOIN `".BIT_DB_PREFIX."liberty_content` lc ON lc.content_id = con.content_id
-			LEFT JOIN `".BIT_DB_PREFIX."contact_address` ca ON ca.content_id = con.content_id
+			LEFT JOIN `".BIT_DB_PREFIX."liberty_content` lc ON lc.`content_id` = con.`content_id`
+			LEFT JOIN `".BIT_DB_PREFIX."contact_address` ca ON ca.`content_id` = con.`content_id`
 			$findSql
 			$joinSql 
 			WHERE lc.`content_type_guid` = ? $whereSql
 			ORDER BY ".$this->mDb->convertSortmode( $sort_mode );
+
 //			(SELECT COUNT(*) FROM `".BIT_DB_PREFIX."task_ticket` e WHERE e.usn = ci.usn ) AS enquiries $selectSql 
 		$query_cant = "SELECT COUNT( * )
 			FROM `".BIT_DB_PREFIX."contact` con
 			LEFT JOIN `".BIT_DB_PREFIX."liberty_content` lc ON lc.content_id = con.content_id
+			LEFT JOIN `".BIT_DB_PREFIX."contact_address` ca ON ca.content_id = con.content_id
 			$joinSql WHERE lc.`content_type_guid` = ? $whereSql ";
 		$result = $this->mDb->query( $query, $bindVars, $max_records, $offset );
 		$ret = array();
@@ -376,6 +405,7 @@ class Contact extends LibertyContent {
 			$ret[] = $res;
 		}
 		$pParamHash["cant"] = $this->mDb->getOne( $query_cant, $bindVars );
+		$pParamHash["listInfo"]["count"] = $pParamHash["cant"];
 
 		LibertyContent::postGetList( $pParamHash );
 		return $ret;
@@ -387,9 +417,17 @@ class Contact extends LibertyContent {
 	* @return array List of contact type names from the contact mamager in alphabetical order
 	*/
 	function getContactGroupList() {
-		$query = "SELECT g.* FROM `".BIT_DB_PREFIX."contact_xref_type` g WHERE g.`xref_type` > 0
+		global $gBitUser, $gBitSmarty;
+
+		$roles = array_keys($gBitUser->mRoles);
+		$bindVars = array();
+		$bindVars = array_merge( $bindVars, $roles, array( $gBitUser->mUserId ) );
+
+		$query = "SELECT g.* FROM `".BIT_DB_PREFIX."contact_xref_type` g
+				  LEFT OUTER JOIN `".BIT_DB_PREFIX."users_roles_map` purm ON ( purm.`user_id`=".$gBitUser->mUserId." ) AND ( purm.`role_id`=g.`role_id` )
+				  WHERE g.`xref_type` > 0 AND (g.`role_id` IN(". implode(',', array_fill(0, count($roles), '?')) ." ) OR purm.`user_id`=?)
 				  ORDER BY g.`xref_type`";
-		$result = $this->mDb->query($query);
+		$result = $this->mDb->query( $query, $bindVars );
 		$ret = array();
 		while ($res = $result->fetchRow()) {
 			$ret[] = $res;
@@ -403,10 +441,17 @@ class Contact extends LibertyContent {
 	* @return array List of contact type names from the contact mamager in alphabetical order
 	*/
 	function getContactSourceList() {
-		$query = "SELECT `cross_ref_title` AS `type_name`, `source` FROM `".BIT_DB_PREFIX."contact_xref_source`
-				  WHERE `xref_type` = 0
-				  ORDER BY `cross_ref_title`";
-		$result = $this->mDb->query($query);
+		global $gBitUser, $gBitSmarty;
+
+		$roles = array_keys($gBitUser->mRoles);
+		$bindVars = array();
+		$bindVars = array_merge( $bindVars, $roles, array( $gBitUser->mUserId ) );
+
+		$query = "SELECT g.`cross_ref_title` AS `type_name`, g.`source` FROM `".BIT_DB_PREFIX."contact_xref_source` g
+				  LEFT OUTER JOIN `".BIT_DB_PREFIX."users_roles_map` purm ON ( purm.`user_id`=".$gBitUser->mUserId." ) AND ( purm.`role_id`=g.`role_id` )
+				  WHERE g.`xref_type` = 0 AND (g.`role_id` IN(". implode(',', array_fill(0, count($roles), '?')) ." ) OR purm.`user_id`=?)
+				  ORDER BY g.`cross_ref_title`";
+		$result = $this->mDb->query( $query, $bindVars );
 		$ret = array();
 
 		while ($res = $result->fetchRow()) {
@@ -488,15 +533,20 @@ class Contact extends LibertyContent {
 		
 			$roles = array_keys($gBitUser->mRoles);
 			$bindVars = array();
+			array_push( $bindVars, $this->mDb->NOW() );
 			array_push( $bindVars, $this->mContentId );
 			$bindVars = array_merge( $bindVars, $roles, array( $gBitUser->mUserId ) );
 
-			$sql = "SELECT s.xref_type, x.`xref_id`, x.`last_update_date`, x.`source`, t.`title` AS type_title, t.`source` as type_source,
+			$sql = "SELECT s.xref_type, x.`xref_id`, x.`last_update_date`, x.`source`, t.`title` AS type_title,
+					CASE 
+					WHEN x.`end_date` < ? THEN 'history'
+					ELSE t.`source` END as type_source,
 					CASE
 					WHEN x.`xorder` = 0 THEN s.`cross_ref_title`
 					ELSE s.`cross_ref_title` || '-' || x.`xorder` END
 					AS source_title,
-					x.`xkey` AS cross_reference, x.`xkey`, x.`xkey_ext`, x.`data`
+					x.`xkey` AS cross_reference, x.`xkey`, x.`xkey_ext`, x.`data`,
+					x.`start_date`, x.`end_date`
 					FROM `".BIT_DB_PREFIX."contact_xref` x
 					JOIN `".BIT_DB_PREFIX."contact_xref_source` s ON s.`source` = x.`source`
 					JOIN `".BIT_DB_PREFIX."contact_xref_type` t ON t.`xref_type` = s.`xref_type`
@@ -537,11 +587,26 @@ class Contact extends LibertyContent {
 		if ( $xref->store( $pParamHash ) ) {
 				$this->mInfo['xref_title'] = $xref->mContentId;
 				$this->mInfo['xref_store'] = $xref->mInfo;
+				$pParamHash['xref_id'] = $xref->mXrefId;
+
 				return true;
 		} else return false;
 	}
+
+	/**
+	 * stepXref( &$pParamHash );
+	 * find contact record that matches the supplied xref record
+	 */
+	function stepXref( &$pParamHash ) {
+		$xref = new ContactXref( $pParamHash['xref_id'] );
+		if ( $xref->stepXref( $pParamHash ) ) {
+			$this->mInfo['xref_title'] = $xref->mContentId;
+			$this->mInfo['xref_store'] = $xref->mInfo;
+			return true;
+		} else return false;
+	}
 	
-		/**
+	/**
 	 * ContactRecordLoad( $data );
 	 * simple csv contact list import 
 	 * Uncomment to enable
@@ -560,7 +625,105 @@ class Contact extends LibertyContent {
 	 * phoenix security csv data import 
 	 * Uncomment to enable
 	 */
-//   require( CONTENT_PKG_PATH.'import/ImportPhx.php');
+//	include( CONTENT_PKG_PATH.'import/ImportPhx2.php');
+	/**
+	 * PhxRecordLoad( $data ); 
+	 * phx seurity file import 
+	 */
+	function PhxRecordLoad( &$data, $cnt ) {
+		$ctable = BIT_DB_PREFIX."contact";
+		$ptable = BIT_DB_PREFIX."contact_phx";
+		$atable = BIT_DB_PREFIX."contact_address";
+
+		$pDataHash['contact_store']['parent_id'] = 1;
+		$pDataHash['contact_store']['xkey'] = $data[0];
+		$pDataHash['title'] = $data[2];
+		if ( strlen($data[4]) > 0 ) {
+			$pDataHash['title'] = $data[4];
+			if ( strlen($data[3]) > 0 ) $pDataHash['title'] .= ', '.$data[3].' '.$data[5];
+			else if ( strlen($data[3]) > 0 ) $pDataHash['title'] .= ', '.$data[5];
+			if ( strlen($data[6]) > 0 ) $pDataHash['title'] = trim($pDataHash['title']).' ('.$data[6].')';
+		}
+		$pDataHash['phx_store']['content_id'] = $cnt;
+		$pDataHash['address_store']['content_id'] = $cnt;
+		$pDataHash['phx_store']['contract'] = $data[0];
+		if ( $data[1] == 'D' ) $type = 0; else $type = 1;
+		$pDataHash['phx_store']['cltype'] = $type;
+		$pDataHash['address_store']['cltype'] = $type;
+		$pDataHash['phx_store']['organisation'] = $data[2];
+		$pDataHash['phx_store']['prefix'] = $data[3];
+		$pDataHash['phx_store']['surname'] = $data[4];
+		$pDataHash['phx_store']['forename'] = $data[5];
+		$pDataHash['phx_store']['spouse'] = $data[6];
+		$pDataHash['address_store']['sao'] = '';
+		$pDataHash['address_store']['pao'] = '';
+		$pDataHash['address_store']['number'] = '';
+		$pDataHash['address_store']['street'] = $data[7];
+		$pDataHash['address_store']['locality'] = $data[8];
+		$pDataHash['address_store']['town'] = $data[9];
+		$pDataHash['address_store']['county'] = $data[10];
+		$pDataHash['address_store']['postcode'] = $data[11];
+		$pDataHash['phx_store']['contact1'] = $data[12];
+		$pDataHash['phx_store']['cname2'] = $data[13];
+		$pDataHash['phx_store']['contact2'] = $data[14];
+		$pDataHash['phx_store']['cname3'] = $data[15];
+		$pDataHash['phx_store']['contact3'] = $data[16];
+		$pDataHash['phx_store']['key1'] = $data[17];
+		$pDataHash['phx_store']['tel1'] = $data[18];
+		$pDataHash['phx_store']['mob1'] = $data[19];
+		$pDataHash['phx_store']['key2'] = $data[20];
+		$pDataHash['phx_store']['tel2'] = $data[21];
+		$pDataHash['phx_store']['mob2'] = $data[22];
+		$pDataHash['phx_store']['key3'] = $data[23];
+		$pDataHash['phx_store']['tel3'] = $data[24];
+		$pDataHash['phx_store']['mob3'] = $data[25];
+		$pDataHash['phx_store']['key4'] = $data[26];
+		$pDataHash['phx_store']['tel4'] = $data[27];
+		$pDataHash['phx_store']['mob4'] = $data[28];
+		$pDataHash['phx_store']['passwd'] = $data[29];
+		$pDataHash['phx_store']['prompt'] = $data[30];
+		$pDataHash['phx_store']['email1'] = $data[31];
+		$pDataHash['phx_store']['email2'] = $data[32];
+		$pDataHash['phx_store']['memo'] = $data[33];
+		$pDataHash['phx_store']['full_start_date'] = $data[34].'-'.$data[35].'-'.$data[36];
+		$pDataHash['phx_store']['payment'] = $data[37];
+		$pDataHash['phx_store']['maintain'] = $data[38];
+		$pDataHash['phx_store']['code'] = $data[39];
+		$pDataHash['phx_store']['key_seal'] = $data[40];
+		$pDataHash['phx_store']['break_seal'] = $data[41];
+
+		$this->mDb->StartTrans();
+		$this->mContentId = 0;
+		$pDataHash['content_id'] = 0;
+		if ( LibertyContent::store( $pDataHash ) ) {
+			$pDataHash['contact_store']['content_id'] = $pDataHash['content_id'];
+			$pDataHash['contact_store']['address_id'] = $pDataHash['content_id'];
+			$pDataHash['phx_store']['content_id'] = $pDataHash['content_id'];
+			$pDataHash['address_store']['content_id'] = $pDataHash['content_id'];
+			
+			$result = $this->mDb->associateInsert( $ctable, $pDataHash['contact_store'] );
+			$result = $this->mDb->associateInsert( $ptable, $pDataHash['phx_store'] );
+			$result = $this->mDb->associateInsert( $atable, $pDataHash['address_store'] );
+			$this->mDb->CompleteTrans();				
+		} else {
+			$this->mDb->RollbackTrans();
+			$this->mErrors['store'] = 'Failed to store this contact.';
+		}				
+		return( count( $this->mErrors ) == 0 ); 
+	}
+	
+	/**
+	 * Delete contact object and all related records
+	 */
+	function PhxDataExpunge()
+	{
+		$ret = FALSE;
+		$query = "DELETE FROM `".BIT_DB_PREFIX."contact_phx`";
+		$result = $this->mDb->query( $query );
+//		$query = "DELETE FROM `".BIT_DB_PREFIX."address_phx`";
+//		$result = $this->mDb->query( $query );
+		return $ret;
+	}
 
 }
 ?>
