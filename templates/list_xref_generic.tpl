@@ -10,6 +10,12 @@
 						<th>Link</th>
 						<th>Data</th>
 						<th>Note</th>
+						{if $source ne 'history' }
+							<th>Started</th>
+						{else}	
+							<th>Ended</th>
+						{/if}	
+						</td>
 						{if $gBitSystem->isFeatureActive( 'contact_list_last_modified' )}
 							<th>Updated</th>
 						{/if}
@@ -36,6 +42,13 @@
 							<td>
 								{$pageInfo.$source[xref].data|escape}
 							</td>
+							<td>
+							{if $source ne 'history' }
+								{$pageInfo.$source[xref].start_date|bit_short_date}
+							{else}	
+								{$pageInfo.$source[xref].end_date|bit_short_date}
+							{/if}	
+							</td>
 							{if $gBitSystem->isFeatureActive( 'contact_list_last_modified' )}
 								<td>
 									{$pageInfo.xref[xref].last_update_date|bit_long_date}
@@ -46,11 +59,19 @@
 									{if $gBitUser->hasPermission( 'p_contact_view_detail' )}
 										{smartlink ititle="View" ifile="view_xref.php" ibiticon="icons/view-fullscreen" xref_id=$pageInfo.$source[xref].xref_id}
 									{/if}	
-									{if $gBitUser->hasPermission( 'p_contact_update' )}
-										{smartlink ititle="Edit" ifile="edit_xref.php" ibiticon="icons/accessories-text-editor" xref_id=$pageInfo.$source[xref].xref_id}
+									{if $gBitUser->hasPermission( 'p_contact_update' ) and $source ne 'history' }
+										{if $pageInfo.$source[xref].source eq 'KEY_B' }
+											{smartlink ititle="Seal" ifile="edit_xref.php" ibiticon="icons/edit-redo" xref_id=$pageInfo.$source[xref].xref_id expunge=2}
+										{else}
+											{smartlink ititle="Edit" ifile="edit_xref.php" ibiticon="icons/accessories-text-editor" xref_id=$pageInfo.$source[xref].xref_id}
+										{/if}
 									{/if}	
-									{if $gBitUser->hasPermission( 'p_contact_expunge' )}
-										{smartlink ititle="Delete" ifile="edit_xref.php" ibiticon="icons/edit-delete" xref_id=$pageInfo.$source[xref].xref_id expunge=1}
+									{if $gBitUser->hasPermission( 'p_contact_expunge' ) and $pageInfo.$source[xref].source ne 'KEY_B' }
+										{if $source eq 'history' }
+											{smartlink ititle="Restore" ifile="edit_xref.php" ibiticon="icons/edit-undo" xref_id=$pageInfo.$source[xref].xref_id expunge=-1}
+										{else}
+											{smartlink ititle="Delete" ifile="edit_xref.php" ibiticon="icons/edit-delete" xref_id=$pageInfo.$source[xref].xref_id expunge=1}
+										{/if}	
 									{/if}	
 								</span>
 							</td>
@@ -65,9 +86,13 @@
 				</tbody>
 			</table>
 		</div>
-		<div>
-			{smartlink ititle="Add additional detail record" ifile="add_xref.php" ibiticon="icons/bookmark-new" content_id=$pageInfo.content_id xref_type=1}
-		</div>
+		{if $gBitUser->hasPermission('p_edit_contact')}
+			<div>
+				{if $source ne 'history' }
+					{smartlink ititle="Add additional detail record" ifile="add_xref.php" ibiticon="icons/bookmark-new" content_id=$pageInfo.content_id xref_type=1}
+				{/if}	
+			</div>
+		{/if}
 		{/legend}
 		{/jstab}
 {* /if *}
