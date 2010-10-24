@@ -73,6 +73,34 @@ $tables = array(
   def_tax_code C(32)
 ",
 
+'contact_wande' => "
+  content_id I8 PRIMARY,
+  contract C(10),
+  username C(128),
+  passwd C(128),
+  djidnumber C(128),
+  forename C(128),
+  surname C(128),
+  organisation C(100),
+  home_phone C(128),
+  work_phone C(128),
+  mobile_phone C(128),
+  fax C(128),
+  email C(128),
+  website C(128),
+  last_time C(128),
+  last_date C(128),
+  lockout_overide C(128),
+  lockout_state C(128),
+  notes X,
+  customer_number C(128),
+  birthday C(128),
+  changelog X,
+  country C(128),
+  import_helper C(128),
+  last_change T DEFAULT CURRENT_TIMESTAMP
+",
+
 );
 
 global $gBitInstaller;
