@@ -7,7 +7,7 @@
  */
 
 // Initialization
-require_once( '../kernel/setup_inc.php' );
+require_once( '../../kernel/setup_inc.php' );
 require_once(CONTACT_PKG_PATH.'Contact.php' );
 
 // Is package installed and enabled
@@ -18,16 +18,16 @@ $gBitSystem->verifyPermission('p_contact_admin' );
 
 $contact = new Contact();
 
-$contact->PhxDataExpunge();
+$contact->wandeDataExpunge();
 
 $row = 0;
 
-$handle = fopen("data/clientdatabase.csv", "r");
+$handle = fopen("../data/6085_clients1.csv", "r");
 if ( $handle == FALSE) {
 	$row = -999;
 } else {
 	while (($data = fgetcsv($handle, 800, ",")) !== FALSE) {
-    	if ( $row ) $contact->PhxRecordLoad( $data, $row );
+    	if ( $row ) $contact->wandeRecordLoad( $data, $row );
     	$row++;
 	}
 	fclose($handle);

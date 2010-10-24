@@ -7,7 +7,7 @@
  */
 
 // Initialization
-require_once( '../kernel/setup_inc.php' );
+require_once( '../../kernel/setup_inc.php' );
 require_once(CONTACT_PKG_PATH.'Contact.php' );
 
 // Is package installed and enabled
@@ -22,7 +22,7 @@ $contact->DataExpunge();
 
 $row = 0;
 
-$handle = fopen("data/clientdatabase.csv", "r");
+$handle = fopen("../data/clientdatabase.csv", "r");
 if ( $handle == FALSE) {
 	$row = -999;
 } else {
