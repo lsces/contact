@@ -43,8 +43,9 @@ if (isset($_REQUEST["fCancel"])) {
 
 // formInfo might be set due to a error on submit
 if( empty( $xrefInfo ) ) {
-	$xrefInfo = &$gContent->mInfo['xref_store'];
+	$xrefInfo = &$gContent->mInfo['xref_store']['data'];
 }
+vd($xrefInfo);
 $gBitSmarty->assign_by_ref( 'xrefInfo', $xrefInfo );
 $gBitSmarty->assign_by_ref( 'title', $gContent->mInfo['title'] );
 $gBitSmarty->assign_by_ref( 'xref_title', $gContent->mInfo['xref_title'] );
