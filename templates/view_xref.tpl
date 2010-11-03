@@ -21,7 +21,7 @@
 			<div class="row">
 				{formlabel label="Reference Key" for="xkey"}
 				{forminput}
-					{if $xrefInfo.xref}
+					{if $xrefInfo.xkey }
 						{$xrefInfo.xkey|escape}
 					{else}
 						&nbsp;
@@ -33,7 +33,7 @@
 			<div class="row">
 				{formlabel label="Reference Text" for="xkey_ext"}
 				{forminput}
-					{if $xrefInfo.xref_ext}
+					{if $xrefInfo.xkey_ext }
 						{$xrefInfo.xkey_ext|escape}
 					{else}
 						&nbsp;
