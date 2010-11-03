@@ -1,0 +1,7 @@
+Contact information managed on a two level structure. 
+Variable xref information is added to a base contact record. 
+Contacts can then have an unlimited number of different xref entries added.
+
+Address information is enhanced by the the use of the address package. This 
+handles conversion of postcode data to full address details, so that we only
+need to record shorthand address data.
