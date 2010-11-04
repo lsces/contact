@@ -78,6 +78,7 @@
 				{/forminput}
 			</div>
 		{/legend}
+		<a class="item" href="{$smarty.const.CONTACT_PKG_URL}index.php?content_id={$xrefInfo.content_id}">{tr}Return{/tr}</a>
 	</div><!-- end .body -->
 </div><!-- end .article -->
 {/strip}
