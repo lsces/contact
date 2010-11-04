@@ -11,6 +11,14 @@
 			{/forminput}
 		</div>
 		{/if}
+		{if isset($pageInfo.name) && ($pageInfo.name <> '') }
+		<div class="row">
+			{formlabel label="Name" for="name"}
+			{forminput}
+				{$pageInfo.name|escape} 
+			{/forminput}
+		</div>
+		{/if}
 		{if isset($pageInfo.organisation) && ($pageInfo.organisation <> '') }
 		<div class="row">
 			{formlabel label="Organisation" for="organisation"}
