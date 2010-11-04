@@ -53,37 +53,41 @@
 
 						{include file="bitpackage:contact/edit_type_header.tpl"}
 							
+						{if $pageInfo.name or $pageInfo.contact_types.0.content_id or !isset( $pageInfo.contact_types ) }
+							<div class="row">
+								{formlabel label="Title" for="prefix"}
+								{forminput}
+									<input size="60" type="text" name="prefix" id="prefix" value="{$pageInfo.prefix|escape}" />
+								{/forminput}
+							</div>
+							<div class="row">
+								{formlabel label="Forename" for="forename"}
+								{forminput}
+									<input size="60" type="text" name="forename" id="forename" value="{$pageInfo.forename|escape}" />
+								{/forminput}
+							</div>
+							<div class="row">
+								{formlabel label="Surname" for="surname"}
+								{forminput}
+									<input size="60" type="text" name="surname" id="surname" value="{$pageInfo.surname|escape}" />
+								{/forminput}
+							</div>
+							<div class="row">
+								{formlabel label="Suffix" for="suffix"}
+								{forminput}
+									<input size="60" type="text" name="suffix" id="suffix" value="{$pageInfo.suffix|escape}" />
+								{/forminput}
+							</div>
+						{/if}
+						{if $pageInfo.organisation or $pageInfo.contact_types.1.content_id or !isset( $pageInfo.contact_types ) }
+							<div class="row">
+								{formlabel label="Organisation" for="organisation"}
+								{forminput}
+									<input size="60" type="text" name="organisation" id="organisation" value="{$pageInfo.organisation|escape}" />
+								{/forminput}
+							</div>
+						{/if}
 {*						<div class="row">
-							{formlabel label="Title" for="prefix"}
-							{forminput}
-								<input size="60" type="text" name="prefix" id="prefix" value="{$pageInfo.prefix|escape}" />
-							{/forminput}
-						</div>
-						<div class="row">
-							{formlabel label="Forename" for="forename"}
-							{forminput}
-								<input size="60" type="text" name="forename" id="forename" value="{$pageInfo.forename|escape}" />
-							{/forminput}
-						</div>
-						<div class="row">
-							{formlabel label="Surname" for="surname"}
-							{forminput}
-								<input size="60" type="text" name="surname" id="surname" value="{$pageInfo.surname|escape}" />
-							{/forminput}
-						</div>
-						<div class="row">
-							{formlabel label="Suffix" for="suffix"}
-							{forminput}
-								<input size="60" type="text" name="suffix" id="suffix" value="{$pageInfo.suffix|escape}" />
-							{/forminput}
-						</div>
-						<div class="row">
-							{formlabel label="Organisation" for="organisation"}
-							{forminput}
-								<input size="60" type="text" name="organisation" id="organisation" value="{$pageInfo.organisation|escape}" />
-							{/forminput}
-						</div>
-						<div class="row">
 							{formlabel label="NI Number" for="nino"}
 							{forminput}
 								<input size="10" type="text" name="nino" id="nino" value="{$pageInfo.nino|escape}" />
