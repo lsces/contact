@@ -45,7 +45,7 @@ if (isset($_REQUEST["fCancel"])) {
 if( empty( $xrefInfo ) ) {
 	$xrefInfo = &$gContent->mInfo['xref_store']['data'];
 }
-vd($xrefInfo);
+
 $gBitSmarty->assign_by_ref( 'xrefInfo', $xrefInfo );
 $gBitSmarty->assign_by_ref( 'title', $gContent->mInfo['title'] );
 $gBitSmarty->assign_by_ref( 'xref_title', $gContent->mInfo['xref_title'] );
