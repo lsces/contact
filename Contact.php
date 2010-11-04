@@ -438,7 +438,6 @@ class Contact extends LibertyContent {
 		$pParamHash["listInfo"]["count"] = $pParamHash["cant"];
 
 		LibertyContent::postGetList( $pParamHash );
-vd($ret);
 		return $ret;
 	}
 
