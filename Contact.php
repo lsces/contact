@@ -71,6 +71,7 @@ class Contact extends LibertyContent {
 		if ( $pContentId ) $this->mContentId = (int)$pContentId;
 		if( $this->verifyId( $this->mContentId ) ) {
  			$query = "select con.*, lc.*, ca.*,
+				x00.`xkey_ext` as name, x01.`xkey_ext` as organisation, 
 				uue.`login` AS modifier_user, uue.`real_name` AS modifier_real_name,
 				uuc.`login` AS creator_user, uuc.`real_name` AS creator_real_name
 				FROM `".BIT_DB_PREFIX."contact` con
@@ -78,6 +79,8 @@ class Contact extends LibertyContent {
 				LEFT JOIN `".BIT_DB_PREFIX."users_users` uue ON (uue.`user_id` = lc.`modifier_user_id`)
 				LEFT JOIN `".BIT_DB_PREFIX."users_users` uuc ON (uuc.`user_id` = lc.`user_id`)
 				LEFT JOIN `".BIT_DB_PREFIX."contact_address` ca ON ca.content_id = con.content_id
+				LEFT JOIN `".BIT_DB_PREFIX."contact_xref` x00 ON x00.content_id = con.content_id AND x00.source = '$00'
+				LEFT JOIN `".BIT_DB_PREFIX."contact_xref` x01 ON x01.content_id = con.content_id AND x01.source = '$01'
 				WHERE con.`content_id`=?";
 			$result = $this->mDb->query( $query, array( $this->mContentId ) );
 //				LEFT JOIN `".BIT_DB_PREFIX."contact` ci ON ci.contact_id = pro.owner_id
@@ -92,6 +95,17 @@ class Contact extends LibertyContent {
 				$this->mInfo['creator'] = (isset( $result->fields['creator_real_name'] ) ? $result->fields['creator_real_name'] : $result->fields['creator_user'] );
 				$this->mInfo['editor'] = (isset( $result->fields['modifier_real_name'] ) ? $result->fields['modifier_real_name'] : $result->fields['modifier_user'] );
 				$this->mInfo['display_url'] = $this->getDisplayUrl();
+				$this->mInfo['organisation'] = trim($this->mInfo['organisation']);
+				$name = explode( '|', $this->mInfo['name'] );
+				if ( isset( $name[0] ) ) { $this->mInfo['prefix'] = $name[0]; } else { $this->mInfo['prefix'] = ''; }
+				if ( isset( $name[1] ) ) { $this->mInfo['forename'] = $name[1]; } else { $this->mInfo['forename'] = ''; }
+				if ( isset( $name[2] ) ) { $this->mInfo['surname'] = $name[2]; } else { $this->mInfo['surname'] = ''; }
+				if ( isset( $name[3] ) ) { $this->mInfo['suffix'] = $name[3]; } else { $this->mInfo['suffix'] = ''; }
+				$this->mInfo['name'] = $this->mInfo['prefix'];
+				$this->mInfo['name'] = trim($this->mInfo['name']).' '.$this->mInfo['forename'];
+				$this->mInfo['name'] = trim($this->mInfo['name']).' '.$this->mInfo['surname'];
+				$this->mInfo['name'] = trim($this->mInfo['name']).' '.$this->mInfo['suffix'];
+				$this->mInfo['name'] = trim($this->mInfo['name']);
 //				$os1 = new OSRef($this->mInfo['x_coordinate'], $this->mInfo['y_coordinate']);
 //				$ll1 = $os1->toLatLng();
 //				$this->mInfo['prop_lat'] = $ll1->lat;
@@ -127,9 +141,18 @@ class Contact extends LibertyContent {
 			$pParamHash['contact_store']['content_id'] = $this->mContentId;
 		} else {
 			unset( $pParamHash['content_id'] );
-			$pParamHash['contact_store']['content_id'] = NULL;
 		}
 
+		$pParamHash['name'] = $pParamHash['prefix'].'|'.$pParamHash['forename'].'|'.$pParamHash['surname'].'|'.$pParamHash['suffix'];
+
+		$pParamHash['title'] = $pParamHash['organisation'];
+		if ( strlen($pParamHash['surname']) > 0 ) {
+			$pDataHash['title'] = $pParamHash['surname'];
+			if ( strlen($pParamHash['prefix']) > 0 ) $pDataHash['title'] .= ', '.$pParamHash['prefix'].' '.$pParamHash['forename'];
+			else if ( strlen($pParamHash['forename']) > 0 ) $pDataHash['title'] .= ', '.$pParamHash['forename'];
+		}
+		$pParamHash['title'] = trim( $pParamHash['title'] );
+		
 //		$pParamHash['contact_store']['comment'] = $pParamHash['comment'];
 //		$pParamHash['contact_store']['surname'] = $pParamHash['surname'];
 
@@ -146,10 +169,6 @@ class Contact extends LibertyContent {
 		}	
 
 		// Secondary store entries
-		$pParamHash['contact_store']['prefix'] = $pParamHash['prefix'];
-		$pParamHash['contact_store']['forename'] = $pParamHash['forename'];
-		$pParamHash['contact_store']['surname'] = $pParamHash['surname'];
-		$pParamHash['contact_store']['suffix'] = $pParamHash['suffix'];
 		$pParamHash['contact_store']['organisation'] = $pParamHash['organisation'];
 
 		if ( !empty( $pParamHash['nino'] ) ) $pParamHash['contact_store']['nino'] = $pParamHash['nino'];
@@ -169,17 +188,17 @@ class Contact extends LibertyContent {
 	**/
 	function store( &$pParamHash ) {
 		if( $this->verify( $pParamHash ) ) {
+
 			// Start a transaction wrapping the whole insert into liberty 
 
 			$this->mDb->StartTrans();
 			if ( LibertyContent::store( $pParamHash ) ) {
 				$table = BIT_DB_PREFIX."contact";
+				$atable = BIT_DB_PREFIX."contact_address";
 
 				// mContentId will not be set until the secondary data has commited 
-				if( $this->verifyId( $this->mContentId ) ) {
-					if( !empty( $pParamHash['contact_store'] ) ) {
-						$result = $this->mDb->associateUpdate( $table, $pParamHash['contact_store'], array( "content_id" => $this->mContentId ) );
-					}
+				if( !empty( $pParamHash['contact_store'] ) ) {
+					$result = $this->mDb->associateUpdate( $table, $pParamHash['contact_store'], array( "content_id" => $this->mContentId ) );
 				} else {
 					$pParamHash['contact_store']['content_id'] = $pParamHash['content_id'];
 					$pParamHash['contact_store']['parent_id'] = $pParamHash['content_id'];
@@ -187,13 +206,24 @@ class Contact extends LibertyContent {
 					$this->mParentId = $pParamHash['contact_store']['parent_id'];
 					$this->mContentId = $pParamHash['content_id'];
 					$result = $this->mDb->associateInsert( $table, $pParamHash['contact_store'] );
+					// Dummy contact addresss entry ... need edit page for address without using nlpg data
+					unset($pParamHash['contact_store']['parent_id']);
+					$result = $this->mDb->associateInsert( $atable, $pParamHash['contact_store'] );
 				}
 				if( !empty( $pParamHash['contact_types'] ) ) {
 					$query = "DELETE FROM `".BIT_DB_PREFIX."contact_xref` WHERE `content_id` = ? AND `source` LIKE '$%'";
 					$result = $this->mDb->query($query, array($this->mContentId ) );
 					 foreach ( $pParamHash['contact_types'] as $key => $source ) {
-						$query = "INSERT INTO `".BIT_DB_PREFIX."contact_xref` (`content_id`, `source`, `last_update_date`) VALUES ( ?, ?, NULL )";
-						$result = $this->mDb->query($query, array( $this->mContentId, $source ) );
+						if ( $source == '$00' ) {
+							$query = "INSERT INTO `".BIT_DB_PREFIX."contact_xref` (`content_id`, `source`, `xkey_ext`, `last_update_date`) VALUES ( ?, ?, ?, NULL )";
+							$result = $this->mDb->query($query, array( $this->mContentId, $source, $pParamHash['name'] ) );
+						} else if ( $source == '$01' ) {
+							$query = "INSERT INTO `".BIT_DB_PREFIX."contact_xref` (`content_id`, `source`, `xkey_ext`, `last_update_date`) VALUES ( ?, ?, ?, NULL )";
+							$result = $this->mDb->query($query, array( $this->mContentId, $source, $pParamHash['organisation'] ) );
+						} else {
+							$query = "INSERT INTO `".BIT_DB_PREFIX."contact_xref` (`content_id`, `source`, `last_update_date`) VALUES ( ?, ?, NULL )";
+							$result = $this->mDb->query($query, array( $this->mContentId, $source ) );
+						}
 					 }
 				}
 				// load before completing transaction as firebird isolates results
@@ -379,9 +409,9 @@ class Contact extends LibertyContent {
 			$pParamHash["listInfo"]["ihash"]["find_postcode"] = $find_postcode;
 		}
 
-		$query = "SELECT con.*, lc.*, ca.*,
-			(SELECT COUNT(*) FROM `".BIT_DB_PREFIX."contact_xref` x WHERE x.content_id = con.content_id AND x.source NOT STARTING WITH '$' ) AS refs,
-			(SELECT COUNT(*) FROM `".BIT_DB_PREFIX."contact_address` a WHERE a.content_id = con.content_id ) AS addresses
+		$query = "SELECT con.`content_id` as content_id, con.*, lc.*, ca.*,
+			(SELECT COUNT(*) FROM `".BIT_DB_PREFIX."contact_xref` x WHERE x.`content_id` = con.`content_id` AND x.`source` NOT STARTING WITH '$' ) AS refs,
+			(SELECT COUNT(*) FROM `".BIT_DB_PREFIX."contact_address` a WHERE a.`content_id` = con.`content_id` ) AS `addresses`
 			FROM `".BIT_DB_PREFIX."contact` con
 			LEFT JOIN `".BIT_DB_PREFIX."liberty_content` lc ON lc.`content_id` = con.`content_id`
 			LEFT JOIN `".BIT_DB_PREFIX."contact_address` ca ON ca.`content_id` = con.`content_id`
@@ -408,6 +438,7 @@ class Contact extends LibertyContent {
 		$pParamHash["listInfo"]["count"] = $pParamHash["cant"];
 
 		LibertyContent::postGetList( $pParamHash );
+vd($ret);
 		return $ret;
 	}
 
@@ -450,12 +481,13 @@ class Contact extends LibertyContent {
 		$query = "SELECT g.`cross_ref_title` AS `type_name`, g.`source` FROM `".BIT_DB_PREFIX."contact_xref_source` g
 				  LEFT OUTER JOIN `".BIT_DB_PREFIX."users_roles_map` purm ON ( purm.`user_id`=".$gBitUser->mUserId." ) AND ( purm.`role_id`=g.`role_id` )
 				  WHERE g.`xref_type` = 0 AND (g.`role_id` IN(". implode(',', array_fill(0, count($roles), '?')) ." ) OR purm.`user_id`=?)
-				  ORDER BY g.`cross_ref_title`";
+				  ORDER BY g.`source`";
 		$result = $this->mDb->query( $query, $bindVars );
 		$ret = array();
-
+		$cnt = 0;
 		while ($res = $result->fetchRow()) {
-			$ret[$res["source"]] = trim($res["type_name"]);
+			$ret[$cnt]['source'] = $res["source"];
+			$ret[$cnt++]['name'] = trim($res["type_name"]);
 		}
 		return $ret;
 	}
