@@ -47,7 +47,7 @@ class ContactType extends BitBase {
 			$this->mContactType[ $res['source']] = $res['cross_ref_title'];
 		}
 
-		asort($this->mContactType);
+//		asort($this->mContactType);
 		$gBitSmarty->assign_by_ref( 'contContactTypes', $this->mContactType );
 	}
 
