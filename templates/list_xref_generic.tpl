@@ -86,10 +86,10 @@
 				</tbody>
 			</table>
 		</div>
-		{if $gBitUser->hasPermission('p_edit_contact')}
+		{if $gBitUser->hasPermission('p_contact_update')}
 			<div>
 				{if $source ne 'history' }
-					{smartlink ititle="Add additional detail record" ifile="add_xref.php" ibiticon="icons/bookmark-new" content_id=$pageInfo.content_id xref_type=1}
+					{smartlink ititle="Add additional detail record" ifile="add_xref.php" ibiticon="icons/bookmark-new" content_id=$pageInfo.content_id xref_type=$xref_type}
 				{/if}	
 			</div>
 		{/if}
