@@ -145,6 +145,7 @@ class Contact extends LibertyContent {
 
 		$pParamHash['name'] = $pParamHash['prefix'].'|'.$pParamHash['forename'].'|'.$pParamHash['surname'].'|'.$pParamHash['suffix'];
 
+		$pParamHash['title'] = $pParamHash['organisation'];
 		if ( strlen($pParamHash['surname']) > 0 ) {
 			$pDataHash['title'] = $pParamHash['surname'];
 			if ( strlen($pParamHash['prefix']) > 0 ) $pDataHash['title'] .= ', '.$pParamHash['prefix'].' '.$pParamHash['forename'];
@@ -167,10 +168,6 @@ class Contact extends LibertyContent {
 		}	
 
 		// Secondary store entries
-		$pParamHash['contact_store']['prefix'] = $pParamHash['prefix'];
-		$pParamHash['contact_store']['forename'] = $pParamHash['forename'];
-		$pParamHash['contact_store']['surname'] = $pParamHash['surname'];
-		$pParamHash['contact_store']['suffix'] = $pParamHash['suffix'];
 		$pParamHash['contact_store']['organisation'] = $pParamHash['organisation'];
 
 		if ( !empty( $pParamHash['nino'] ) ) $pParamHash['contact_store']['nino'] = $pParamHash['nino'];
@@ -199,10 +196,8 @@ class Contact extends LibertyContent {
 				$atable = BIT_DB_PREFIX."contact_address";
 
 				// mContentId will not be set until the secondary data has commited 
-				if( $this->verifyId( $this->mContentId ) ) {
-					if( !empty( $pParamHash['contact_store'] ) ) {
-						$result = $this->mDb->associateUpdate( $table, $pParamHash['contact_store'], array( "content_id" => $this->mContentId ) );
-					}
+				if( !empty( $pParamHash['contact_store'] ) ) {
+					$result = $this->mDb->associateUpdate( $table, $pParamHash['contact_store'], array( "content_id" => $this->mContentId ) );
 				} else {
 					$pParamHash['contact_store']['content_id'] = $pParamHash['content_id'];
 					$pParamHash['contact_store']['parent_id'] = $pParamHash['content_id'];
@@ -266,7 +261,7 @@ class Contact extends LibertyContent {
 	 */
 	function isCommentable(){
 		global $gBitSystem;	
-		return $gBitSystem->isFeatureActive( 'contact_post_comments' );
+		return TRUE; // $gBitSystem->isFeatureActive( 'contact_post_comments' );
 	}
 
 	/**
@@ -413,6 +408,9 @@ class Contact extends LibertyContent {
 			$pParamHash["listInfo"]["ihash"]["find_postcode"] = $find_postcode;
 		}
 
+		$query = "SELECT con.`content_id` as content_id, con.*, lc.*, ca.*,
+			(SELECT COUNT(*) FROM `".BIT_DB_PREFIX."contact_xref` x WHERE x.`content_id` = con.`content_id` AND x.`source` NOT STARTING WITH '$' ) AS refs,
+			(SELECT COUNT(*) FROM `".BIT_DB_PREFIX."contact_address` a WHERE a.`content_id` = con.`content_id` ) AS `addresses`
 			FROM `".BIT_DB_PREFIX."contact` con
 			LEFT JOIN `".BIT_DB_PREFIX."liberty_content` lc ON lc.`content_id` = con.`content_id`
 			LEFT JOIN `".BIT_DB_PREFIX."contact_address` ca ON ca.`content_id` = con.`content_id`
@@ -481,11 +479,13 @@ class Contact extends LibertyContent {
 		$query = "SELECT g.`cross_ref_title` AS `type_name`, g.`source` FROM `".BIT_DB_PREFIX."contact_xref_source` g
 				  LEFT OUTER JOIN `".BIT_DB_PREFIX."users_roles_map` purm ON ( purm.`user_id`=".$gBitUser->mUserId." ) AND ( purm.`role_id`=g.`role_id` )
 				  WHERE g.`xref_type` = 0 AND (g.`role_id` IN(". implode(',', array_fill(0, count($roles), '?')) ." ) OR purm.`user_id`=?)
+				  ORDER BY g.`source`";
 		$result = $this->mDb->query( $query, $bindVars );
 		$ret = array();
 		$cnt = 0;
 		while ($res = $result->fetchRow()) {
 			$ret[$cnt]['source'] = $res["source"];
+			$ret[$cnt++]['name'] = trim($res["type_name"]);
 		}
 		return $ret;
 	}
