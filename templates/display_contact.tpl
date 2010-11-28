@@ -1,6 +1,3 @@
-<div class="body">
-	<div class="content">
-
 		{include file="bitpackage:contact/display_type_header.tpl"}
 
 		{if isset($pageInfo.usn) && ($pageInfo.usn <> '') }
@@ -54,8 +51,6 @@
 
 		{jstabs}
 			{section name=type loop=$pageInfo.type}
-				{include file="bitpackage:contact/list_xref_generic.tpl" source=$pageInfo.type[type].source source_title=$pageInfo.type[type].title}
+				{include file="bitpackage:contact/list_xref_generic.tpl" source=$pageInfo.type[type].source source_title=$pageInfo.type[type].title xref_type=$pageInfo.type[type].xref_type}
 			{/section}
 		{/jstabs}
-	</div><!-- end .content -->
-</div><!-- end .body -->
