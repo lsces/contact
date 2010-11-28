@@ -45,6 +45,7 @@ if( empty( $xrefInfo ) ) {
 	$xrefInfo['xref_type'] = $_REQUEST['xref_type'];
 }
 $xrefInfo['xref_type_list'] = $gContent->getXrefTypeList( $xrefInfo['xref_type'] );
+$gContent->mInfo['format_guid'] = 'text';
 
 $gBitSmarty->assign_by_ref( 'xrefInfo', $xrefInfo );
 $gBitSmarty->assign_by_ref( 'title', $gContent->mInfo['title'] );
