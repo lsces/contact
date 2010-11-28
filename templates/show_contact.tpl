@@ -1,20 +1,20 @@
 <div class="display contact">
 {include file="bitpackage:contact/contact_header.tpl"}
 {include file="bitpackage:contact/contact_date_bar.tpl"}
-{if $gContent->isCommentable()}
-	{include file="bitpackage:contact/comments_edit.tpl"}
-{/if}
-{jstabs}
-	{jstab title="General"}
+	<div class="body">
 		{include file="bitpackage:contact/display_contact.tpl"}
-	{/jstab}
-	{jstab title="Local Notes"}
-		{if $gContent->isCommentable()}
-			{include file="bitpackage:contact/comments.tpl"}
+	{jstabs}
+		{jstab title="Local Notes" class="contact_notes"}
+			{include file="bitpackage:liberty/comments.tpl"}
+		{/jstab}
+		{if $gBitSystem->isFeatureActive('package_tasks')}
+			{jstab title="Activity" class="todo_list"}
+				{include file="bitpackage:tasks/list_tasks.tpl"}
+			{/jstab}
 		{/if}
-	{/jstab}
-	{jstab title="Documents"}
-		Link to private fisheye document gallery
-	{/jstab}
-{/jstabs}
+		{jstab title="Documents" class="contact_docs"}
+			Link to private fisheye document gallery
+		{/jstab}
+	{/jstabs}
+	</div> {* end .body *}
 </div> {* end .contact *}
