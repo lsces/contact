@@ -41,21 +41,23 @@
 						{if isset($listcontacts[content].uprn) && ($listcontacts[content].uprn <> '') }UPRN: {$listcontacts[content].uprn}&nbsp;&nbsp;{/if}
 						{if isset($listcontacts[content].postcode) && ($listcontacts[content].postcode <> '') }
 							{tr}Address{/tr}&nbsp;-&nbsp; 
-							{if isset($listcontacts[content].sao) && ($listcontacts[content].sao <> '') }
-								{$listcontacts[content].sao},&nbsp;{/if}
-							{if isset($listcontacts[content].pao) && ($listcontacts[content].pao <> '') }
-								{$listcontacts[content].pao},&nbsp;{/if}
-							{if isset($listcontacts[content].number) && ($listcontacts[content].number <> '') }
-								{$listcontacts[content].number},&nbsp;{/if}
-							{if isset($listcontacts[content].street) && ($listcontacts[content].street <> '') }
-								{$listcontacts[content].street},&nbsp;{/if}
-							{if isset($listcontacts[content].locality) && ($listcontacts[content].locality <> '') }
-								{$listcontacts[content].locality},&nbsp;{/if}
+							{if isset($listcontacts[content].house) && ($listcontacts[content].house <> '') }
+								{$listcontacts[content].house},&nbsp;{/if}
+							{if isset($listcontacts[content].add1) && ($listcontacts[content].add1 <> '') }
+								{$listcontacts[content].add1},&nbsp;{/if}
+							{if isset($listcontacts[content].add2) && ($listcontacts[content].add2 <> '') }
+								{$listcontacts[content].add2},&nbsp;{/if}
+							{if isset($listcontacts[content].add3) && ($listcontacts[content].add3 <> '') }
+								{$listcontacts[content].add3},&nbsp;{/if}
+							{if isset($listcontacts[content].add4) && ($listcontacts[content].add4 <> '') }
+								{$listcontacts[content].add4},&nbsp;{/if}
 							{if isset($listcontacts[content].town) && ($listcontacts[content].town <> '') }
 								{$listcontacts[content].town},&nbsp;{/if}
 							{if isset($listcontacts[content].county) && ($listcontacts[content].county <> '') }
 								{$listcontacts[content].county},&nbsp;{/if}
 							{$listcontacts[content].postcode}&nbsp;&nbsp;
+							{if isset($listcontacts[content].grideast) }
+								&lt;{$listcontacts[content].grideast|escape}&nbsp;,&nbsp;{$listcontacts[content].gridnorth|escape}&gt;&nbsp;{/if}
 						{/if}
 						<br />
 						{tr}Refs{/tr}: {$listcontacts[content].refs|default:0}&nbsp;&nbsp;
