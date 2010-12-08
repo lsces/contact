@@ -575,7 +575,7 @@ class Contact extends LibertyContent {
 					WHEN x.`xorder` = 0 THEN s.`cross_ref_title`
 					ELSE s.`cross_ref_title` || '-' || x.`xorder` END
 					AS source_title,
-					x.`xkey` AS cross_reference, x.`xkey`, x.`xkey_ext`, x.`data`,
+					x.`xref`, x.`xkey`, x.`xkey_ext`, x.`data`,
 					x.`start_date`, x.`end_date`
 					FROM `".BIT_DB_PREFIX."contact_xref` x
 					JOIN `".BIT_DB_PREFIX."contact_xref_source` s ON s.`source` = x.`source`

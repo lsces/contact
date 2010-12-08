@@ -83,7 +83,7 @@ class ContactXref extends BitBase {
 				$sql = "SELECT x.`multi` FROM `".BIT_DB_PREFIX."contact_xref_source` x WHERE x.`source` = ?";				
 				$next = $this->mDb->getOne( $sql, array(  $pParamHash['xref_store']['source'] ) );
 				if ( $next > 0 ) {
-					$sql = "SELECT MAX(x.`xorder`) + 1 FROM `".BIT_DB_PREFIX."contact_xref` x
+					$sql = "SELECT COALESCE( MAX(x.`xorder`) + 1, 1 ) FROM `".BIT_DB_PREFIX."contact_xref` x
 							WHERE x.`content_id` = ? AND x.`source` = ?";
 					$next = $this->mDb->getOne( $sql, array(  $pParamHash['xref_store']['content_id'], $pParamHash['xref_store']['source'] ) );
 				}
@@ -96,11 +96,15 @@ class ContactXref extends BitBase {
 				$pParamHash['xref_store']['content_id'] =  $this->mContentId;
 				$pParamHash['start_date'] = $this->mDb->NOW();
 				$pParamHash['ignore_end_date'] = 'on';
+				$pParamHash['xref_store']['xref'] = 0;
 				$pParamHash['xref_store']['xkey'] = '';
 				$pParamHash['xref_store']['xkey_ext'] = '';
 				$pParamHash['xref_store']['data'] = '';
 			}
 			
+			if ( isset( $pParamHash['xref'] )) {
+				$pParamHash['xref_store']['xref'] = $pParamHash['xref'];
+			} 
 			if ( isset( $pParamHash['xkey'] )) {
 				$pParamHash['xref_store']['xkey'] = $pParamHash['xkey'];
 			} 
