@@ -80,8 +80,14 @@ class ContactXref extends BitBase {
 					$pParamHash['xref_store']['source'] = $pParamHash['Array_xref_type_list']['Array.source'];
 				}
 				$pParamHash['xref_store']['content_id'] = $pParamHash['content_id'];
-				$sql = "SELECT x`.multi` FROM `".BIT_DB_PREFIX."contact_xref_source` x WHERE x.`source` = ?";				
-				$pParamHash['xref_store']['xorder'] = $this->mDb->getOne( $sql, array(  $pParamHash['xref_store']['source'] ) );
+				$sql = "SELECT x.`multi` FROM `".BIT_DB_PREFIX."contact_xref_source` x WHERE x.`source` = ?";				
+				$next = $this->mDb->getOne( $sql, array(  $pParamHash['xref_store']['source'] ) );
+				if ( $next > 0 ) {
+					$sql = "SELECT MAX(x.`xorder`) + 1 FROM `".BIT_DB_PREFIX."contact_xref` x
+							WHERE x.`content_id` = ? AND x.`source` = ?";
+					$next = $this->mDb->getOne( $sql, array(  $pParamHash['xref_store']['content_id'], $pParamHash['xref_store']['source'] ) );
+				}
+				$pParamHash['xref_store']['xorder'] = $next;
 			} 
 
 			if ( isset ( $pParamHash['fStepXref']  ) ) {
