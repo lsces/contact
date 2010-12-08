@@ -57,20 +57,20 @@
 							<td>
 								<span class="actionicon">
 									{if $gBitUser->hasPermission( 'p_contact_view_detail' )}
-										{smartlink ititle="View" ifile="view_xref.php" ibiticon="icons/view-fullscreen" xref_id=$pageInfo.$source[xref].xref_id}
+										{smartlink ititle="View" ifile="view_xref.php" ibiticon="icons/view-fullscreen" content_id=$pageInfo.content_id xref_id=$pageInfo.$source[xref].xref_id}
 									{/if}	
 									{if $gBitUser->hasPermission( 'p_contact_update' ) and $source ne 'history' }
 										{if $pageInfo.$source[xref].source eq 'KEY_B' }
-											{smartlink ititle="Seal" ifile="edit_xref.php" ibiticon="icons/edit-redo" xref_id=$pageInfo.$source[xref].xref_id expunge=2}
+											{smartlink ititle="Seal" ifile="edit_xref.php" ibiticon="icons/edit-redo" content_id=$pageInfo.content_id xref_id=$pageInfo.$source[xref].xref_id expunge=2}
 										{else}
-											{smartlink ititle="Edit" ifile="edit_xref.php" ibiticon="icons/accessories-text-editor" xref_id=$pageInfo.$source[xref].xref_id}
+											{smartlink ititle="Edit" ifile="edit_xref.php" ibiticon="icons/accessories-text-editor" content_id=$pageInfo.content_id xref_id=$pageInfo.$source[xref].xref_id}
 										{/if}
 									{/if}	
 									{if $gBitUser->hasPermission( 'p_contact_expunge' ) and $pageInfo.$source[xref].source ne 'KEY_B' }
 										{if $source eq 'history' }
-											{smartlink ititle="Restore" ifile="edit_xref.php" ibiticon="icons/edit-undo" xref_id=$pageInfo.$source[xref].xref_id expunge=-1}
+											{smartlink ititle="Restore" ifile="edit_xref.php" ibiticon="icons/edit-undo" content_id=$pageInfo.content_id xref_id=$pageInfo.$source[xref].xref_id expunge=-1}
 										{else}
-											{smartlink ititle="Delete" ifile="edit_xref.php" ibiticon="icons/edit-delete" xref_id=$pageInfo.$source[xref].xref_id expunge=1}
+											{smartlink ititle="Delete" ifile="edit_xref.php" ibiticon="icons/edit-delete" content_id=$pageInfo.content_id xref_id=$pageInfo.$source[xref].xref_id expunge=1}
 										{/if}	
 									{/if}	
 								</span>

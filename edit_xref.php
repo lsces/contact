@@ -19,6 +19,9 @@ $gBitSystem->verifyPackage( 'contact' );
 $gBitSystem->verifyPermission( 'p_contact_update' );
 
 include_once( CONTACT_PKG_PATH.'lookup_contact_inc.php' );
+if( empty( $gContent ) || !is_object( $gContent ) ) {
+	$gContent = new Contact();
+}
 
 if( !empty( $_REQUEST['xref_id'] ) ) {
 	$gContent->loadXref( $_REQUEST['xref_id'] );
@@ -41,10 +44,10 @@ if (isset($_REQUEST["fCancel"])) {
 	}
 } else if(isset( $_REQUEST["expunge"] ) ) {
 	if( $gContent->stepXref( $_REQUEST ) ) {
-		if ( $_REQUEST['expunge'] > 2) {
+//		if ( $_REQUEST['expunge'] > 2) {
 			header("Location: ".$gContent->getDisplayUrl() );
 			die;
-		}
+//		}
 	} 
 } 
 
