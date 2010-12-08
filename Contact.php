@@ -618,7 +618,8 @@ class Contact extends LibertyContent {
 				$this->mInfo['xref_title'] = $xref->mContentId;
 				$this->mInfo['xref_store'] = $xref->mInfo;
 				$pParamHash['xref_id'] = $xref->mXrefId;
-
+				$this->load();
+				
 				return true;
 		} else return false;
 	}
@@ -632,6 +633,8 @@ class Contact extends LibertyContent {
 		if ( $xref->stepXref( $pParamHash ) ) {
 			$this->mInfo['xref_title'] = $xref->mContentId;
 			$this->mInfo['xref_store'] = $xref->mInfo;
+			$this->load();
+
 			return true;
 		} else return false;
 	}
