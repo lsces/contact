@@ -112,6 +112,9 @@ class Contact extends LibertyContent {
 //				$this->mInfo['prop_lng'] = $ll1->lng;
 
 				$this->loadContentTypeList();
+				if ( $this->mInfo['contact_types'][2]['content_id'] ) { 
+					$this->loadClientList();
+				}
 				$this->loadXrefList();
 			}
 		}
@@ -638,7 +641,43 @@ class Contact extends LibertyContent {
 			return true;
 		} else return false;
 	}
-	
+
+	/**
+	 * getClientList( &$pParamHash );
+	 * Get list of client records for this contact record
+	 * This is used to list related contact records such as contacts handled by a call center or alarm maintainer
+	 */
+	function loadClientList() {
+		if( $this->isValid() ) {
+			global $gBitUser;
+		
+			$roles = array_keys($gBitUser->mRoles);
+			$bindVars = array();
+			array_push( $bindVars, $this->mDb->NOW() );
+			array_push( $bindVars, $this->mContentId );
+//			$bindVars = array_merge( $bindVars, $roles, array( $gBitUser->mUserId ) );
+
+			$sql = "SELECT r.`xref_id`, r.`content_id`, r.`last_update_date`, c.`title`,
+					CASE 
+					WHEN r.`end_date` < ? THEN 'history'
+					ELSE r.`source` END as type_source,
+					r.`xkey`, r.`xkey_ext`, r.`data`,
+					r.`start_date`, r.`end_date`
+					FROM `".BIT_DB_PREFIX."contact_xref` r
+					JOIN `".BIT_DB_PREFIX."liberty_content` c ON c.`content_id` = r.`content_id`
+					WHERE r.`xref` = ? AND r.`source` = '#A' 
+					ORDER BY c.`title`";
+//					LEFT OUTER JOIN `".BIT_DB_PREFIX."users_roles_map` purm ON ( purm.`user_id`=".$gBitUser->mUserId." ) AND ( purm.`role_id` = s.`role_id` )
+//					AND (s.`role_id` IN(". implode(',', array_fill(0, count($roles), '?')) ." ) OR purm.`user_id`=?)
+
+			$result = $this->mDb->query( $sql, $bindVars );
+
+			while( $res = $result->fetchRow() ) {
+				$this->mInfo['client_list'][] = $res;
+			}
+		}
+	}
+
 	/**
 	 * ContactRecordLoad( $data );
 	 * simple csv contact list import 
