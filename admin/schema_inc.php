@@ -28,6 +28,7 @@ $tables = array(
   source C(20) PRIMARY,
   cross_ref_title C(64),
   xref_type I2,
+  multi I2,
   role_id I4,
   cross_ref_href C(256),
   data X

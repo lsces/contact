@@ -80,7 +80,8 @@ class ContactXref extends BitBase {
 					$pParamHash['xref_store']['source'] = $pParamHash['Array_xref_type_list']['Array.source'];
 				}
 				$pParamHash['xref_store']['content_id'] = $pParamHash['content_id'];
-				$pParamHash['xref_store']['xorder'] = 0;
+				$sql = "SELECT x`.multi` FROM `".BIT_DB_PREFIX."contact_xref_source` x WHERE x.`source` = ?";				
+				$pParamHash['xref_store']['xorder'] = $this->mDb->getOne( $sql, array(  $pParamHash['xref_store']['source'] ) );
 			} 
 
 			if ( isset ( $pParamHash['fStepXref']  ) ) {
