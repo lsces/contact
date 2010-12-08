@@ -71,7 +71,7 @@ class Contact extends LibertyContent {
 		if ( $pContentId ) $this->mContentId = (int)$pContentId;
 		if( $this->verifyId( $this->mContentId ) ) {
  			$query = "select con.*, lc.*, ca.*,
-				x00.`xkey_ext` as name, x01.`xkey_ext` as organisation, 
+				x00.`xkey_ext` as name, lc.`title` as organisation, 
 				uue.`login` AS modifier_user, uue.`real_name` AS modifier_real_name,
 				uuc.`login` AS creator_user, uuc.`real_name` AS creator_real_name
 				FROM `".BIT_DB_PREFIX."contact` con
@@ -80,7 +80,6 @@ class Contact extends LibertyContent {
 				LEFT JOIN `".BIT_DB_PREFIX."users_users` uuc ON (uuc.`user_id` = lc.`user_id`)
 				LEFT JOIN `".BIT_DB_PREFIX."contact_address` ca ON ca.content_id = con.content_id
 				LEFT JOIN `".BIT_DB_PREFIX."contact_xref` x00 ON x00.content_id = con.content_id AND x00.source = '$00'
-				LEFT JOIN `".BIT_DB_PREFIX."contact_xref` x01 ON x01.content_id = con.content_id AND x01.source = '$01'
 				WHERE con.`content_id`=?";
 			$result = $this->mDb->query( $query, array( $this->mContentId ) );
 //				LEFT JOIN `".BIT_DB_PREFIX."contact` ci ON ci.contact_id = pro.owner_id
@@ -501,13 +500,13 @@ class Contact extends LibertyContent {
 	function getXrefTypeList( $xrefGroup = 0 ) {
 		if ( $xrefGroup > -1 ) {
 			$query = "SELECT s.`cross_ref_title` AS `type_name`, s.`source`  FROM `".BIT_DB_PREFIX."contact_xref_source` s
-					  LEFT JOIN `".BIT_DB_PREFIX."contact_xref` x ON x.`source` = s.`source` AND x.`content_id` = ? 
+					  LEFT JOIN `".BIT_DB_PREFIX."contact_xref` x ON x.`source` = s.`source` AND x.`content_id` = ? AND ( x.`end_date` IS NULL OR x.`end_date` > CURRENT_TIMESTAMP ) 
 					  WHERE s.`xref_type` = ? AND ( x.`xref_id` IS NULL OR x.`xorder` > 0 )
 					  ORDER BY s.`cross_ref_title`";
 			$result = $this->mDb->query($query, array( $this->mContentId, $xrefGroup ) );
 		} else {
 			$query = "SELECT s.`cross_ref_title` AS `type_name`, s.`source`  FROM `".BIT_DB_PREFIX."contact_xref_source` s
-					  LEFT JOIN `".BIT_DB_PREFIX."contact_xref` x ON x.`source` = s.`source` AND x.`content_id` = ? 
+					  LEFT JOIN `".BIT_DB_PREFIX."contact_xref` x ON x.`source` = s.`source` AND x.`content_id` = ? AND ( x.`end_date` IS NULL OR x.`end_date` > CURRENT_TIMESTAMP )
 					  WHERE s.`xref_type` > 0 AND ( x.`xref_id` IS NULL OR x.`xorder` > 0 )
 					  ORDER BY s.`cross_ref_title`";
 			$result = $this->mDb->query($query, array( $this->mContentId ) );
