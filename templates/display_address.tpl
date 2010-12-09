@@ -31,9 +31,9 @@
 				Easting: {$pageInfo.x_coordinate|escape} Northing: {$pageInfo.y_coordinate|escape}
 				&nbsp;&lt;<a href="http://www.openstreetmap.org/index.html?mlat={$pageInfo.x_coordinate}&mlon={$pageInfo.y_coordinate}&zoom=16&layers=BOFT" title="{$propertyInfo.title}">
 					OpenStreetMap
-				</a>&gt;&nbsp;&lt;<a href="http://www.bing.com/maps/?cp={$pageInfo.x_coordinate}~{$pageInfo.y_coordinate}&lvl=16&style=r#" title="{$pageInfo.title}">
+				</a>&gt;&nbsp;&lt;<a href="http://www.bing.com/maps/?cp={$pageInfo.x_coordinate}~{$pageInfo.y_coordinate}&lvl=16&style=r&q={$pageInfo.postcode}#" title="{$pageInfo.title}">
 					Multimap
-				</a>&gt;&nbsp;&lt;<a href="http://www.google.co.uk/maps?f=q&source=s_q&hl=en&ll={$pageInfo.x_coordinate},{$pageInfo.y_coordinate}&z=16" title="{$pageInfo.title}">
+				</a>&gt;&nbsp;&lt;<a href="http://www.google.co.uk/maps?f=q&source=s_q&hl=en&q={$pageInfo.postcode}&ll={$pageInfo.x_coordinate},{$pageInfo.y_coordinate}&z=16" title="{$pageInfo.title}">
 					Google
 				</a>&gt;<br />
 				{$pageInfo.rpa|escape}
