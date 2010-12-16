@@ -28,7 +28,7 @@
 		<div class="row">
 			{formlabel label="Visual Centre Coordinates" for="street_start_x"}
 			{forminput}
-				Easting: {$pageInfo.x_coordinate|escape} Northing: {$pageInfo.y_coordinate|escape}
+				Lat: {$pageInfo.x_coordinate|escape} Lon: {$pageInfo.y_coordinate|escape}
 				&nbsp;&lt;<a href="http://www.openstreetmap.org/index.html?mlat={$pageInfo.x_coordinate}&mlon={$pageInfo.y_coordinate}&zoom=16&layers=BOFT" title="{$propertyInfo.title}">
 					OpenStreetMap
 				</a>&gt;&nbsp;&lt;<a href="http://www.bing.com/maps/?cp={$pageInfo.x_coordinate}~{$pageInfo.y_coordinate}&lvl=16&style=r&q={$pageInfo.postcode}#" title="{$pageInfo.title}">

@@ -72,8 +72,9 @@ class Contact extends LibertyContent {
 		if( $this->verifyId( $this->mContentId ) ) {
  			$query = "select con.*, lc.*,
  				ap.*, xhC.`xkey_ext` AS house,
- 				x00.`xkey_ext` as name, lc.`title` as organisation, 
-				uue.`login` AS modifier_user, uue.`real_name` AS modifier_real_name,
+ 				x00.`xkey_ext` as name, lc.`title` as organisation,
+ 				xhL.`xkey` as x_coordinate, xhL.`xkey_ext` as y_coordinate,
+ 				uue.`login` AS modifier_user, uue.`real_name` AS modifier_real_name,
 				uuc.`login` AS creator_user, uuc.`real_name` AS creator_real_name
 				FROM `".BIT_DB_PREFIX."contact` con
 				LEFT JOIN `".BIT_DB_PREFIX."liberty_content` lc ON lc.content_id = con.content_id
@@ -81,6 +82,7 @@ class Contact extends LibertyContent {
 				LEFT JOIN `".BIT_DB_PREFIX."users_users` uuc ON (uuc.`user_id` = lc.`user_id`)
 				LEFT JOIN `".BIT_DB_PREFIX."contact_xref` x00 ON x00.`content_id` = con.`content_id` AND x00.`source` = '$00'
 				LEFT JOIN `".BIT_DB_PREFIX."contact_xref` xhC ON xhC.`content_id` = con.`content_id` AND xhC.`source` = '#C' AND ( xhC.`end_date` IS NULL OR xhC.`end_date` > CURRENT_TIMESTAMP )
+				LEFT JOIN `".BIT_DB_PREFIX."contact_xref` xhL ON xhL.`content_id` = con.`content_id` AND xhL.`source` = '#L' AND ( xhL.`end_date` IS NULL OR xhL.`end_date` > CURRENT_TIMESTAMP )
 				LEFT JOIN `".BIT_DB_PREFIX."address_postcode` ap ON ap.`postcode` = xhC.`xkey`
 				WHERE con.`content_id`=?";
 			$result = $this->mDb->query( $query, array( $this->mContentId ) );
@@ -108,13 +110,13 @@ class Contact extends LibertyContent {
 				$this->mInfo['name'] = trim($this->mInfo['name']).' '.$this->mInfo['suffix'];
 				$this->mInfo['name'] = trim($this->mInfo['name']);
 
-				if ( $this->mInfo['postcode'] and $this->mInfo['grideast'] <> '00000' ) {
+				if ( !$this->mInfo['x_coordinate'] and $this->mInfo['postcode'] and $this->mInfo['grideast'] <> '00000' ) {
 					$os1 = new OSRef( $this->mInfo['grideast']*10, $this->mInfo['gridnorth']*10 );
 					$ll1 = $os1->toLatLng();
 					$this->mInfo['x_coordinate'] = $ll1->lat;
 					$this->mInfo['y_coordinate'] = $ll1->lng;
 				}
-				
+
 				$this->loadContentTypeList();
 				if ( $this->mInfo['contact_types'][2]['content_id'] ) { 
 					$this->loadClientList();
@@ -418,10 +420,12 @@ class Contact extends LibertyContent {
 
 		$query = "SELECT con.`content_id` as content_id, con.*, lc.*,
 			ap.*, xhC.`xkey_ext` AS house,
-			(SELECT COUNT(*) FROM `".BIT_DB_PREFIX."contact_xref` x WHERE x.`content_id` = con.`content_id` AND x.`source` NOT STARTING WITH '$' ) AS refs
+			xhL.`xkey` as x_coordinate, xhL.`xkey_ext` as y_coordinate,
+ 			(SELECT COUNT(*) FROM `".BIT_DB_PREFIX."contact_xref` x WHERE x.`content_id` = con.`content_id` AND x.`source` NOT STARTING WITH '$' ) AS refs
 			FROM `".BIT_DB_PREFIX."contact` con
 			LEFT JOIN `".BIT_DB_PREFIX."liberty_content` lc ON lc.`content_id` = con.`content_id`
 			LEFT JOIN `".BIT_DB_PREFIX."contact_xref` xhC ON xhC.`content_id` = con.`content_id` AND xhC.`source` = '#C' AND ( xhC.`end_date` IS NULL OR xhC.`end_date` > CURRENT_TIMESTAMP )
+			LEFT JOIN `".BIT_DB_PREFIX."contact_xref` xhL ON xhL.`content_id` = con.`content_id` AND xhL.`source` = '#L' AND ( xhL.`end_date` IS NULL OR xhL.`end_date` > CURRENT_TIMESTAMP )
 			LEFT JOIN `".BIT_DB_PREFIX."address_postcode` ap ON ap.`postcode` = xhC.`xkey`
 			$findSql
 			$joinSql 
@@ -447,6 +451,7 @@ class Contact extends LibertyContent {
 		$pParamHash["listInfo"]["count"] = $pParamHash["cant"];
 
 		LibertyContent::postGetList( $pParamHash );
+vd($ret);
 		return $ret;
 	}
 
