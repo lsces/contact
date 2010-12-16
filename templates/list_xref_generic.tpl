@@ -61,7 +61,7 @@
 									{/if}	
 									{if $gBitUser->hasPermission( 'p_contact_update' ) and $source ne 'history' }
 										{if $pageInfo.$source[xref].source eq 'KEY_B' }
-											{smartlink ititle="Seal" ifile="edit_xref.php" ibiticon="icons/edit-redo" content_id=$pageInfo.content_id xref_id=$pageInfo.$source[xref].xref_id expunge=2}
+											{smartlink ititle="Seal" ifile="edit_key_break.php" ibiticon="icons/edit-redo" content_id=$pageInfo.content_id xref_id=$pageInfo.$source[xref].xref_id}
 										{else}
 											{smartlink ititle="Edit" ifile="edit_xref.php" ibiticon="icons/accessories-text-editor" content_id=$pageInfo.content_id xref_id=$pageInfo.$source[xref].xref_id}
 										{/if}
