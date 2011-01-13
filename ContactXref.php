@@ -62,6 +62,7 @@ class ContactXref extends BitBase {
 				$this->mInfo['title'] = $result['source_title'];
 				unset($result['source_title']);
 				$this->mInfo['data'] = $result;
+				$this->mInfo['format_guid'] = 'text';
 			}
 		}
 	}
@@ -172,7 +173,9 @@ class ContactXref extends BitBase {
 			if( isset( $pParamHash['xref_id'] ) ) {
 				$result = $this->mDb->associateUpdate( $table, $pParamHash['xref_store'], array( "xref_id" => $pParamHash['xref_id'] ) );
 			} else {
-				$this->mXrefId = $pParamHash['ref_id'] = $pParamHash['xref_store']['xref_id'] = $this->mDb->GenID( 'contact_xref_seq' );
+				$this->mXrefId = $this->mDb->GenID( 'contact_xref_seq' );
+				$pParamHash['xref_id'] = $this->mXrefId;
+				$pParamHash['xref_store']['xref_id'] = $this->mXrefId;
 				$result = $this->mDb->associateInsert( $table, $pParamHash['xref_store'] );
 			}
 			// load before completing transaction as firebird isolates results
@@ -185,15 +188,17 @@ class ContactXref extends BitBase {
 	}
 
 	function stepXref( &$pParamHash = NULL ) {
-		if ( $pParamHash["expunge"] == 2 ) {
-			$pParamHash['end_date'] = $this->mDb->NOW();
-			$this->store( $pParamHash );
-			unset($pParamHash['xref_id']);
-			$pParamHash['fStepXref'] = 1;
-		} else if ( $pParamHash["expunge"] == 1 ) {
-			$pParamHash['end_date'] = $this->mDb->NOW();
-		} else {
-			$pParamHash['ignore_end_date'] = 'on';
+		if ( isset($pParamHash["expunge"]) ) {
+			if ( $pParamHash["expunge"] == 2 ) {
+				$pParamHash['end_date'] = $this->mDb->NOW();
+				$this->store( $pParamHash );
+				unset($pParamHash['xref_id']);
+				$pParamHash['fStepXref'] = 1;
+			} else if ( $pParamHash["expunge"] == 1 ) {
+				$pParamHash['end_date'] = $this->mDb->NOW();
+			} else {
+				$pParamHash['ignore_end_date'] = 'on';
+			}
 		}
 		$this->store( $pParamHash );
 		return true;

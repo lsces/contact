@@ -26,13 +26,26 @@ if( empty( $gContent ) || !is_object( $gContent ) ) {
 if( !empty( $_REQUEST['xref_id'] ) ) {
 	$gContent->loadXref( $_REQUEST['xref_id'] );
 }
-
 $gContent->stepXref( $_REQUEST );
+
+if(isset($_REQUEST["fSaveXref"])) {
+	header("Location: ".$gContent->getDisplayUrl() );
+	die;
+}
 
 // formInfo might be set due to a error on submit
 if( empty( $xrefInfo ) ) {
 	$xrefInfo = &$gContent->mInfo['xref_store']['data'];
 }
+if( empty( $xrefInfo['content_id'] ) ) {
+	$xrefInfo = $_REQUEST;
+	if ( isset($xrefInfo['edit']) ) { 
+		$xrefInfo['data'] = $xrefInfo['edit'];
+	}
+}
+
+// Ensure simple text edit boxes for xref entries
+$gContent->mInfo['format_guid'] = 'text';
 $gBitSmarty->assign_by_ref( 'xrefInfo', $xrefInfo );
 $gBitSmarty->assign_by_ref( 'title', $gContent->mInfo['title'] );
 $gBitSmarty->assign_by_ref( 'xref_title', $gContent->mInfo['xref_title'] );
