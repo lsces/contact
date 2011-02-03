@@ -36,6 +36,9 @@
 				</a>&gt;&nbsp;&lt;<a href="http://www.google.co.uk/maps?f=q&source=s_q&hl=en&q={$pageInfo.postcode}&ll={$pageInfo.x_coordinate},{$pageInfo.y_coordinate}&z=16" title="{$pageInfo.title}">
 					Google
 				</a>&gt;<br />
+				Navigate to &lt;<a href="http://openrouteservice.org/index.php?start=-1.822164,52.073197&end={$pageInfo.y_coordinate},{$pageInfo.x_coordinate}&pref=Fastest&lang=en&unit=MI" title="{$propertyInfo.title}">
+					OpenRouteService
+				</a>&gt;
 				{$pageInfo.rpa|escape}
 			{/forminput}
 		</div>
