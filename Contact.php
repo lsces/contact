@@ -533,6 +533,31 @@ class Contact extends LibertyContent {
 	}
 
 	/**
+	* Returns Contract Numbers list
+	* @param $contract selects a single type of contract to list
+	* @return array List of contact numbers in contract number order
+	*/
+	function getContractList( $contract = 0 ) {
+		$query = "SELECT r.`xkey_ext` AS `contract`, r.`content_id`, lc.`title`, r.`xref`, r.`xkey`, r.`data`,
+				ap.*, xhC.`xkey_ext` AS house, r.xref,
+				CASE WHEN r.`xkey_ext` STARTING 'C' THEN CAST ( SUBSTRING ( r.`xkey_ext` FROM 2 FOR 4 ) AS INTEGER )
+				ELSE CAST ( r.`xkey_ext` AS INTEGER ) END AS XORDERBY
+				FROM `".BIT_DB_PREFIX."contact_xref` r
+				LEFT JOIN `".BIT_DB_PREFIX."liberty_content` lc ON lc.`content_id` = r.`content_id` 
+				LEFT JOIN `".BIT_DB_PREFIX."contact_xref` xhC ON xhC.`content_id` = lc.`content_id` AND xhC.`source` = '#C' AND ( xhC.`end_date` IS NULL OR xhC.`end_date` > CURRENT_TIMESTAMP )
+				LEFT JOIN `".BIT_DB_PREFIX."address_postcode` ap ON ap.`postcode` = xhC.`xkey`
+				WHERE r.`source` = 'KEY_S' AND r.`xref` = ? AND ( r.`end_date` IS NULL OR r.`end_date` > CURRENT_TIMESTAMP )
+				ORDER BY r.`xref`, XORDERBY";
+		$result = $this->mDb->query($query, array( $contract ) );
+		
+		$ret = array();
+		while ($res = $result->fetchRow()) {
+			$ret[] = $res;
+		}
+		return $ret;
+	}
+
+	/**
 	 * getXrefList( &$pParamHash );
 	 * Get list of xref records for this contact record
 	 */

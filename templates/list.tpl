@@ -78,6 +78,6 @@
 
 		{pagination}
 	</div><!-- end .body -->
-</div><!-- end .irlist -->
+</div><!-- end .contacts -->
 
 {/strip}
