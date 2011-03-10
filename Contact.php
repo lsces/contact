@@ -113,8 +113,8 @@ class Contact extends LibertyContent {
 				if ( !$this->mInfo['x_coordinate'] and $this->mInfo['postcode'] and $this->mInfo['grideast'] <> '00000' ) {
 					$os1 = new OSRef( $this->mInfo['grideast']*10, $this->mInfo['gridnorth']*10 );
 					$ll1 = $os1->toLatLng();
-					$this->mInfo['x_coordinate'] = $ll1->lat;
-					$this->mInfo['y_coordinate'] = $ll1->lng;
+					$this->mInfo['y_coordinate'] = $ll1->lat;
+					$this->mInfo['x_coordinate'] = $ll1->lng;
 				}
 
 				$this->loadContentTypeList();
@@ -753,8 +753,8 @@ class Contact extends LibertyContent {
 				if ( $res['postcode'] and $res['grideast'] <> '00000' ) {
 					$os1 = new OSRef( $res['grideast']*10, $res['gridnorth']*10 );
 					$ll1 = $os1->toLatLng();
-					$res['x_coordinate'] = $ll1->lat;
-					$res['y_coordinate'] = $ll1->lng;
+					$res['x_coordinate'] = $ll1->lng;
+					$res['y_coordinate'] = $ll1->lat;
 				}
 
 				$this->mInfo['address'][] = $res;

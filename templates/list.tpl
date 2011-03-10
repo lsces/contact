@@ -59,8 +59,8 @@
 							{if isset($listcontacts[content].grideast) }
 								&lt;{$listcontacts[content].grideast|escape}&nbsp;,&nbsp;{$listcontacts[content].gridnorth|escape}&gt;&nbsp;{/if}
 						{/if}
-						{if $listcontacts[content].x_coordinate }
-								&nbsp;Exact Cords:&lt;{$listcontacts[content].x_coordinate|escape}&nbsp;,&nbsp;{$listcontacts[content].y_coordinate|escape}&gt;&nbsp;
+						{if $listcontacts[content].y_coordinate and $listcontacts[content].x_coordinate }
+								&nbsp;Exact Cords:&lt;{$listcontacts[content].y_coordinate|escape}&nbsp;,&nbsp;{$listcontacts[content].x_coordinate|escape}&gt;&nbsp;
 						{/if}	
 						<br />
 						{tr}Refs{/tr}: {$listcontacts[content].refs|default:0}&nbsp;&nbsp;
