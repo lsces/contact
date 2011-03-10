@@ -1,45 +1,45 @@
 		<div class="row">
 			{formlabel label="$header" for="lpi"}
 			{forminput}
-				{if isset($pageInfo.sao) && ($pageInfo.sao <> '') }
-					{$pageInfo.sao},&nbsp;{/if}
-				{if isset($pageInfo.pao) && ($pageInfo.pao <> '') }
-					{$pageInfo.pao},<br />{/if}
-				{if isset($pageInfo.number) && ($pageInfo.number <> '') }
-					{$pageInfo.number},<br />{/if}
-				{if isset($pageInfo.house) && ($pageInfo.house <> '') }
-					{$pageInfo.house},<br />{/if}
-				{if isset($pageInfo.add1) && ($pageInfo.add1 <> '') }
-					{$pageInfo.add1},<br />{/if}
-				{if isset($pageInfo.add2) && ($pageInfo.add2 <> '') }
-					{$pageInfo.add2},&nbsp;{/if}
-				{if isset($pageInfo.add3) && ($pageInfo.add3 <> '') }
-					{$pageInfo.add3},<br />{/if}
-				{if isset($pageInfo.add4) && ($pageInfo.add4 <> '') }
-					{$pageInfo.add4},&nbsp;{/if}
-				{if isset($pageInfo.town) && ($pageInfo.town <> '') }
-					{$pageInfo.town},&nbsp;{/if}
-				{if isset($pageInfo.county) && ($pageInfo.county <> '') }
-					{$pageInfo.county},&nbsp;{/if}
-				{$pageInfo.postcode}&nbsp;&nbsp;
+				{if isset($address.sao) && ($address.sao <> '') }
+					{$address.sao},&nbsp;{/if}
+				{if isset($address.pao) && ($address.pao <> '') }
+					{$address.pao},<br />{/if}
+				{if isset($address.number) && ($address.number <> '') }
+					{$address.number},<br />{/if}
+				{if isset($address.house) && ($address.house <> '') }
+					{$address.house},<br />{/if}
+				{if isset($address.add1) && ($address.add1 <> '') }
+					{$address.add1},<br />{/if}
+				{if isset($address.add2) && ($address.add2 <> '') }
+					{$address.add2},&nbsp;{/if}
+				{if isset($address.add3) && ($address.add3 <> '') }
+					{$address.add3},<br />{/if}
+				{if isset($address.add4) && ($address.add4 <> '') }
+					{$address.add4},&nbsp;{/if}
+				{if isset($address.town) && ($address.town <> '') }
+					{$address.town},&nbsp;{/if}
+				{if isset($address.county) && ($address.county <> '') }
+					{$address.county},&nbsp;{/if}
+				{$address.postcode}&nbsp;&nbsp;
 			{/forminput}
 		</div>
-		{if isset($pageInfo.x_coordinate) && ($pageInfo.x_coordinate <> '') }
+		{if $locate == 1 && isset($address.x_coordinate) && ($address.x_coordinate <> '') }
 		<div class="row">
 			{formlabel label="Visual Centre Coordinates" for="street_start_x"}
 			{forminput}
-				Lat: {$pageInfo.x_coordinate|escape} Lon: {$pageInfo.y_coordinate|escape}
-				&nbsp;&lt;<a href="http://www.openstreetmap.org/index.html?mlat={$pageInfo.x_coordinate}&mlon={$pageInfo.y_coordinate}&zoom=16&layers=BOFT" title="{$propertyInfo.title}">
+				Lat: {$address.x_coordinate|escape} Lon: {$address.y_coordinate|escape}
+				&nbsp;&lt;<a href="http://www.openstreetmap.org/index.html?mlat={$address.x_coordinate}&mlon={$address.y_coordinate}&zoom=16&layers=BOFT" title="{$propertyInfo.title}">
 					OpenStreetMap
-				</a>&gt;&nbsp;&lt;<a href="http://www.bing.com/maps/?cp={$pageInfo.x_coordinate}~{$pageInfo.y_coordinate}&lvl=16&style=r&q={$pageInfo.postcode}#" title="{$pageInfo.title}">
+				</a>&gt;&nbsp;&lt;<a href="http://www.bing.com/maps/?cp={$address.x_coordinate}~{$address.y_coordinate}&lvl=16&style=r&q={$address.postcode}#" title="{$address.title}">
 					Multimap
-				</a>&gt;&nbsp;&lt;<a href="http://www.google.co.uk/maps?f=q&source=s_q&hl=en&q={$pageInfo.postcode}&ll={$pageInfo.x_coordinate},{$pageInfo.y_coordinate}&z=16" title="{$pageInfo.title}">
+				</a>&gt;&nbsp;&lt;<a href="http://www.google.co.uk/maps?f=q&source=s_q&hl=en&q={$address.postcode}&ll={$address.x_coordinate},{$address.y_coordinate}&z=16" title="{$address.title}">
 					Google
 				</a>&gt;<br />
-				Navigate to &lt;<a href="http://openrouteservice.org/index.php?start=-1.822164,52.073197&end={$pageInfo.y_coordinate},{$pageInfo.x_coordinate}&pref=Fastest&lang=en&unit=MI" title="{$propertyInfo.title}">
+				Navigate to &lt;<a href="http://openrouteservice.org/index.php?start=-1.822164,52.073197&end={$address.y_coordinate},{$address.x_coordinate}&pref=Fastest&lang=en&unit=MI" title="{$propertyInfo.title}">
 					OpenRouteService
 				</a>&gt;
-				{$pageInfo.rpa|escape}
+				{$address.rpa|escape}
 			{/forminput}
 		</div>
 		{/if}

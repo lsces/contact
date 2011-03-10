@@ -40,7 +40,9 @@
 			{/forminput}
 		</div>
 		{/if}
-		{include file="bitpackage:contact/display_address.tpl" header="Contact Address"}
+		{section name=address loop=$pageInfo.address}
+			{include file="bitpackage:contact/display_address.tpl" header=$pageInfo.address[address].source_title address=$pageInfo.address[address] locate=1}
+		{/section}
 
 		<div class="row">
 			{formlabel label="General Notes" for="data"}

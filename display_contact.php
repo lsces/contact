@@ -33,7 +33,7 @@ if( $gContent->isCommentable() ) {
 	$comments_return_url = $_SERVER['PHP_SELF']."?content_id=".$gContent->mContentId;
 	include_once( LIBERTY_PKG_PATH.'comments_inc.php' );
 
- 	if ( !$_REQUEST[post_comment_submit] == 'Post' ) {
+ 	if ( isset($_REQUEST['post_comment_submit']) and !$_REQUEST['post_comment_submit'] == 'Post' ) {
 		header ("location: ".CONTACT_PKG_URL."index.php?content_id=".$gContent->mContentId );
 		die;
 	}

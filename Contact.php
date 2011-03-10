@@ -122,6 +122,7 @@ class Contact extends LibertyContent {
 					$this->loadClientList();
 				}
 				$this->loadXrefList();
+				$this->loadAddressList();
 			}
 		}
 		LibertyContent::load();
@@ -685,6 +686,53 @@ class Contact extends LibertyContent {
 
 			while( $res = $result->fetchRow() ) {
 				$this->mInfo['client_list'][] = $res;
+			}
+		}
+	}
+
+	/**
+	 * getAddressList( &$pParamHash );
+	 * Get list of address records for this contact record
+	 */
+	function loadAddressList() {
+		if( $this->isValid() && empty( $this->mInfo['xref'] ) ) {
+			global $gBitUser;
+		
+			$roles = array_keys($gBitUser->mRoles);
+			$bindVars = array();
+			array_push( $bindVars, $this->mDb->NOW() );
+			array_push( $bindVars, $this->mContentId );
+			$bindVars = array_merge( $bindVars, $roles, array( $gBitUser->mUserId ) );
+
+			$sql = "SELECT s.xref_type, x.`xref_id`, x.`last_update_date`, x.`source`, t.`title` AS type_title,
+					CASE 
+					WHEN x.`end_date` < ? THEN 'history'
+					ELSE t.`source` END as type_source,
+					CASE
+					WHEN x.`xorder` = 0 THEN s.`cross_ref_title`
+					ELSE s.`cross_ref_title` || '-' || x.`xorder` END
+					AS source_title,
+					x.`xkey_ext` AS house, ap.add1, ap.add2, ap.add3, ap.add4, ap.town, ap.county, ap.postcode, ap.grideast, ap.gridnorth, x.`data`,
+					x.`start_date`, x.`end_date`
+					FROM `".BIT_DB_PREFIX."contact_xref` x
+					JOIN `".BIT_DB_PREFIX."contact_xref_source` s ON s.`source` = x.`source`
+					JOIN `".BIT_DB_PREFIX."contact_xref_type` t ON t.`xref_type` = s.`xref_type`
+					JOIN `".BIT_DB_PREFIX."address_postcode` ap ON ap.`postcode` = x.`xkey`
+					LEFT OUTER JOIN `".BIT_DB_PREFIX."users_roles_map` purm ON ( purm.`user_id`=".$gBitUser->mUserId." ) AND ( purm.`role_id`=s.`role_id` )
+					WHERE x.content_id = ? AND (s.`role_id` IN(". implode(',', array_fill(0, count($roles), '?')) ." ) OR purm.`user_id`=?)
+					ORDER BY x.`source`, x.`xorder`";
+
+			$result = $this->mDb->query( $sql, $bindVars );
+
+			while( $res = $result->fetchRow() ) {
+				if ( $res['postcode'] and $res['grideast'] <> '00000' ) {
+					$os1 = new OSRef( $res['grideast']*10, $res['gridnorth']*10 );
+					$ll1 = $os1->toLatLng();
+					$res['x_coordinate'] = $ll1->lat;
+					$res['y_coordinate'] = $ll1->lng;
+				}
+
+				$this->mInfo['address'][] = $res;
 			}
 		}
 	}
