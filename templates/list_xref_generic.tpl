@@ -29,7 +29,7 @@
 								{$pageInfo.$source[xref].source_title|escape}
 							</td>
 							<td>
-								{if isset($pageInfo.$source[xref].xref) && ($pageInfo.$source[xref].xref <> '') }
+								{if isset($pageInfo.$source[xref].xref) && $pageInfo.$source[xref].xref <> '' && $pageInfo.$source[xref].xref > 100 }
 									{$pageInfo.$source[xref].xref|escape}
 									{smartlink ititle="Link to" ifile="display_contact.php" ibiticon="icons/accessories-text-editor" content_id=$pageInfo.$source[xref].xref}
 								{else}
