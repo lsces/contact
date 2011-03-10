@@ -31,6 +31,7 @@ $tables = array(
   multi I2,
   role_id I4,
   cross_ref_href C(256),
+  template C(32),
   data X
   ",
 
