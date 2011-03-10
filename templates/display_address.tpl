@@ -29,14 +29,14 @@
 			{formlabel label="Visual Centre Coordinates" for="street_start_x"}
 			{forminput}
 				Lat: {$address.y_coordinate|escape} Lon: {$address.x_coordinate|escape}
-				&nbsp;&lt;<a href="http://www.openstreetmap.org/index.html?mlat={$address.y_coordinate}&mlon={$address.x_coordinate}&zoom=16&layers=BOFT" title="{$propertyInfo.title}">
+				&nbsp;&lt;<a href="http://www.openstreetmap.org/index.html?mlat={$address.y_coordinate}&mlon={$address.x_coordinate}&zoom=16&layers=BOFT" title="{$propertyInfo.title}" target="_blank">
 					OpenStreetMap
-				</a>&gt;&nbsp;&lt;<a href="http://www.bing.com/maps/?cp={$address.y_coordinate}~{$address.x_coordinate}&lvl=16&style=r&q={$address.postcode}#" title="{$address.title}">
+				</a>&gt;&nbsp;&lt;<a href="http://www.bing.com/maps/?cp={$address.y_coordinate}~{$address.x_coordinate}&lvl=16&style=r&q={$address.postcode}#" title="{$address.title}" target="_blank">
 					Multimap
-				</a>&gt;&nbsp;&lt;<a href="http://www.google.co.uk/maps?f=q&source=s_q&hl=en&q={$address.postcode}&ll={$address.y_coordinate},{$address.x_coordinate}&z=16" title="{$address.title}">
+				</a>&gt;&nbsp;&lt;<a href="http://www.google.co.uk/maps?f=q&source=s_q&hl=en&q={$address.postcode}&ll={$address.y_coordinate},{$address.x_coordinate}&z=16" title="{$address.title}" target="_blank">
 					Google
 				</a>&gt;<br />
-				Navigate to &lt;<a href="http://openrouteservice.org/index.php?start=-1.822164,52.073197&end={$address.x_coordinate},{$address.y_coordinate}&pref=Fastest&lang=en&unit=MI" title="{$propertyInfo.title}">
+				Navigate to &lt;<a href="http://openrouteservice.org/index.php?start=-1.822164,52.073197&end={$address.x_coordinate},{$address.y_coordinate}&pref=Fastest&lang=en&unit=MI" title="{$propertyInfo.title}" target="_blank">
 					OpenRouteService
 				</a>&gt;
 				{$address.rpa|escape}
