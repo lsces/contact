@@ -100,7 +100,7 @@
 
 				{jstab title="Contact Address"}
 					{section name=address loop=$pageInfo.address}
-						{include file="bitpackage:contact/display_address.tpl" header=$pageInfo.address[address].source_title address=$pageInfo.address[address] locate=1}
+						{include file="bitpackage:contact/display_address.tpl" header=$pageInfo.address[address].source_title address=$pageInfo.address[address] locate=0}
 					{/section}
 				{/jstab}
 
