@@ -48,7 +48,8 @@ class ContactXref extends BitBase {
 					ELSE s.`cross_ref_title` || '-' || x.`xorder` END
 					AS source_title, s.`source`, s.`xref_type`,
 					CASE WHEN x.`start_date` IS NULL THEN 'y' ELSE 'n' END AS `ignore_start_date`, 
-					CASE WHEN x.`end_date` IS NULL THEN 'y' ELSE 'n' END AS `ignore_end_date` 
+					CASE WHEN x.`end_date` IS NULL THEN 'y' ELSE 'n' END AS `ignore_end_date`,
+					s.`cross_ref_title` AS `template_title`, s.`template`
 					FROM `".BIT_DB_PREFIX."contact_xref` x
 					JOIN `".BIT_DB_PREFIX."contact_xref_source` s ON s.`source` = x.`source`
 					WHERE x.`xref_id` = ?

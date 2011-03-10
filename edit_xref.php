@@ -60,5 +60,9 @@ $gBitSmarty->assign_by_ref( 'title', $gContent->mInfo['title'] );
 $gBitSmarty->assign_by_ref( 'xref_title', $gContent->mInfo['xref_title'] );
 
 $gBitSmarty->assign_by_ref( 'errors', $gContent->mErrors );
-$gBitSystem->display( 'bitpackage:contact/edit_xref.tpl', 'Edit: ' , array( 'display_mode' => 'edit' ));
+if( isset($xrefInfo['template']) ) {
+	$gBitSystem->display( 'bitpackage:contact/edit_xref_'.$xrefInfo['template'].'.tpl', 'Edit: ' , array( 'display_mode' => 'edit' ));
+} else {
+	$gBitSystem->display( 'bitpackage:contact/edit_xref.tpl', 'Edit: ' , array( 'display_mode' => 'edit' ));
+}
 ?>

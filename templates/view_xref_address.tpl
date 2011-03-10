@@ -1,49 +1,37 @@
 {strip}
 <div class="edit contact_xref">
 	<div class="header">
-		<h1>{tr}Contact Xref{/tr}: {$xref_title|escape} for {$title|escape}</h1>
+		<h1>{$xrefInfo.template_title|escape}: {$xref_title|escape} for {$title|escape}</h1>
 	</div>
 
 	<div class="body">
-		{legend legend="XRef Contents"}
+		{legend legend="Contents"}
 			<div class="row">
-				{formlabel label="Cross Reference Link" for="xref"}
-				{forminput}
-					{if $xrefInfo.xref}
-						{$xrefInfo.xref|escape}
-					{else}
-						&nbsp;
-					{/if}
-					{formhelp note="Link to other contact/content entries."}
-				{/forminput}
-			</div>
-
-			<div class="row">
-				{formlabel label="Reference Key" for="xkey"}
-				{forminput}
-					{if $xrefInfo.xkey }
-						{$xrefInfo.xkey|escape}
-					{else}
-						&nbsp;
-					{/if}
-					{formhelp note="ID Key use to access data in other systems identified by the xref type."}
-				{/forminput}
-			</div>
-
-			<div class="row">
-				{formlabel label="Reference Text" for="xkey_ext"}
+				{formlabel label="House Name/Number" for="xkey_ext"}
 				{forminput}
 					{if $xrefInfo.xkey_ext }
 						{$xrefInfo.xkey_ext|escape}
 					{else}
-						&nbsp;
+						Not yet set
 					{/if}
-					{formhelp note="Variable text element such as url or email address."}
+					{formhelp note="House name and/or number when used with postcode, or free format full address."}
 				{/forminput}
 			</div>
 
 			<div class="row">
-				{formlabel label="Reference Notes" for="data"}
+				{formlabel label="Postcode" for="xkey"}
+				{forminput}
+					{if $xrefInfo.xkey }
+						{$xrefInfo.xkey|escape}
+					{else}
+						Not yet set
+					{/if}
+					{formhelp note="Postcode for address."}
+				{/forminput}
+			</div>
+
+			<div class="row">
+				{formlabel label="`$xrefInfo.template_title` Notes" for="data"}
 				{forminput}
 					{$xrefInfo.data|escape}
 					{formhelp note="Keep the text attached to reference items short and use comment records to add larger volumns of text. This should be reserved for simple notes such 'as use after 5PM' or the link."}
@@ -60,7 +48,7 @@
 					{else}
 						{$xrefInfo.start_date|bit_long_datetime}
 					{/if}
-					{formhelp note="This xref record becomes valid on this date."}
+					{formhelp note="This address record becomes valid on this date."}
 				{/forminput}
 			</div>
 
@@ -72,7 +60,7 @@
 					{else}
 						{$xrefInfo.end_date|bit_long_datetime}
 					{/if}
-					{formhelp note="This xref record finishes on this date."}
+					{formhelp note="This address record finishes on this date."}
 				{/forminput}
 			</div>
 		{/legend}
