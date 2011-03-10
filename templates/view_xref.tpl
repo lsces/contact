@@ -1,5 +1,5 @@
 {strip}
-<div class="edit contact_xref">
+<div class="view contact_xref">
 	<div class="header">
 		<h1>{tr}Contact Xref{/tr}: {$xref_title|escape} for {$title|escape}</h1>
 	</div>
