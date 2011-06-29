@@ -157,34 +157,12 @@ class Contact extends LibertyContent {
 
 		$pParamHash['title'] = $pParamHash['organisation'];
 		if ( strlen($pParamHash['surname']) > 0 ) {
-			$pDataHash['title'] = $pParamHash['surname'];
-			if ( strlen($pParamHash['prefix']) > 0 ) $pDataHash['title'] .= ', '.$pParamHash['prefix'].' '.$pParamHash['forename'];
-			else if ( strlen($pParamHash['forename']) > 0 ) $pDataHash['title'] .= ', '.$pParamHash['forename'];
+			$pParamHash['title'] = $pParamHash['surname'];
+			if ( strlen($pParamHash['prefix']) > 0 ) $pParamHash['title'] .= ', '.$pParamHash['prefix'].' '.$pParamHash['forename'];
+			else if ( strlen($pParamHash['forename']) > 0 ) $pParamHash['title'] .= ', '.$pParamHash['forename'];
 		}
 		$pParamHash['title'] = trim( $pParamHash['title'] );
-//		$pParamHash['contact_store']['comment'] = $pParamHash['comment'];
-//		$pParamHash['contact_store']['surname'] = $pParamHash['surname'];
-
-//		if ( empty( $pParamHash['parent_id'] ) )
-//			$pParamHash['parent_id'] = $this->mContentId;
-			
-		// content store
-		// check for name issues, first truncate length if too long
-/*		if( empty( $pParamHash['surname'] ) || empty( $pParamHash['forename'] ) )  {
-			$this->mErrors['names'] = 'You must enter a forename and surname for this contact.';
-		} else {
-			$pParamHash['title'] = substr( $pParamHash['prefix'].' '.$pParamHash['forename'].' '.$pParamHash['surname'].' '.$pParamHash['suffix'], 0, 160 );
-			$pParamHash['content_store']['title'] = $pParamHash['title'];
-		}	
-
-		// Secondary store entries
-		$pParamHash['contact_store']['organisation'] = $pParamHash['organisation'];
-
-		if ( !empty( $pParamHash['nino'] ) ) $pParamHash['contact_store']['nino'] = $pParamHash['nino'];
-		if ( !empty( $pParamHash['dob'] ) ) $pParamHash['contact_store']['dob'] = $pParamHash['dob'];
-		if ( !empty( $pParamHash['eighteenth'] ) ) $pParamHash['contact_store']['eighteenth'] = $pParamHash['eighteenth'];
-		if ( !empty( $pParamHash['dod'] ) ) $pParamHash['contact_store']['dod'] = $pParamHash['dod'];
-*/
+		$pParamHash['contact_store']['xkey'] = $pParamHash['xkey'];
 		return( count( $this->mErrors ) == 0 );
 	}
 
@@ -206,17 +184,19 @@ class Contact extends LibertyContent {
 				$atable = BIT_DB_PREFIX."contact_address";
 
 				// mContentId will not be set until the secondary data has commited 
-				if( !empty( $pParamHash['contact_store'] ) ) {
+				if( !empty( $pParamHash['contact_store']['content_id'] ) ) {
 					$result = $this->mDb->associateUpdate( $table, $pParamHash['contact_store'], array( "content_id" => $this->mContentId ) );
 				} else {
 					$pParamHash['contact_store']['content_id'] = $pParamHash['content_id'];
 					$pParamHash['contact_store']['parent_id'] = $pParamHash['content_id'];
 					$pParamHash['contact_store']['address_id'] = $pParamHash['content_id'];
+					$pParamHash['contact_store']['xkey'] = $pParamHash['xkey'];
 					$this->mParentId = $pParamHash['contact_store']['parent_id'];
 					$this->mContentId = $pParamHash['content_id'];
 					$result = $this->mDb->associateInsert( $table, $pParamHash['contact_store'] );
 					// Dummy contact addresss entry ... need edit page for address without using nlpg data
 					unset($pParamHash['contact_store']['parent_id']);
+					unset($pParamHash['contact_store']['xkey']);
 					$result = $this->mDb->associateInsert( $atable, $pParamHash['contact_store'] );
 				}
 				if( !empty( $pParamHash['contact_types'] ) ) {
