@@ -90,6 +90,13 @@
 {* include edit_personal.tpl *}
 
 						<div class="row">
+							{formlabel label="Key Number" for="xkey"}
+							{forminput}
+								<input size="10" type="text" name="xkey" id="xkey" value="{$pageInfo.xkey|escape}" />
+							{/forminput}
+						</div>
+
+						<div class="row">
 							{formlabel label="Note" for="description"}
 							{forminput}
 								<input size="60" type="text" name="description" id="description" value="{$pageInfo.description|escape}" />
