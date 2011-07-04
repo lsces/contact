@@ -42,6 +42,13 @@
 		{/if}
 		{section name=address loop=$pageInfo.address}
 			{include file="bitpackage:contact/display_address.tpl" header=$pageInfo.address[address].source_title address=$pageInfo.address[address] locate=1}
+		{sectionelse}
+			<li class="item norecords">
+				{tr}No addresses found{/tr}
+				{if $gBitUser->hasPermission('p_edit_contact')}
+					{smartlink ititle="Add an address record" ifile="add_xref_address.php" ibiticon="icons/bookmark-new" content_id=$pageInfo.content_id}
+				{/if}
+			</li>
 		{/section}
 
 		<div class="row">
