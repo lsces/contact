@@ -490,8 +490,13 @@ class Contact extends LibertyContent {
 	* @param $xrefGroup selects a single group of xref types
 	* @return array List of xref type names from the contact mamager in alphabetical order
 	*/
-	function getXrefTypeList( $xrefGroup = 0 ) {
-		if ( $xrefGroup > -1 ) {
+	function getXrefTypeList( $xrefGroup = 0, $xrefTemplate = NULL ) {
+		if ( $xrefTemplate ) {
+			$query = "SELECT s.`cross_ref_title` AS `type_name`, s.`source`  FROM `".BIT_DB_PREFIX."contact_xref_source` s
+					  WHERE s.`template` = '$xrefTemplate'
+					  ORDER BY s.`cross_ref_title`";
+			$result = $this->mDb->query($query, array( $this->mContentId, $xrefGroup ) );
+		} elseif ( $xrefGroup > -1 ) {
 			$query = "SELECT s.`cross_ref_title` AS `type_name`, s.`source`  FROM `".BIT_DB_PREFIX."contact_xref_source` s
 					  LEFT JOIN `".BIT_DB_PREFIX."contact_xref` x ON x.`source` = s.`source` AND x.`content_id` = ? AND ( x.`end_date` IS NULL OR x.`end_date` > CURRENT_TIMESTAMP ) 
 					  WHERE s.`xref_type` = ? AND ( x.`xref_id` IS NULL OR x.`xorder` > 0 )
@@ -717,24 +722,26 @@ class Contact extends LibertyContent {
 					WHEN x.`xorder` = 0 THEN s.`cross_ref_title`
 					ELSE s.`cross_ref_title` || '-' || x.`xorder` END
 					AS source_title,
-					x.`xkey_ext` AS house, ap.add1, ap.add2, ap.add3, ap.add4, ap.town, ap.county, ap.postcode, ap.grideast, ap.gridnorth, x.`data`,
+					x.`xkey_ext` AS house, ap.`add1`, ap.`add2`, ap.`add3`, ap.`add4`, ap.`town`, ap.`county`, x.`xkey` AS postcode, ap.`grideast`, ap.`gridnorth`, x.`data`,
 					x.`start_date`, x.`end_date`
 					FROM `".BIT_DB_PREFIX."contact_xref` x
 					JOIN `".BIT_DB_PREFIX."contact_xref_source` s ON s.`source` = x.`source`
 					JOIN `".BIT_DB_PREFIX."contact_xref_type` t ON t.`xref_type` = s.`xref_type`
-					JOIN `".BIT_DB_PREFIX."address_postcode` ap ON ap.`postcode` = x.`xkey`
+					LEFT JOIN `".BIT_DB_PREFIX."address_postcode` ap ON ap.`postcode` = x.`xkey`
 					LEFT OUTER JOIN `".BIT_DB_PREFIX."users_roles_map` purm ON ( purm.`user_id`=".$gBitUser->mUserId." ) AND ( purm.`role_id`=s.`role_id` )
-					WHERE x.content_id = ? AND (s.`role_id` IN(". implode(',', array_fill(0, count($roles), '?')) ." ) OR purm.`user_id`=?)
+					WHERE x.content_id = ? AND s.`template` = 'address' AND (s.`role_id` IN(". implode(',', array_fill(0, count($roles), '?')) ." ) OR purm.`user_id`=?)
 					ORDER BY x.`source`, x.`xorder`";
 
 			$result = $this->mDb->query( $sql, $bindVars );
 
 			while( $res = $result->fetchRow() ) {
-				if ( $res['postcode'] and $res['grideast'] <> '00000' ) {
+				if ( $res['grideast'] and $res['grideast'] <> '00000' ) {
 					$os1 = new OSRef( $res['grideast']*10, $res['gridnorth']*10 );
 					$ll1 = $os1->toLatLng();
 					$res['x_coordinate'] = $ll1->lng;
 					$res['y_coordinate'] = $ll1->lat;
+				} else {
+					$res['house'] = $res['house'].' - '.$res['data'];
 				}
 
 				$this->mInfo['address'][] = $res;
