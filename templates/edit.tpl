@@ -105,12 +105,6 @@
 					{/legend}
 				{/jstab}
 
-				{jstab title="Contact Address"}
-					{section name=address loop=$pageInfo.address}
-						{include file="bitpackage:contact/display_address.tpl" header=$pageInfo.address[address].source_title address=$pageInfo.address[address] locate=0}
-					{/section}
-				{/jstab}
-
 				{jstab title="Contact Notes"}
 					{legend legend="Notes Body"}
 						<div class="row">
