@@ -16,13 +16,7 @@
 			{jstabs}
 				{jstab title="Reference Details"}
 					{legend legend="Contents"}
-						<div class="row">
-							{formlabel label="`$xrefInfo.template_title` Number" for="xkey"}
-							{forminput}
-								<input type="text" name="xkey" id="xkey" value="{$xrefInfo.xkey|escape}" />
-								{formhelp note="ID Key use to access data in other systems identified by the xref type."}
-							{/forminput}
-						</div>
+						{include file="bitpackage:contact/edit_xref_phones_fields.tpl"}
 		
 						{formlabel label="`$xrefInfo.template_title` Number Notes" for="data"}
 						{capture assign=textarea_help}
@@ -32,31 +26,7 @@
 					{/legend}
 				{/jstab}
 
-				{jstab title="Time period"}
-					{legend legend="Start and Stop Dates"}
-						<div class="row">
-							<input type="hidden" name="startDateInput" value="1" />
-							&nbsp;Ignore Date <input type="checkbox" name="ignore_start_date" {if $xrefInfo.ignore_start_date eq "y"}checked{/if} />
-							{formlabel label="Start Date" for=""}
-							{forminput}
-								{html_select_date prefix="start_" time=$xrefInfo.start_date start_year="-5" end_year="+10"} {tr}at{/tr}&nbsp;
-								<span dir="ltr">{html_select_time prefix="start_" time=$xrefInfo.start_date display_seconds=false}&nbsp;{$siteTimeZone}</span>
-								{formhelp note="This xref record becomes valid on this date."}
-							{/forminput}
-						</div>
-		
-						<div class="row">
-							<input type="hidden" name="endDateInput" value="1" />
-							&nbsp;Ignore Date <input type="checkbox" name="ignore_end_date" {if $xrefInfo.ignore_end_date eq "y"}checked{/if} />
-							{formlabel label="End Date" for=""}
-							{forminput}
-								{html_select_date prefix="end_" time=$xrefInfo.end_date start_year="-5" end_year="+10"} {tr}at{/tr}&nbsp;
-								<span dir="ltr">{html_select_time prefix="end_" time=$xrefInfo.end_date display_seconds=false}&nbsp;{$siteTimeZone}</span>
-								{formhelp note="This xref record finishes on this date."}
-							{/forminput}
-						</div>
-					{/legend}
-				{/jstab}
+				{include file="bitpackage:contact/edit_xref_dates.tpl"}
 			
 				<div class="row submit">
 					<input type="submit" name="fCancel" value="{tr}Cancel{/tr}" />&nbsp;

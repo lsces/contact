@@ -1,3 +1,21 @@
+{literal}
+<script type="text/javascript">//<![CDATA[
+function updateContactXrefFormat() {
+	document.getElementById('generic-format').style.display = 'none';
+	document.getElementById('address-format').style.display = 'none';
+	document.getElementById('contact-format').style.display = 'none';
+	document.getElementById('locate-format').style.display = 'none';
+	document.getElementById('phone-format').style.display = 'none';
+	document.getElementById('text-format').style.display = 'none';
+	document.getElementById('value-format').style.display = 'none';
+	var form = document.getElementById('editContactXrefForm');
+	var input = form.source;
+    var i  = input.selectedIndex; 
+    var select = document.getElementById('format-'+input.options[i].value).value;
+	document.getElementById(select+'-format').style.display = 'block';
+}
+//]]></script>
+{/literal}
 {strip}
 <div class="floaticon">{bithelp}</div>
 <div class="edit contact_xref">
@@ -9,46 +27,33 @@
 	{formfeedback warning=`$errors.title`}
 
 	<div class="body">
-		{form enctype="multipart/form-data" id="writexref"}
+		{form enctype="multipart/form-data" id="editContactXrefForm"}
 			<input type="hidden" name="content_id" value="{$xrefInfo.content_id}" />
 			<input type="hidden" name="xref_type" value="{$xrefInfo.xref_type}" />
+			{foreach from=$xrefInfo.xref_type_list.type key=feature item=output}
+				<input type="hidden" id="format-{$feature}" name="format-{$feature}" value="{$output}" />
+			{/foreach}
 
 			{jstabs}
 				{jstab title="Reference Details"}
 					{legend legend="XRef Contents"}
+						{formfeedback error=$errors warning=$contactWarnings success=$contactSuccess}
+						
 						<div class="row">
-							{formlabel label="Cross Reference Type" for="source"}
+							{formlabel label="Reference Type" for="source"}
 							{forminput}
-								{html_options name="$xrefInfo.xref_type_list[$xrefInfo.source]" options=$xrefInfo.xref_type_list selected=`$xrefInfo.source`}
-								{formhelp note="Type of cross link reference to add."}
+								{html_options name="source" id="source" options=$xrefInfo.xref_type_list.list selected=$smarty.const.CONTACT_FORMAT_GENERIC onchange="updateContactXrefFormat();}
+								{formhelp note="Select type of reference information to add"}
 							{/forminput}
 						</div>
-		
-						<div class="row">
-							{formlabel label="Cross Reference Link" for="xref"}
-							{forminput}
-								<input type="text" name="xref" id="xref" value="{$xrefInfo.xref|escape}" />
-								{formhelp note="Link to other contact/content entries."}
-							{/forminput}
-						</div>
-		
-						<div class="row">
-							{formlabel label="Reference Key" for="xkey"}
-							{forminput}
-								<input type="text" name="xkey" id="xkey" value="{$xrefInfo.xkey|escape}" />
-								{formhelp note="ID Key use to access data in other systems identified by the xref type."}
-							{/forminput}
-						</div>
-		
-						<div class="row">
-							{formlabel label="Reference Text" for="xkey_ext"}
-							{forminput}
-								<input type="text" name="xkey_ext" id="xkey_ext" value="{$xrefInfo.xkey_ext|escape}" />
-								{formhelp note="Variable text element such as url or email address."}
-							{/forminput}
-						</div>
-		
-						{formlabel label="Reference Notes" for="data"}
+
+						{foreach from=$xrefInfo.xref_format_list key=feature item=output}
+							<div id="{$output}-format">
+								{include file="bitpackage:contact/edit_xref_`$output`_fields.tpl"}
+							</div>
+						{/foreach}
+
+						{formlabel label="Additional Notes" for="data"}
 						{capture assign=textarea_help}
 							{tr}Keep the text attached to reference items short and use comment records to add larger volumns of text. This should be reserved for simple notes such 'as use after 5PM' or the link.{/tr}
 						{/capture}
@@ -56,32 +61,8 @@
 					{/legend}
 				{/jstab}
 
-				{jstab title="Time period"}
-					{legend legend="Start and Stop Dates"}
-						<div class="row">
-							<input type="hidden" name="startDateInput" value="1" />
-							&nbsp;Ignore Date <input type="checkbox" name="ignore_start_date" />
-							{formlabel label="Start Date" for=""}
-							{forminput}
-								{html_select_date prefix="start_" time=$xrefInfo.start_date start_year="-5" end_year="+10"} {tr}at{/tr}&nbsp;
-								<span dir="ltr">{html_select_time prefix="start_" time=$xrefInfo.start_date display_seconds=false}&nbsp;{$siteTimeZone}</span>
-								{formhelp note="This xref record becomes valid on this date."}
-							{/forminput}
-						</div>
-		
-						<div class="row">
-							<input type="hidden" name="endDateInput" value="1" />
-							&nbsp;Ignore Date <input type="checkbox" name="ignore_end_date" checked />
-							{formlabel label="End Date" for=""}
-							{forminput}
-								{html_select_date prefix="end_" time=$xrefInfo.end_date start_year="-5" end_year="+10"} {tr}at{/tr}&nbsp;
-								<span dir="ltr">{html_select_time prefix="end_" time=$xrefInfo.end_date display_seconds=false}&nbsp;{$siteTimeZone}</span>
-								{formhelp note="This xref record finishes on this date."}
-							{/forminput}
-						</div>
-					{/legend}
-				{/jstab}
-			
+				{include file="bitpackage:contact/edit_xref_dates.tpl"}
+
 				<div class="row submit">
 					<input type="submit" name="fCancel" value="{tr}Cancel{/tr}" />&nbsp;
 					<input type="submit" name="fAddXref" value="{tr}Save{/tr}" />

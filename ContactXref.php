@@ -80,6 +80,8 @@ class ContactXref extends BitBase {
 			if ( isset ( $pParamHash['fAddXref'] ) ) {
 				if ( isset( $pParamHash['Array_xref_type_list'] )) {
 					$pParamHash['xref_store']['source'] = $pParamHash['Array_xref_type_list']['Array.source'];
+				} else {
+					$pParamHash['xref_store']['source'] = $pParamHash['source'];
 				}
 				$pParamHash['xref_store']['content_id'] = $pParamHash['content_id'];
 				$sql = "SELECT x.`multi` FROM `".BIT_DB_PREFIX."contact_xref_source` x WHERE x.`source` = ?";				

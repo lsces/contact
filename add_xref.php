@@ -38,6 +38,8 @@ if (isset($_REQUEST["fCancel"])) {
 
 if( !isset( $_REQUEST['xref_type'] ) ) $_REQUEST['xref_type'] = 0;
 
+$gBitSystem->setOnloadScript( 'updateContactXrefFormat();' );
+
 // formInfo might be set due to a error on submit
 if( empty( $xrefInfo ) ) {
 	$xrefInfo = &$gContent->mInfo['xref_store'];
@@ -45,7 +47,13 @@ if( empty( $xrefInfo ) ) {
 	$xrefInfo['xref_type'] = $_REQUEST['xref_type'];
 }
 $xrefInfo['xref_type_list'] = $gContent->getXrefTypeList( $xrefInfo['xref_type'] );
+$xrefInfo['xref_format_list'] = $gContent->getXrefFormatList();
+
+// Don't use ckeditor for text fields '
 $gContent->mInfo['format_guid'] = 'text';
+// Default dates for creating new record
+$xrefInfo['ignore_start_date'] = 'n';
+$xrefInfo['ignore_end_date'] = 'y';
 
 $gBitSmarty->assign_by_ref( 'xrefInfo', $xrefInfo );
 $gBitSmarty->assign_by_ref( 'title', $gContent->mInfo['title'] );

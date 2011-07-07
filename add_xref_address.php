@@ -45,7 +45,11 @@ if( empty( $xrefInfo ) ) {
 	$xrefInfo['xref_type'] = $_REQUEST['xref_type'];
 }
 $xrefInfo['xref_type_list'] = $gContent->getXrefTypeList( 0, 'address' );
+// Don't use ckeditor for text fields '
 $gContent->mInfo['format_guid'] = 'text';
+// Default dates for creating new record
+$xrefInfo['ignore_start_date'] = 'n';
+$xrefInfo['ignore_end_date'] = 'y';
 
 $gBitSmarty->assign_by_ref( 'xrefInfo', $xrefInfo );
 $gBitSmarty->assign_by_ref( 'title', $gContent->mInfo['title'] );
