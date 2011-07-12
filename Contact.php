@@ -15,7 +15,7 @@
 require_once( CONTACT_PKG_PATH.'ContactXref.php' );
 require_once( CONTACT_PKG_PATH.'ContactType.php' );
 require_once( LIBERTY_PKG_PATH.'LibertyContent.php' );		// Contact base class
-require_once( NLPG_PKG_PATH.'lib/phpcoord-2.3.php' );
+require_once( CONTACT_PKG_PATH.'lib/phpcoord-2.3.php' );
 
 define( 'CONTACT_CONTENT_TYPE_GUID', 'contact' );
 
@@ -330,12 +330,19 @@ class Contact extends LibertyContent {
 		$whereSql = '';
 		$bindVars = array();
 
-		if ( isset( $pParamHash['contact_type_guid'][0] ) ) {
+		if ( isset( $pParamHash['role_id'] ) ) {
+			array_push( $bindVars, $this->mContentTypeGuid );
+			if ( $pParamHash['role_id'] > 0 ) {
+				$whereSql .= " AND con.`role_id` = ? ";
+				$bindVars[] = $pParamHash['role_id'];
+			}
+		}
+		elseif ( isset( $pParamHash['contact_type_guid'][0] ) ) {
 			$joinSql .= "JOIN `".BIT_DB_PREFIX."contact_xref` cx ON cx.`content_id` = con.`content_id` AND cx.`source` = ? ";
 			$bindVars[] = $pParamHash['contact_type_guid'][0];
+			array_push( $bindVars, $this->mContentTypeGuid );
 		}
 		
-		array_push( $bindVars, $this->mContentTypeGuid );
 		$this->getServicesSql( 'content_list_sql_function', $selectSql, $joinSql, $whereSql, $bindVars, NULL, $pParamHash );
 
 		// this will set $find, $sort_mode, $max_records and $offset
