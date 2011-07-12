@@ -9,7 +9,7 @@
  * Initialization
  */
 require_once( CONTACT_PKG_PATH.'Contact.php');
-require_once( TASKS_PKG_PATH.'Tasks.php');
+//require_once( TASKS_PKG_PATH.'Tasks.php');
 require_once( LIBERTY_PKG_PATH.'lookup_content_inc.php' );
 
 	// if we already have a gContent, we assume someone else created it for us, and has properly loaded everything up.
