@@ -1,13 +1,9 @@
 {literal}
 <script type="text/javascript">//<![CDATA[
-function updateContactXrefFormat() {
-	document.getElementById('generic-format').style.display = 'none';
-	document.getElementById('address-format').style.display = 'none';
-	document.getElementById('contact-format').style.display = 'none';
-	document.getElementById('locate-format').style.display = 'none';
-	document.getElementById('phone-format').style.display = 'none';
-	document.getElementById('text-format').style.display = 'none';
-	document.getElementById('value-format').style.display = 'none';
+function updateContactXrefFormat() { {/literal}
+{foreach from=$xrefInfo.xref_format_list key=feature item=output}
+	document.getElementById('{$output}-format').style.display = 'none';
+{/foreach} {literal}
 	var form = document.getElementById('editContactXrefForm');
 	var input = form.source;
     var i  = input.selectedIndex; 
