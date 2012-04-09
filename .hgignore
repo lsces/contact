@@ -1,0 +1,3 @@
+syntax: glob
+data/customers.csv
+data/suppliers.csv
