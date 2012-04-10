@@ -23,8 +23,22 @@
 								{formhelp note="Type of cross link reference to add."}
 							{/forminput}
 						</div>
-
-						{include file="bitpackage:contact/edit_xref_address_fields.tpl"}
+		
+						<div class="row">
+							{formlabel label="House Name/Number" for="xkey_ext"}
+							{forminput}
+								<input type="text" name="xkey_ext" id="xkey_ext" value="{$xrefInfo.xkey_ext|escape}" />
+								{formhelp note="House name and/or number when used with postcode, or free format full address."}
+							{/forminput}
+						</div>
+		
+						<div class="row">
+							{formlabel label="Postcode" for="xkey"}
+							{forminput}
+								<input type="text" name="xkey" id="xkey" value="{$xrefInfo.xkey|escape}" />&nbsp;<input type="submit" name="fPostcode" value="{tr}Postcode Lookup{/tr}" />
+								{formhelp note="Postcode for address."}
+							{/forminput}
+						</div>
 		
 						{formlabel label="`$xrefInfo.template_title` Notes" for="data"}
 						{capture assign=textarea_help}
@@ -34,7 +48,31 @@
 					{/legend}
 				{/jstab}
 
-				{include file="bitpackage:contact/edit_xref_dates.tpl"}
+				{jstab title="Time period"}
+					{legend legend="Start and Stop Dates"}
+						<div class="row">
+							<input type="hidden" name="startDateInput" value="1" />
+							&nbsp;Ignore Date <input type="checkbox" name="ignore_start_date" />
+							{formlabel label="Start Date" for=""}
+							{forminput}
+								{html_select_date prefix="start_" time=$xrefInfo.start_date start_year="-5" end_year="+10"} {tr}at{/tr}&nbsp;
+								<span dir="ltr">{html_select_time prefix="start_" time=$xrefInfo.start_date display_seconds=false}&nbsp;{$siteTimeZone}</span>
+								{formhelp note="This xref record becomes valid on this date."}
+							{/forminput}
+						</div>
+		
+						<div class="row">
+							<input type="hidden" name="endDateInput" value="1" />
+							&nbsp;Ignore Date <input type="checkbox" name="ignore_end_date" checked />
+							{formlabel label="End Date" for=""}
+							{forminput}
+								{html_select_date prefix="end_" time=$xrefInfo.end_date start_year="-5" end_year="+10"} {tr}at{/tr}&nbsp;
+								<span dir="ltr">{html_select_time prefix="end_" time=$xrefInfo.end_date display_seconds=false}&nbsp;{$siteTimeZone}</span>
+								{formhelp note="This xref record finishes on this date."}
+							{/forminput}
+						</div>
+					{/legend}
+				{/jstab}
 			
 				<div class="row submit">
 					<input type="submit" name="fCancel" value="{tr}Cancel{/tr}" />&nbsp;
