@@ -340,13 +340,22 @@ class Contact extends LibertyContent {
 		elseif ( isset( $pParamHash['contact_type_guid'][0] ) ) {
 			$joinSql .= "JOIN `".BIT_DB_PREFIX."contact_xref` cx ON cx.`content_id` = con.`content_id` AND cx.`source` = ? ";
 			$bindVars[] = $pParamHash['contact_type_guid'][0];
-			array_push( $bindVars, $this->mContentTypeGuid );
 		}
-		
-		$this->getServicesSql( 'content_list_sql_function', $selectSql, $joinSql, $whereSql, $bindVars, NULL, $pParamHash );
 
 		// this will set $find, $sort_mode, $max_records and $offset
 		extract( $pParamHash );
+
+		if( isset( $find_xref ) and is_string( $find_xref ) and $find_xref <> '' ) {
+			$joinSql .= "JOIN `".BIT_DB_PREFIX."contact_xref` cy ON cy.`content_id` = con.`content_id` AND cy.`xkey` like ? ";
+			$bindVars[] = '%' . strtoupper( $find_xref ). '%';
+			$pParamHash["listInfo"]["ihash"]["find_xref"] = $find_xref;
+		}
+
+		if ( !isset( $pParamHash['role_id'] ) ) {
+	 		array_push( $bindVars, $this->mContentTypeGuid );
+		}
+
+	 	$this->getServicesSql( 'content_list_sql_function', $selectSql, $joinSql, $whereSql, $bindVars, NULL, $pParamHash );
 
 //		$pParamHash["listInfo"]["ihash"]['contact_type_guid'] = $contact_type_guid;
 
