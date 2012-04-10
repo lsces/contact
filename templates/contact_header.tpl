@@ -14,7 +14,8 @@
 			{$pageInfo.surname}
 		{else}  *}
 			{$pageInfo.title}
-{*		{/if}</h1>    *}
+{*		{/if}  *}
+	</h1>
 	<div class="description">{$pageInfo.description}</div>
 
 </div> {* end .header *}
