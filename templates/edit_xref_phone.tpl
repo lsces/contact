@@ -16,7 +16,7 @@
 			{jstabs}
 				{jstab title="Reference Details"}
 					{legend legend="Contents"}
-						{include file="bitpackage:contact/edit_xref_phones_fields.tpl"}
+						{include file="bitpackage:contact/edit_xref_phone_fields.tpl"}
 		
 						{formlabel label="`$xrefInfo.template_title` Number Notes" for="data"}
 						{capture assign=textarea_help}
