@@ -29,14 +29,14 @@ if( !empty( $_REQUEST['xref_id'] ) ) {
 
 if (isset($_REQUEST["fCancel"])) {
 	if( !empty( $gContent->mContentId ) ) {
-		header("Location: ".$gContent->getDisplayUrl() );
+		header("Location: ".$gContent->getDisplayUrl( $gContent->mContentId ) );
 	} else {
 		header("Location: ".CONTACT_PKG_URL );
 	}
 	die;
 } else if(isset($_REQUEST["fSaveXref"])) {
 	if( $gContent->storeXref( $_REQUEST ) ) {
-		header("Location: ".$gContent->getDisplayUrl() );
+		header("Location: ".$gContent->getDisplayUrl( $gContent->mContentId ) );
 		die;
 	} else {
 		$xrefInfo = $_REQUEST;
@@ -48,8 +48,8 @@ if (isset($_REQUEST["fCancel"])) {
 			header("Location: ".$gContent->getDisplayUrl() );
 			die;
 //		}
-	} 
-} 
+	}
+}
 
 // formInfo might be set due to a error on submit
 if( empty( $xrefInfo ) ) {

@@ -22,19 +22,27 @@ include_once( CONTACT_PKG_PATH.'lookup_contact_inc.php' );
 
 if (isset($_REQUEST["fCancel"])) {
 	if( !empty( $gContent->mContentId ) ) {
-		header("Location: ".$gContent->getDisplayUrl() );
+		header("Location: ".$gContent->getDisplayUrl( $gContent->mContentId ) );
 	} else {
 		header("Location: ".CONTACT_PKG_URL );
 	}
 	die;
 } elseif (isset($_REQUEST["fAddXref"])) {
+	$source = $_REQUEST["source"];
+	$format = $_REQUEST["format-".$source];
+    if ( $format != 'generic' ) {
+    	if ( isset( $_REQUEST[$format."xref"] ) ) { $_REQUEST["xref"] = $_REQUEST[$format."xref"]; }
+    	if ( isset( $_REQUEST[$format."xkey"] ) ) { $_REQUEST["xkey"] = $_REQUEST[$format."xkey"]; }
+    	if ( isset( $_REQUEST[$format."xkey_ext"] ) ) { $_REQUEST["xkey_ext"] = $_REQUEST[$format."xkey_ext"]; }
+    }
 	if( $gContent->storeXref( $_REQUEST ) ) {
-		header("Location: ".$gContent->getDisplayUrl() );
+		header("Location: ".$gContent->getDisplayUrl( $gContent->mContentId ) );
+		die;
 	} else {
 		$xrefInfo = $_REQUEST;
 		$xrefInfo['data'] = &$_REQUEST['edit'];
 	}
-} 
+}
 
 if( !isset( $_REQUEST['xref_type'] ) ) $_REQUEST['xref_type'] = 0;
 
