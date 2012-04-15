@@ -29,14 +29,14 @@ if( !empty( $_REQUEST['xref_id'] ) ) {
 
 if (isset($_REQUEST["fCancel"])) {
 	if( !empty( $gContent->mContentId ) ) {
-		header("Location: ".$gContent->getDisplayUrl( $gContent->mContentId ) );
+		header("Location: ".$gContent->getContactUrl( $gContent->mContentId ) );
 	} else {
 		header("Location: ".CONTACT_PKG_URL );
 	}
 	die;
 } else if(isset($_REQUEST["fSaveXref"])) {
 	if( $gContent->storeXref( $_REQUEST ) ) {
-		header("Location: ".$gContent->getDisplayUrl( $gContent->mContentId ) );
+		header("Location: ".$gContent->getContactUrl( $gContent->mContentId ) );
 		die;
 	} else {
 		$xrefInfo = $_REQUEST;
@@ -45,7 +45,7 @@ if (isset($_REQUEST["fCancel"])) {
 } else if(isset( $_REQUEST["expunge"] ) ) {
 	if( $gContent->stepXref( $_REQUEST ) ) {
 //		if ( $_REQUEST['expunge'] > 2) {
-			header("Location: ".$gContent->getDisplayUrl() );
+			header("Location: ".$gContent->getContactUrl() );
 			die;
 //		}
 	}

@@ -67,7 +67,7 @@ class Contact extends LibertyContent {
 	 *
 	 * (Describe Contact object here )
 	 */
-	function load($pContentId = NULL) {
+	function load( $pContentId = NULL, $pPluginParams = NULL ) {
 		if ( $pContentId ) $this->mContentId = (int)$pContentId;
 		if( $this->verifyId( $this->mContentId ) ) {
  			$query = "select con.*, lc.*,
@@ -97,7 +97,7 @@ class Contact extends LibertyContent {
 				$this->mContactName = $result->fields['title'];
 				$this->mInfo['creator'] = (isset( $result->fields['creator_real_name'] ) ? $result->fields['creator_real_name'] : $result->fields['creator_user'] );
 				$this->mInfo['editor'] = (isset( $result->fields['modifier_real_name'] ) ? $result->fields['modifier_real_name'] : $result->fields['modifier_user'] );
-				$this->mInfo['display_url'] = $this->getDisplayUrl();
+				$this->mInfo['display_url'] = $this->getContactUrl();
 				$this->mInfo['organisation'] = trim($this->mInfo['organisation']);
 				$name = explode( '|', $this->mInfo['name'] );
 				if ( isset( $name[0] ) ) { $this->mInfo['prefix'] = $name[0]; } else { $this->mInfo['prefix'] = ''; }
@@ -261,9 +261,9 @@ class Contact extends LibertyContent {
 	 * @param array different possibilities depending on derived class
 	 * @return string the link to display the page.
 	 */
-	function getDisplayUrl( $pContentId=NULL ) {
+	function getContactUrl( $pContentId=NULL ) {
 		global $gBitSystem;
-		if( empty( $pContentId ) ) {
+		if( empty( $pContentId ) and isset($this) ) {
 			$pContentId = $this->mContentId;
 		}
 
@@ -277,13 +277,13 @@ class Contact extends LibertyContent {
 	 * @param array mInfo style array of content information
 	 * @return the link to display the page.
 	 */
-	function getDisplayLink( $pText, $aux ) {
-		if ( $this->mContentId != $aux['content_id'] ) $this->load($aux['content_id']);
+	function getDisplayLink( $pTitle=NULL, $pMixed=NULL, $pAnchor=NULL ) {
+		if ( $this->mContentId != $pMixed['content_id'] ) $this->load($pMixed['content_id']);
 
 		if (empty($this->mInfo['content_id']) ) {
-			$ret = '<a href="'.$this->getDisplayUrl($aux['content_id']).'">'.$aux['title'].'</a>';
+			$ret = '<a href="'.$this->getContactUrl($pMixed['content_id']).'">'.$pMixed['title'].'</a>';
 		} else {
-			$ret = '<a href="'.$this->getDisplayUrl($aux['content_id']).'">'."Contact - ".$this->mInfo['title'].'</a>';
+			$ret = '<a href="'.$this->getContactUrl($pMixed['content_id']).'">'."Contact - ".$this->mInfo['title'].'</a>';
 		}
 		return $ret;
 	}
@@ -294,7 +294,7 @@ class Contact extends LibertyContent {
 	 * @param array mInfo style array of content information
 	 * @return string Text for the title description
 	 */
-	function getTitle( $pHash = NULL ) {
+	function getTitle( $pHash = NULL, $pDefault=TRUE ) {
 		$ret = NULL;
 		if( empty( $pHash ) ) {
 			$pHash = &$this->mInfo;
