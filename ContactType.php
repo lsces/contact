@@ -21,7 +21,7 @@ class ContactType extends BitBase {
 	var $mContactType;
 
 	function ContactType() {
-		BitBase::BitBase();
+		parent::__construct();
 	}
 
 	/**

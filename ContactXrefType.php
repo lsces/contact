@@ -20,7 +20,7 @@ require_once( KERNEL_PKG_PATH."BitBase.php" );
 class ContactXrefType extends BitBase {
 
 	function ContactXrefType() {
-		BitBase::BitBase();
+		parent::__construct();
 
 	}
 
