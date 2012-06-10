@@ -28,14 +28,14 @@ class Contact extends LibertyContent {
 	var $mTypes;
 
 	/**
-	 * Constructor 
-	 * 
+	 * Constructor
+	 *
 	 * Build a Contact object based on LibertyContent
 	 * @param integer Contact Id identifer
-	 * @param integer Base content_id identifier 
+	 * @param integer Base content_id identifier
 	 */
 	function Contact( $pContactId = NULL, $pContentId = NULL ) {
-		LibertyContent::LibertyContent();
+		parent::__construct( $pContentId );
 		$this->registerContentType( CONTACT_CONTENT_TYPE_GUID, array(
 				'content_type_guid' => CONTACT_CONTENT_TYPE_GUID,
 				'content_name' => 'Contact Entry',
@@ -57,7 +57,7 @@ class Contact extends LibertyContent {
 		$this->mUpdateContentPerm  = 'p_contact_update';
 		$this->mExpungeContentPerm  = 'p_contact_expunge';
 		$this->mAdminContentPerm = 'p_contact_admin';
-		
+
 		$this->mTypes = new ContactType();
 		$this->mTypes->setup();
 	}
@@ -118,7 +118,7 @@ class Contact extends LibertyContent {
 				}
 
 				$this->loadContentTypeList();
-				if ( $this->mInfo['contact_types'][2]['content_id'] ) { 
+				if ( $this->mInfo['contact_types'][2]['content_id'] ) {
 					$this->loadClientList();
 				}
 				$this->loadXrefList();
@@ -176,14 +176,14 @@ class Contact extends LibertyContent {
 	function store( &$pParamHash ) {
 		if( $this->verify( $pParamHash ) ) {
 
-			// Start a transaction wrapping the whole insert into liberty 
+			// Start a transaction wrapping the whole insert into liberty
 
 			$this->mDb->StartTrans();
 			if ( LibertyContent::store( $pParamHash ) ) {
 				$table = BIT_DB_PREFIX."contact";
 				$atable = BIT_DB_PREFIX."contact_address";
 
-				// mContentId will not be set until the secondary data has commited 
+				// mContentId will not be set until the secondary data has commited
 				if( !empty( $pParamHash['contact_store']['content_id'] ) ) {
 					$result = $this->mDb->associateUpdate( $table, $pParamHash['contact_store'], array( "content_id" => $this->mContentId ) );
 				} else {
@@ -250,7 +250,7 @@ class Contact extends LibertyContent {
 	 * Check if the current post can have comments attached to it
 	 */
 	function isCommentable(){
-		global $gBitSystem;	
+		global $gBitSystem;
 		return TRUE; // $gBitSystem->isFeatureActive( 'contact_post_comments' );
 	}
 
@@ -272,7 +272,7 @@ class Contact extends LibertyContent {
 
 	/**
 	 * Returns HTML link to display a Contact object
-	 * 
+	 *
 	 * @param string Not used ( generated locally )
 	 * @param array mInfo style array of content information
 	 * @return the link to display the page.
@@ -316,12 +316,12 @@ class Contact extends LibertyContent {
 	/**
 	 * Returns list of contact entries
 	 *
-	 * @param integer 
+	 * @param integer
 	 * @return array of contact entries
 	 */
 	function getList( &$pParamHash ) {
 		global $gBitSystem, $gBitUser;
-		
+
 		LibertyContent::prepGetList( $pParamHash );
 
 		$findSql = '';
@@ -331,7 +331,7 @@ class Contact extends LibertyContent {
 		$bindVars = array();
 
 		if ( isset( $pParamHash['role_id'] ) ) {
-			array_push( $bindVars, $this->mContentTypeGuid );
+	 		array_push( $bindVars, $this->mContentTypeGuid );
 			if ( $pParamHash['role_id'] > 0 ) {
 				$whereSql .= " AND con.`role_id` = ? ";
 				$bindVars[] = $pParamHash['role_id'];
@@ -363,13 +363,13 @@ class Contact extends LibertyContent {
 		if ( isset( $active ) ) {
 			if ( $active === 'Inactive' ) {
 				$whereSql .= " AND ( lc.`event_time` > 0 AND lc.`event_time` < $t ) ";
-			} 
+			}
 		} else {
 			$active = 'Active';
 		}
 		if ( $active == 'Active' ) {
 			$whereSql .= " AND ( lc.`event_time` = 0 OR lc.`event_time` > $t ) ";
-		} 
+		}
 		$pParamHash["listInfo"]["active"] = $active;
 
 		if( isset( $find_key ) and is_string( $find_key ) and $find_key <> '' ) {
@@ -425,11 +425,11 @@ class Contact extends LibertyContent {
 			LEFT JOIN `".BIT_DB_PREFIX."contact_xref` xhL ON xhL.`content_id` = con.`content_id` AND xhL.`source` = '#L' AND ( xhL.`end_date` IS NULL OR xhL.`end_date` > CURRENT_TIMESTAMP )
 			LEFT JOIN `".BIT_DB_PREFIX."address_postcode` ap ON ap.`postcode` = xhC.`xkey`
 			$findSql
-			$joinSql 
+			$joinSql
 			WHERE lc.`content_type_guid` = ? $whereSql
 			ORDER BY ".$this->mDb->convertSortmode( $sort_mode );
 
-//			(SELECT COUNT(*) FROM `".BIT_DB_PREFIX."task_ticket` e WHERE e.usn = ci.usn ) AS enquiries $selectSql 
+//			(SELECT COUNT(*) FROM `".BIT_DB_PREFIX."task_ticket` e WHERE e.usn = ci.usn ) AS enquiries $selectSql
 		$query_cant = "SELECT COUNT( * )
 			FROM `".BIT_DB_PREFIX."contact` con
 			LEFT JOIN `".BIT_DB_PREFIX."liberty_content` lc ON lc.content_id = con.content_id
@@ -515,7 +515,7 @@ class Contact extends LibertyContent {
 			$result = $this->mDb->query($query, array( $this->mContentId, $xrefGroup ) );
 		} elseif ( $xrefGroup > -1 ) {
 			$query = "SELECT s.`cross_ref_title` AS `type_name`, s.`source`, s.`template`  FROM `".BIT_DB_PREFIX."contact_xref_source` s
-					  LEFT JOIN `".BIT_DB_PREFIX."contact_xref` x ON x.`source` = s.`source` AND x.`content_id` = ? AND ( x.`end_date` IS NULL OR x.`end_date` > CURRENT_TIMESTAMP ) 
+					  LEFT JOIN `".BIT_DB_PREFIX."contact_xref` x ON x.`source` = s.`source` AND x.`content_id` = ? AND ( x.`end_date` IS NULL OR x.`end_date` > CURRENT_TIMESTAMP )
 					  WHERE s.`xref_type` = ? AND ( x.`xref_id` IS NULL OR x.`xorder` > 0 )
 					  ORDER BY s.`cross_ref_title`";
 			$result = $this->mDb->query($query, array( $this->mContentId, $xrefGroup ) );
@@ -571,13 +571,13 @@ class Contact extends LibertyContent {
 				CASE WHEN r.`xkey_ext` STARTING 'C' THEN CAST ( SUBSTRING ( r.`xkey_ext` FROM 2 FOR 4 ) AS INTEGER )
 				ELSE CAST ( r.`xkey_ext` AS INTEGER ) END AS XORDERBY
 				FROM `".BIT_DB_PREFIX."contact_xref` r
-				LEFT JOIN `".BIT_DB_PREFIX."liberty_content` lc ON lc.`content_id` = r.`content_id` 
+				LEFT JOIN `".BIT_DB_PREFIX."liberty_content` lc ON lc.`content_id` = r.`content_id`
 				LEFT JOIN `".BIT_DB_PREFIX."contact_xref` xhC ON xhC.`content_id` = lc.`content_id` AND xhC.`source` = '#C' AND ( xhC.`end_date` IS NULL OR xhC.`end_date` > CURRENT_TIMESTAMP )
 				LEFT JOIN `".BIT_DB_PREFIX."address_postcode` ap ON ap.`postcode` = xhC.`xkey`
 				WHERE r.`source` = 'KEY_S' AND r.`xref` = ? AND ( r.`end_date` IS NULL OR r.`end_date` > CURRENT_TIMESTAMP )
 				ORDER BY r.`xref`, XORDERBY";
 		$result = $this->mDb->query($query, array( $contract ) );
-		
+
 		$ret = array();
 		while ($res = $result->fetchRow()) {
 			$ret[] = $res;
@@ -592,7 +592,7 @@ class Contact extends LibertyContent {
 	function getContactTypes() {
 		return $this->mTypes->mContactType;
 	}
-	
+
 	/**
 	 * getXrefList( &$pParamHash );
 	 * Get list of xref records for this contact record
@@ -600,7 +600,7 @@ class Contact extends LibertyContent {
 	function loadContentTypeList() {
 		if( $this->isValid() && empty( $this->mInfo['contact_types'] ) ) {
 			global $gBitUser;
-		
+
 			$roles = array_keys($gBitUser->mRoles);
 			$bindVars = array();
 			array_push( $bindVars, $this->mContentId );
@@ -608,11 +608,11 @@ class Contact extends LibertyContent {
 
 			$sql = "SELECT r.`source`, r.`cross_ref_title`, d.`content_id`
 					FROM `".BIT_DB_PREFIX."contact_xref_source` r
-					LEFT JOIN `".BIT_DB_PREFIX."contact_xref` d ON d.`content_id` = ? AND d.`source` = r.`source` 
+					LEFT JOIN `".BIT_DB_PREFIX."contact_xref` d ON d.`content_id` = ? AND d.`source` = r.`source`
 					LEFT OUTER JOIN `".BIT_DB_PREFIX."users_roles_map` purm ON ( purm.`user_id`=".$gBitUser->mUserId." ) AND ( purm.`role_id`=r.`role_id` )
 					WHERE r.xref_type = 0 AND (r.`role_id` IN(". implode(',', array_fill(0, count($roles), '?')) ." ) OR purm.`user_id`=?)
 					ORDER BY r.`source`";
-					
+
 			$result = $this->mDb->query( $sql, $bindVars );
 
 			while( $res = $result->fetchRow() ) {
@@ -628,7 +628,7 @@ class Contact extends LibertyContent {
 	function loadXrefList() {
 		if( $this->isValid() && empty( $this->mInfo['xref'] ) ) {
 			global $gBitUser;
-		
+
 			$roles = array_keys($gBitUser->mRoles);
 			$bindVars = array();
 			array_push( $bindVars, $this->mDb->NOW() );
@@ -636,7 +636,7 @@ class Contact extends LibertyContent {
 			$bindVars = array_merge( $bindVars, $roles, array( $gBitUser->mUserId ) );
 
 			$sql = "SELECT s.xref_type, x.`xref_id`, x.`last_update_date`, x.`source`, t.`title` AS type_title,
-					CASE 
+					CASE
 					WHEN x.`end_date` < ? THEN 'history'
 					ELSE t.`source` END as type_source,
 					CASE
@@ -687,7 +687,7 @@ class Contact extends LibertyContent {
 				$this->mInfo['xref_store'] = $xref->mInfo;
 				$pParamHash['xref_id'] = $xref->mXrefId;
 				$this->load();
-				
+
 				return true;
 		} else return false;
 	}
@@ -715,7 +715,7 @@ class Contact extends LibertyContent {
 	function loadClientList() {
 		if( $this->isValid() ) {
 			global $gBitUser;
-		
+
 			$roles = array_keys($gBitUser->mRoles);
 			$bindVars = array();
 			array_push( $bindVars, $this->mDb->NOW() );
@@ -723,14 +723,14 @@ class Contact extends LibertyContent {
 //			$bindVars = array_merge( $bindVars, $roles, array( $gBitUser->mUserId ) );
 
 			$sql = "SELECT r.`xref_id`, r.`content_id`, r.`last_update_date`, c.`title`,
-					CASE 
+					CASE
 					WHEN r.`end_date` < ? THEN 'history'
 					ELSE r.`source` END as type_source,
 					r.`xkey`, r.`xkey_ext`, r.`data`,
 					r.`start_date`, r.`end_date`
 					FROM `".BIT_DB_PREFIX."contact_xref` r
 					JOIN `".BIT_DB_PREFIX."liberty_content` c ON c.`content_id` = r.`content_id`
-					WHERE r.`xref` = ? AND r.`source` = '#A' 
+					WHERE r.`xref` = ? AND r.`source` = '#A'
 					ORDER BY c.`title`";
 //					LEFT OUTER JOIN `".BIT_DB_PREFIX."users_roles_map` purm ON ( purm.`user_id`=".$gBitUser->mUserId." ) AND ( purm.`role_id` = s.`role_id` )
 //					AND (s.`role_id` IN(". implode(',', array_fill(0, count($roles), '?')) ." ) OR purm.`user_id`=?)
@@ -750,7 +750,7 @@ class Contact extends LibertyContent {
 	function loadAddressList() {
 		if( $this->isValid() && empty( $this->mInfo['xref'] ) ) {
 			global $gBitUser;
-		
+
 			$roles = array_keys($gBitUser->mRoles);
 			$bindVars = array();
 			array_push( $bindVars, $this->mDb->NOW() );
@@ -758,7 +758,7 @@ class Contact extends LibertyContent {
 			$bindVars = array_merge( $bindVars, $roles, array( $gBitUser->mUserId ) );
 
 			$sql = "SELECT s.xref_type, x.`xref_id`, x.`last_update_date`, x.`source`, t.`title` AS type_title,
-					CASE 
+					CASE
 					WHEN x.`end_date` < ? THEN 'history'
 					ELSE t.`source` END as type_source,
 					CASE
@@ -794,28 +794,28 @@ class Contact extends LibertyContent {
 
 	/**
 	 * ContactRecordLoad( $data );
-	 * simple csv contact list import 
+	 * simple csv contact list import
 	 * Uncomment to enable
 	 */
 //   require( CONTENT_PKG_PATH.'import/ImportContact.php');
 
 	/**
-	 * SageRecordLoad( $data ); 
-	 * sage csv data import 
+	 * SageRecordLoad( $data );
+	 * sage csv data import
 	 * Uncomment to enable
 	 */
 //   require( CONTENT_PKG_PATH.'import/ImportSage.php');
 
 	/**
-	 * PhxRecordLoad( $data ); 
-	 * phoenix security csv data import 
+	 * PhxRecordLoad( $data );
+	 * phoenix security csv data import
 	 * Uncomment to enable
 	 */
 //	include( CONTENT_PKG_PATH.'import/ImportPhx2.php');
 
 	/**
-	 * wandeRecordLoad( $data ); 
-	 * wande data file import 
+	 * wandeRecordLoad( $data );
+	 * wande data file import
 	 * Uncomment to enable
 	 */
 //	include( CONTENT_PKG_PATH.'import/ImportWande.php');
