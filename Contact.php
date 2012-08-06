@@ -97,7 +97,7 @@ class Contact extends LibertyContent {
 				$this->mContactName = $result->fields['title'];
 				$this->mInfo['creator'] = (isset( $result->fields['creator_real_name'] ) ? $result->fields['creator_real_name'] : $result->fields['creator_user'] );
 				$this->mInfo['editor'] = (isset( $result->fields['modifier_real_name'] ) ? $result->fields['modifier_real_name'] : $result->fields['modifier_user'] );
-				$this->mInfo['display_url'] = $this->getContactUrl();
+				$this->mInfo['display_url'] = $this->getDisplayUrl();
 				$this->mInfo['organisation'] = trim($this->mInfo['organisation']);
 				$name = explode( '|', $this->mInfo['name'] );
 				if ( isset( $name[0] ) ) { $this->mInfo['prefix'] = $name[0]; } else { $this->mInfo['prefix'] = ''; }
@@ -153,7 +153,9 @@ class Contact extends LibertyContent {
 			unset( $pParamHash['content_id'] );
 		}
 
-		$pParamHash['name'] = $pParamHash['prefix'].'|'.$pParamHash['forename'].'|'.$pParamHash['surname'].'|'.$pParamHash['suffix'];
+		if( isset( $pParamHash['surname'] ) ) {
+			$pParamHash['name'] = $pParamHash['prefix'].'|'.$pParamHash['forename'].'|'.$pParamHash['surname'].'|'.$pParamHash['suffix'];
+		}
 
 		$pParamHash['title'] = $pParamHash['organisation'];
 		if ( strlen($pParamHash['surname']) > 0 ) {
@@ -261,9 +263,9 @@ class Contact extends LibertyContent {
 	 * @param array different possibilities depending on derived class
 	 * @return string the link to display the page.
 	 */
-	function getContactUrl( $pContentId=NULL ) {
+	function getDisplayUrl( $pContentId=NULL ) {
 		global $gBitSystem;
-		if( empty( $pContentId ) and isset($this) ) {
+		if( empty( $pContentId ) ) {
 			$pContentId = $this->mContentId;
 		}
 
@@ -277,13 +279,13 @@ class Contact extends LibertyContent {
 	 * @param array mInfo style array of content information
 	 * @return the link to display the page.
 	 */
-	function getDisplayLink( $pTitle=NULL, $pMixed=NULL, $pAnchor=NULL ) {
-		if ( $this->mContentId != $pMixed['content_id'] ) $this->load($pMixed['content_id']);
+	function getDisplayLink( $pLinkText=NULL, $pMixed=NULL, $pAnchor=NULL ) {
+		if ( $this->mContentId != $pMixed['content_id'] ) $this->load($aux['content_id']);
 
 		if (empty($this->mInfo['content_id']) ) {
-			$ret = '<a href="'.$this->getContactUrl($pMixed['content_id']).'">'.$pMixed['title'].'</a>';
+			$ret = '<a href="'.$this->getDisplayUrl($pMixed['content_id']).'">'.$pMixed['title'].'</a>';
 		} else {
-			$ret = '<a href="'.$this->getContactUrl($pMixed['content_id']).'">'."Contact - ".$this->mInfo['title'].'</a>';
+			$ret = '<a href="'.$this->getDisplayUrl($pMixed['content_id']).'">'."Contact - ".$this->mInfo['title'].'</a>';
 		}
 		return $ret;
 	}

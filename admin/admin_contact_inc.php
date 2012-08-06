@@ -64,6 +64,8 @@ foreach( $contactTypeDefaults as $key => $val) {
 		$contactTypesSelected[] = $key;
 	}
 }
-$gBitSmarty->assign('contactTypesSelected', $contactTypesSelected);
+if (isset($_REQUEST["contactTypesSelected"])) {
+	$gBitSmarty->assign('contactTypesSelected', $contactTypesSelected);
+}
 
 ?>

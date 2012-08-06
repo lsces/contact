@@ -29,7 +29,7 @@ if( !empty( $_REQUEST['xref_id'] ) ) {
 $gContent->stepXref( $_REQUEST );
 
 if(isset($_REQUEST["fSaveXref"])) {
-	header("Location: ".$gContent->getContactUrl() );
+	header("Location: ".$gContent->getDisplayUrl() );
 	die;
 }
 

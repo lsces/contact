@@ -22,7 +22,7 @@ include_once( CONTACT_PKG_PATH.'lookup_contact_inc.php' );
 
 if (isset($_REQUEST["fCancel"])) {
 	if( !empty( $gContent->mContentId ) ) {
-		header("Location: ".$gContent->getContactUrl( $gContent->mContentId ) );
+		header("Location: ".$gContent->getDisplayUrl() );
 	} else {
 		header("Location: ".CONTACT_PKG_URL );
 	}
@@ -36,7 +36,7 @@ if (isset($_REQUEST["fCancel"])) {
     	if ( isset( $_REQUEST[$format."xkey_ext"] ) ) { $_REQUEST["xkey_ext"] = $_REQUEST[$format."xkey_ext"]; }
     }
 	if( $gContent->storeXref( $_REQUEST ) ) {
-		header("Location: ".$gContent->getContactUrl( $gContent->mContentId ) );
+		header("Location: ".$gContent->getDisplayUrl() );
 		die;
 	} else {
 		$xrefInfo = $_REQUEST;

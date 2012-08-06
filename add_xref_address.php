@@ -22,14 +22,14 @@ include_once( CONTACT_PKG_PATH.'lookup_contact_inc.php' );
 
 if (isset($_REQUEST["fCancel"])) {
 	if( !empty( $gContent->mContentId ) ) {
-		header("Location: ".$gContent->getContactUrl() );
+		header("Location: ".$gContent->getDisplayUrl() );
 	} else {
 		header("Location: ".CONTACT_PKG_URL );
 	}
 	die;
 } elseif (isset($_REQUEST["fAddXref"])) {
 	if( $gContent->storeXref( $_REQUEST ) ) {
-		header("Location: ".$gContent->getContactUrl() );
+		header("Location: ".$gContent->getDisplayUrl() );
 	} else {
 		$xrefInfo = $_REQUEST;
 		$xrefInfo['data'] = &$_REQUEST['edit'];

@@ -26,14 +26,14 @@ if( !empty( $_REQUEST['xref_id'] ) ) {
 
 if (isset($_REQUEST["fCancel"])) {
 	if( !empty( $gContent->mContentId ) ) {
-		header("Location: ".$gContent->getContactUrl() );
+		header("Location: ".$gContent->getDisplayUrl() );
 	} else {
 		header("Location: ".CONTACT_PKG_URL );
 	}
 	die;
 } elseif (isset($_REQUEST["fSaveXref"])) {
 	if( $gContent->storeXref( $_REQUEST ) ) {
-		header("Location: ".$gContent->getContactUrl() );
+		header("Location: ".$gContent->getDisplayUrl() );
 		die;
 	} else {
 		$xrefInfo = $_REQUEST;
