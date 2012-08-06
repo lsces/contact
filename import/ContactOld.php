@@ -59,7 +59,7 @@ class Contact extends LibertyBase {
 				$this->mContactName = $result->fields['title'];
 				$this->mInfo['creator'] = (isset( $result->fields['creator_real_name'] ) ? $result->fields['creator_real_name'] : $result->fields['creator_user'] );
 				$this->mInfo['editor'] = (isset( $result->fields['modifier_real_name'] ) ? $result->fields['modifier_real_name'] : $result->fields['modifier_user'] );
-				$this->mInfo['display_url'] = $this->getContactUrl();
+				$this->mInfo['display_url'] = $this->getDisplayUrl();
 				$os1 = new OSRef($this->mInfo['x_coordinate'], $this->mInfo['y_coordinate']);
 				$ll1 = $os1->toLatLng();
 				$this->mInfo['prop_lat'] = $ll1->lat;
@@ -211,9 +211,9 @@ class Contact extends LibertyBase {
 		if ( $this->mContactId != $aux['contact_id'] ) $this->load($aux['contact_id']);
 
 		if (empty($this->mInfo['contact_id']) ) {
-			$ret = '<a href="'.$this->getContactUrl($aux['contact_id']).'">'.$aux['title'].'</a>';
+			$ret = '<a href="'.$this->getDisplayUrl($aux['contact_id']).'">'.$aux['title'].'</a>';
 		} else {
-			$ret = '<a href="'.$this->getContactUrl($aux['contact_id']).'">'."Contact - ".$this->mInfo['title'].'</a>';
+			$ret = '<a href="'.$this->getDisplayUrl($aux['contact_id']).'">'."Contact - ".$this->mInfo['title'].'</a>';
 		}
 		return $ret;
 	}
@@ -283,7 +283,7 @@ class Contact extends LibertyBase {
 		$this->mDb->CompleteTrans();
 
 		while ($res = $result->fetchRow()) {
-			$res['contact_url'] = $this->getContactUrl( $res['contact_id'] );
+			$res['contact_url'] = $this->getDisplayUrl( $res['contact_id'] );
 			$ret[] = $res;
 		}
 
