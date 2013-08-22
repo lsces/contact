@@ -14,6 +14,7 @@
  */
 require_once( CONTACT_PKG_PATH.'ContactXref.php' );
 require_once( CONTACT_PKG_PATH.'ContactType.php' );
+require_once( CONTACT_PKG_PATH.'ContactXrefType.php' );
 require_once( LIBERTY_PKG_PATH.'LibertyContent.php' );		// Contact base class
 require_once( CONTACT_PKG_PATH.'lib/phpcoord-2.3.php' );
 
