@@ -1,5 +1,6 @@
 {strip}
-<ul>
+{if $packageMenuTitle}<a class="dropdown-toggle" data-toggle="dropdown" href="#"> {tr}{$packageMenuTitle}{/tr} <b class="caret"></b></a>{/if}
+<ul class="{$packageMenuClass}">
 	<li><a class="item" href="{$smarty.const.CONTACT_PKG_URL}list.php">{tr}List Contacts{/tr}</a></li>
 	<li><a class="item" href="{$smarty.const.CONTACT_PKG_URL}list_contracts.php?contract=1">{tr}List Domestic Contracts{/tr}</a></li>
 	<li><a class="item" href="{$smarty.const.CONTACT_PKG_URL}list_contracts.php?contract=1">{tr}List Business Contracts{/tr}</a></li>
