@@ -2,7 +2,7 @@
 /**
  * @version $Header$
  * @package articles
- * 
+ *
  * @copyright Copyright (c) 2004-2006, bitweaver.org
  * All Rights Reserved. See below for details and a complete list of authors.
  * Licensed under the GNU LESSER GENERAL PUBLIC LICENSE. See http://www.gnu.org/copyleft/lesser.html for details.
@@ -40,7 +40,7 @@ class ContactType extends BitBase {
 					LEFT OUTER JOIN `".BIT_DB_PREFIX."users_roles_map` purm ON ( purm.`user_id`=".$gBitUser->mUserId." ) AND ( purm.`role_id`=r.`role_id` )
 					WHERE r.xref_type = 0 AND (r.`role_id` IN(". implode(',', array_fill(0, count($roles), '?')) ." ) OR purm.`user_id`=?)
 					ORDER BY r.`source`";
-					
+
 		$result = $this->mDb->query( $sql, $bindVars );
 
 		while( $res = $result->fetchRow() ) {
@@ -70,6 +70,37 @@ class ContactType extends BitBase {
 			$pStore['contact_type_guid'] = array();
 		}
 	}
+
+	public static function getContactTypeList( $pOptionHash=NULL ) {
+		global $gBitSystem;
+
+		$where = '';
+		$bindVars = array();
+		if( !empty( $pOptionHash['active_role'] ) ) {
+			$where = " WHERE cxt.`role_id` = ? ";
+			$bindVars[] = $pOptionHash['active_role'];
+		}
+		if ( !empty(  $pOptionHash['title'] ) ) {
+			$where = " WHERE cxt.`title` = ? ";
+			$bindVars[] = $pOptionHash['title'];
+		}
+
+		$query = "SELECT cxt.*
+				 FROM `".BIT_DB_PREFIX."contact_xref_type` cxt
+				 $where ORDER BY cxt.`xref_type`";
+
+		$result = $gBitSystem->mDb->query( $query, $bindVars );
+
+        $ret = array();
+
+        while( $res = $result->fetchRow() ) {
+			$res["num_types"] = $gBitSystem->mDb->getOne( "SELECT COUNT(*) FROM `".BIT_DB_PREFIX."contact_xref_source` WHERE `xref_type`= ?", array( $res["xref_type"] ) );
+
+            $ret[] = $res;
+        }
+
+        return $ret;
+    }
 
 }
 ?>
