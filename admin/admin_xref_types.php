@@ -1,9 +1,8 @@
-<?php 
+<?php
 // $Header$
 require_once( '../../kernel/setup_inc.php' );
 
 include_once( CONTACT_PKG_PATH.'Contact.php' );
-include_once( CONTACT_PKG_PATH.'lookup_xref_type_inc.php' );
 
 // Is package installed and enabled
 $gBitSystem->verifyPackage( 'contact' );
@@ -24,8 +23,8 @@ if( isset( $_REQUEST["fSubmitAddXrefType"] ) ) {
 	$gContent->removeXrefType( TRUE );
 }
 
-$xref_types = ContactXrefType::getXrefTypeList();
+$xref_types = ContactXrefType::getContactXrefTypeList();
 $gBitSmarty->assign( 'xref_types', $xref_types );
 
-$gBitSystem->display( 'bitpackage:contact/admin_xref_types.tpl', tra( 'Edit XrefTypes' ) , array( 'display_mode' => 'admin' ));
+$gBitSystem->display( 'bitpackage:contact/admin_xref_types.tpl', tra( 'Edit Xref Types' ) , array( 'display_mode' => 'admin' ));
 ?>
