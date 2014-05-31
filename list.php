@@ -41,10 +41,8 @@ if( $gBitUser->hasPermission("p_contact_view_changes") && $_SESSION['contact']['
 // Get a list of matching contact entries
 $listcontacts = $gContent->getList( $listHash );
 
-
 if ( $listHash['listInfo']['count'] == 1 ){
-	header ("location: ".CONTACT_PKG_URL."display_contact.php?content_id=".$listcontacts[0]['content_id'] );
-	die;
+	bit_redirect( CONTACT_PKG_URL."display_contact.php?content_id=".$listcontacts[0]['content_id'] );
 }
 
 $gBitSmarty->assign_by_ref( 'listcontacts', $listcontacts );

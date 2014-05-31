@@ -29,8 +29,7 @@ if( !empty( $_REQUEST['xref_id'] ) ) {
 $gContent->stepXref( $_REQUEST );
 
 if(isset($_REQUEST["fSaveXref"])) {
-	header("Location: ".$gContent->getDisplayUrl() );
-	die;
+	bit_redirect( $gContent->getDisplayUrl() );
 }
 
 // formInfo might be set due to a error on submit

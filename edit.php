@@ -49,15 +49,13 @@ if(isset($_REQUEST["preview"])) {
 // Pro
 if (isset($_REQUEST["fCancel"])) {
 	if( !empty( $gContent->mContentId ) ) {
-		header("Location: ".$gContent->getDisplayUrl() );
+		bit_redirect( $gContent->getDisplayUrl() );
 	} else {
-		header("Location: ".CONTACT_PKG_URL );
+		bit_redirect( CONTACT_PKG_URL );
 	}
-	die;
 } elseif (isset($_REQUEST["fSaveContact"])) {
 	if( $gContent->store( $_REQUEST ) ) {
-		header("Location: ".$gContent->getDisplayUrl() );
-		die;
+		bit_redirect( $gContent->getDisplayUrl() );
 	} else {
 		$formInfo = $_REQUEST;
 		$formInfo['data'] = &$_REQUEST['edit'];
