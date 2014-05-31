@@ -20,6 +20,17 @@ $gBitSystem->verifyPermission( 'p_contact_view' );
 
 include_once( CONTACT_PKG_PATH.'lookup_contact_inc.php' );
 
+require_once( FISHEYE_PKG_PATH.'FisheyeGallery.php');
+require_once( FISHEYE_PKG_PATH.'FisheyeImage.php');
+global $gBitSystem, $fisheyeErrors, $fisheyeWarnings, $fisheyeSuccess;
+$lookup = array();
+$gGallery = new FisheyeGallery(4);
+$gGallery->load();
+$gGallery->loadImages(0,4);
+$gBitSmarty->assign_by_ref('gGallery', $gGallery);
+$gBitSmarty->assign_by_ref('galleryId', $gGallery->mGalleryId);
+$gBitSmarty->assign('galLayout', 'fixed_grid');
+
 if ( !$gContent->isValid() ) {
 	header ("location: ".CONTACT_PKG_URL."list.php");
 	die;
