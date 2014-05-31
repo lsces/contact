@@ -6,6 +6,7 @@
 			{forminput}
 				{$pageInfo.usn|escape} 
 			{/forminput}
+			<div class="clear"></div>
 		</div>
 		{/if}
 		{if isset($pageInfo.name) && ($pageInfo.name <> '') }
@@ -14,6 +15,7 @@
 			{forminput}
 				{$pageInfo.name|escape} 
 			{/forminput}
+			<div class="clear"></div>
 		</div>
 		{/if}
 		{if isset($pageInfo.organisation) && ($pageInfo.organisation <> '') }
@@ -22,6 +24,7 @@
 			{forminput}
 				{$pageInfo.organisation|escape} 
 			{/forminput}
+			<div class="clear"></div>
 		</div>
 		{/if}
 		{if isset($pageInfo.dob) && ($pageInfo.dob <> '') }
@@ -30,6 +33,7 @@
 			{forminput}
 				{$pageInfo.dob|bit_long_date}
 			{/forminput}
+			<div class="clear"></div>
 		</div>
 		{/if}
 		{if isset($pageInfo.nino) && ($pageInfo.nino <> '') }
@@ -38,6 +42,7 @@
 			{forminput}
 				{$pageInfo.nino|escape}
 			{/forminput}
+			<div class="clear"></div>
 		</div>
 		{/if}
 		{section name=address loop=$pageInfo.address}

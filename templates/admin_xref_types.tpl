@@ -14,7 +14,7 @@
 		{form legend="Create a new Source Type" enctype="multipart/form-data"}
 			<input type="hidden" name="MAX_FILE_SIZE" value="1000000" />
 
-			<div class="control-group">
+			<div class="control-group column-group gutters">
 				{formlabel label="Source Type Title" for="cross_ref_title"}
 				{forminput}
 					<input type="text" id="cross_ref_title" name="cross_ref_title" />
@@ -22,7 +22,7 @@
 				{/forminput}
 			</div> 
 
-			<div class="control-group">
+			<div class="control-group column-group gutters">
 				{formlabel label="Source Template" for="topic_name"}
 				{forminput}
 					<input type="text" id="template" name="template" />
@@ -31,7 +31,7 @@
 			</div> 
 
 			<div class="control-group submit">
-				<input type="submit" class="btn" name="fSubmitAddTopic" value="{tr}Add Topic{/tr}" />
+				<input type="submit" class="ink-button" name="fSubmitAddTopic" value="{tr}Add Topic{/tr}" />
 			</div>
 		{/form}
 
@@ -82,7 +82,6 @@
 					<td align="right">
 						{smartlink ititle='edit' booticon="icon-edit" ifile='edit_xref_type.php' source=$xref_types[type].source}
 						{* smartlink ititle='permissions' booticon="icon-key" ipackage='kernel' ifile='object_permissions.php' objectName="Topic `$xref_types[type].name`" object_type=topic permType=topics object_id=$xref_types[type].topic_id *}
-						<br />
 						<a href="{$smarty.const.CONTACT_PKG_URL}admin/admin_topics.php?fRemoveSource=1&amp;source={$xref_types[type].topic_id}">{booticon iname="icon-trash" ipackage="icons" iforce=icon_text iexplain="Remove Source"}</a>
 					</td>
 				</tr>

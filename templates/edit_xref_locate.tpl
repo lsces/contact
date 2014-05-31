@@ -6,7 +6,7 @@
 	</div>
 
 	{formfeedback hash=$feedback}
-	{formfeedback warning=`$errors.title`}
+	{formfeedback warning=$errors.title}
 
 	<div class="body">
 		{form enctype="multipart/form-data" id="writexref"}
@@ -19,9 +19,10 @@
 						<div class="row">
 							{formlabel label="Geographic Location" for="xref"}
 							{forminput}
-								<a class="item" href="http://www.openstreetmap.org/?lat={$xrefInfo.xkey_ext}&lon={$xrefInfo.xkey}&zoom=15&layers=MN" target="_blank">{tr}OpenStreetMap Link{/tr}</a>
+								<a class="item" href="http://www.openstreetmap.org/?mlat={$xrefInfo.xkey_ext}&mlon={$xrefInfo.xkey}&zoom=17&layers=MN" target="_blank">{tr}OpenStreetMap Link{/tr}</a>
 								{formhelp note="Use one of the graphical tools like multimap or google maps to identify actual co-ordinates."}
 							{/forminput}
+							<div class="clear"></div>
 						</div>
 
 						<div class="row">
@@ -30,6 +31,7 @@
 								<input type="text" name="xkey" id="xkey" value="{$xrefInfo.xkey|escape}" />
 								{formhelp note="Longitude for the location."}
 							{/forminput}
+							<div class="clear"></div>
 						</div>
 		
 						<div class="row">
@@ -38,13 +40,14 @@
 								<input type="text" name="xkey_ext" id="xkey_ext" value="{$xrefInfo.xkey_ext|escape}" />
 								{formhelp note="Latitude for the location."}
 							{/forminput}
+							<div class="clear"></div>
 						</div>
 		
 						{formlabel label="Location Directions" for="data"}
 						{capture assign=textarea_help}
 							{tr}Directions to assist finding the actual location where site is not accessable via the postcode.{/tr}
 						{/capture}
-						{textarea rows=5 noformat=1}{$xrefInfo.data}{/textarea}
+						{textarea rows=5 noformat=1 edit=$xrefInfo.data}
 					{/legend}
 				{/jstab}
 
@@ -59,6 +62,7 @@
 								<span dir="ltr">{html_select_time prefix="start_" time=$xrefInfo.start_date display_seconds=false}&nbsp;{$siteTimeZone}</span>
 								{formhelp note="This address becomes valid on this date."}
 							{/forminput}
+							<div class="clear"></div>
 						</div>
 		
 						<div class="row">
@@ -70,6 +74,7 @@
 								<span dir="ltr">{html_select_time prefix="end_" time=$xrefInfo.end_date display_seconds=false}&nbsp;{$siteTimeZone}</span>
 								{formhelp note="This address finishes on this date."}
 							{/forminput}
+							<div class="clear"></div>
 						</div>
 					{/legend}
 				{/jstab}

@@ -10,6 +10,7 @@
 				<span dir="ltr">{html_select_time prefix="start_" time=$xrefInfo.start_date display_seconds=false}&nbsp;{$siteTimeZone}</span>
 				{formhelp note="This xref record becomes valid on this date."}
 			{/forminput}
+			<div class="clear"></div>
 		</div>
 
 		<div class="row">
@@ -21,6 +22,7 @@
 				<span dir="ltr">{html_select_time prefix="end_" time=$xrefInfo.end_date display_seconds=false}&nbsp;{$siteTimeZone}</span>
 				{formhelp note="This xref record finishes on this date."}
 			{/forminput}
+			<div class="clear"></div>
 		</div>
 	{/legend}
 {/jstab}

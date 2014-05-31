@@ -12,6 +12,7 @@
 					<a class="item" href="http://www.openstreetmap.org/?lat={$xrefInfo.xkey_ext}&lon={$xrefInfo.xkey}&zoom=15&layers=MN" target="_blank">{tr}OpenStreetMap Link{/tr}</a>
 					{formhelp note="Use one of the graphical tools like multimap or google maps to identify actual co-ordinates."}
 				{/forminput}
+				<div class="clear"></div>
 			</div>
 
 			<div class="row">
@@ -24,6 +25,7 @@
 					{/if}
 					{formhelp note="Easting for location (x_coord - longitude)."}
 				{/forminput}
+				<div class="clear"></div>
 			</div>
 
 			<div class="row">
@@ -36,6 +38,7 @@
 					{/if}
 					{formhelp note="Northing for location (y_coord - latitude)."}
 				{/forminput}
+				<div class="clear"></div>
 			</div>
 
 			<div class="row">
@@ -44,6 +47,7 @@
 					{$xrefInfo.data|escape}
 					{formhelp note="Directions to assist finding the actual location where site is not accessable via the postcode."}
 				{/forminput}
+				<div class="clear"></div>
 			</div>
 		{/legend}
 
@@ -58,6 +62,7 @@
 					{/if}
 					{formhelp note="This address record becomes valid on this date."}
 				{/forminput}
+				<div class="clear"></div>
 			</div>
 
 			<div class="row">
@@ -70,6 +75,7 @@
 					{/if}
 					{formhelp note="This address record finishes on this date."}
 				{/forminput}
+				<div class="clear"></div>
 			</div>
 		{/legend}
 		<a class="item" href="{$smarty.const.CONTACT_PKG_URL}index.php?content_id={$xrefInfo.content_id}">{tr}Return{/tr}</a>

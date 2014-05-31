@@ -6,7 +6,7 @@
 	</div>
 
 	{formfeedback hash=$feedback}
-	{formfeedback warning=`$errors.title`}
+	{formfeedback warning=$errors.title}
 
 	<div class="body">
 		{form enctype="multipart/form-data" id="writexref"}
@@ -22,6 +22,7 @@
 								<input type="text" name="xkey" id="xkey" value="{$xrefInfo.xkey|escape}" />
 								{formhelp note="Key Seal Code from key management system."}
 							{/forminput}
+						<div class="clear"></div>
 						</div>
 		
 						<div class="row">
@@ -30,13 +31,14 @@
 								<input type="text" name="xkey_ext" id="xkey_ext" value="{$xrefInfo.xkey_ext|escape}" />
 								{formhelp note="Contract number."}
 							{/forminput}
+							<div class="clear"></div>
 						</div>
 		
 						{formlabel label="Key Seal Notes" for="data"}
 						{capture assign=textarea_help}
 							{tr}Keep the text attached to reference items short and use comment records to add larger volumns of text. This should be reserved for simple notes such 'as use after 5PM' or the link.{/tr}
 						{/capture}
-						{textarea rows=5 noformat=1}{$xrefInfo.data}{/textarea}
+						{textarea rows=5 noformat=1 edit=$xrefInfo.data}
 					{/legend}
 				{/jstab}
 
@@ -51,6 +53,7 @@
 								<span dir="ltr">{html_select_time prefix="start_" time=$xrefInfo.start_date display_seconds=false}&nbsp;{$siteTimeZone}</span>
 								{formhelp note="This key seal record becomes valid on this date."}
 							{/forminput}
+							<div class="clear"></div>
 						</div>
 		
 						<div class="row">
@@ -62,6 +65,7 @@
 								<span dir="ltr">{html_select_time prefix="end_" time=$xrefInfo.end_date display_seconds=false}&nbsp;{$siteTimeZone}</span>
 								{formhelp note="This key seal record finishes on this date."}
 							{/forminput}
+							<div class="clear"></div>
 						</div>
 					{/legend}
 				{/jstab}

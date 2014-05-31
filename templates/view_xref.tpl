@@ -16,6 +16,7 @@
 					{/if}
 					{formhelp note="Link to other contact/content entries."}
 				{/forminput}
+				<div class="clear"></div>
 			</div>
 
 			<div class="row">
@@ -28,6 +29,7 @@
 					{/if}
 					{formhelp note="ID Key use to access data in other systems identified by the xref type."}
 				{/forminput}
+				<div class="clear"></div>
 			</div>
 
 			<div class="row">
@@ -40,6 +42,7 @@
 					{/if}
 					{formhelp note="Variable text element such as url or email address."}
 				{/forminput}
+				<div class="clear"></div>
 			</div>
 
 			<div class="row">
@@ -48,6 +51,7 @@
 					{$xrefInfo.data|escape}
 					{formhelp note="Keep the text attached to reference items short and use comment records to add larger volumns of text. This should be reserved for simple notes such 'as use after 5PM' or the link."}
 				{/forminput}
+				<div class="clear"></div>
 			</div>
 		{/legend}
 
@@ -62,6 +66,7 @@
 					{/if}
 					{formhelp note="This xref record becomes valid on this date."}
 				{/forminput}
+				<div class="clear"></div>
 			</div>
 
 			<div class="row">
@@ -74,6 +79,7 @@
 					{/if}
 					{formhelp note="This xref record finishes on this date."}
 				{/forminput}
+				<div class="clear"></div>
 			</div>
 		{/legend}
 		<a class="item" href="{$smarty.const.CONTACT_PKG_URL}index.php?content_id={$xrefInfo.content_id}">{tr}Return{/tr}</a>

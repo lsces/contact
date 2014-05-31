@@ -5,5 +5,6 @@
 		<input type="text" name="{$output}xkey_ext" id="xkey_ext" value="{$xrefInfo.xkey_ext|escape}" />
 		{formhelp note="Numeric values such as distaces and counts."}
 	{/forminput}
+	<div class="clear"></div>
 </div>
 {/strip}

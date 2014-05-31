@@ -20,6 +20,7 @@
 					<input type="text" id="topic_name" name="topic_name" value="{$gContent->mInfo.topic_name}" />
 					{formhelp note=""}
 				{/forminput}
+				<div class="clear"></div>
 			</div>
 
 			<div class="row">
@@ -28,6 +29,7 @@
 					<input type="checkbox" id="topic_enabled" name="active_topic" {if $gContent->mInfo.active_topic == 'y'}checked="checked"{/if} />
 					{formhelp note=""}
 				{/forminput}
+				<div class="clear"></div>
 			</div>
 
 			<div class="row">
@@ -36,6 +38,7 @@
 					<input name="upload" id="t-image" type="file" />
 					{formhelp note=""}
 				{/forminput}
+				<div class="clear"></div>
 			</div>
 
 			<div class="row">

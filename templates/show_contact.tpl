@@ -17,8 +17,8 @@
 				{include file="bitpackage:tasks/list_tasks.tpl"}
 			{/jstab}
 		{/if}
-		{jstab title="Documents" class="contact_docs"}
-			Link to private fisheye document gallery
+		{jstab title="Images" class="contact_pics"}
+			{include file="`$smarty.const.FISHEYE_PKG_PATH`gallery_views/`$galLayout`/fisheye_`$galLayout`_test.tpl" }
 		{/jstab}
 	{/jstabs}
 	</div> {* end .body *}

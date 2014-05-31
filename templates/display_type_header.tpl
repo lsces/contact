@@ -5,5 +5,6 @@
 			{if isset($type.content_id) }{$type.cross_ref_title}<br/> {/if}
 		{/foreach}
 	{/forminput}
+	<div class="clear"></div>
 </div>
 

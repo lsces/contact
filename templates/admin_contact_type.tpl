@@ -14,7 +14,7 @@
 		{form legend="Create a new Topic" enctype="multipart/form-data"}
 			<input type="hidden" name="MAX_FILE_SIZE" value="1000000" />
 
-			<div class="control-group">
+			<div class="control-group column-group gutters">
 				{formlabel label="Contact Type Title" for="type_name"}
 				{forminput}
 					<input type="text" id="topic_name" name="type_name" />
@@ -23,7 +23,7 @@
 			</div> 
 
 			<div class="control-group submit">
-				<input type="submit" class="btn" name="fSubmitAddType" value="{tr}Add Contact Type{/tr}" />
+				<input type="submit" class="ink-button" name="fSubmitAddType" value="{tr}Add Contact Type{/tr}" />
 			</div>
 		{/form}
 

@@ -42,36 +42,42 @@
 				{forminput}
 					<input size="60" type="text" name="prefix" id="prefix" value="{$pageInfo.prefix|escape}" />
 				{/forminput}
+				<div class="clear"></div>
 			</div>
 			<div class="row">
 				{formlabel label="Forename" for="forename"}
 				{forminput}
 					<input size="60" type="text" name="forename" id="forename" value="{$pageInfo.forename|escape}" />
 				{/forminput}
+				<div class="clear"></div>
 			</div>
 			<div class="row">
 				{formlabel label="Surname" for="surname"}
 				{forminput}
 					<input size="60" type="text" name="surname" id="surname" value="{$pageInfo.surname|escape}" />
 				{/forminput}
+				<div class="clear"></div>
 			</div>
 			<div class="row">
 				{formlabel label="Suffix" for="suffix"}
 				{forminput}
 					<input size="60" type="text" name="suffix" id="suffix" value="{$pageInfo.suffix|escape}" />
 				{/forminput}
+				<div class="clear"></div>
 			</div>
 			<div class="row">
 				{formlabel label="Organisation" for="organisation"}
 				{forminput}
 					<input size="60" type="text" name="organisation" id="organisation" value="{$pageInfo.organisation|escape}" />
 				{/forminput}
+				<div class="clear"></div>
 			</div>
 			<div class="row">
 				{formlabel label="NI Number" for="nino"}
 				{forminput}
 					<input size="10" type="text" name="nino" id="nino" value="{$pageInfo.nino|escape}" />
 				{/forminput}
+				<div class="clear"></div>
 			</div>
 *}
 			<div class="row">
@@ -79,6 +85,7 @@
 				{forminput}
 					<input size="60" type="text" name="description" id="description" value="{$pageInfo.description|escape}" />
 				{/forminput}
+				<div class="clear"></div>
 			</div>
 			<div class="row">
 				{formlabel label="Memo" for="$textarea_id"}
@@ -87,6 +94,7 @@
 					<input type="hidden" name="cols" value="{$cols}" />
 					<textarea id="{$textarea_id}" name="edit" rows="{$rows|default:20}" cols="{$cols|default:80}">{if !$preview}{$pageInfo.data|escape}{else}{$edit}{/if}</textarea>
 				{/forminput}
+				<div class="clear"></div>
 			</div>
 
 			<div class="row submit">

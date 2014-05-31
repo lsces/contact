@@ -12,5 +12,6 @@
 		{/if}
 	{/forminput}
 	{formhelp note=""}
+	<div class="clear"></div>
 </div>
 

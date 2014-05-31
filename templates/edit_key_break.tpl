@@ -6,7 +6,7 @@
 	</div>
 
 	{formfeedback hash=$feedback}
-	{formfeedback warning=`$errors.title`}
+	{formfeedback warning=$errors.title}
 
 	<div class="body">
 		{form enctype="multipart/form-data" id="writexref"}
@@ -20,6 +20,7 @@
 						<input type="text" name="xref" id="xref" value="{$xrefInfo.xref|escape}" />
 						{formhelp note="Link to job that caused seal break."}
 					{/forminput}
+					<div class="clear"></div>
 				</div>
 
 				<div class="row">
@@ -28,6 +29,7 @@
 						<input type="text" name="xkey" id="xkey" value="{$xrefInfo.xkey|escape}" />
 						{formhelp note="ID Key use to access data in other systems identified by the xref type."}
 					{/forminput}
+					<div class="clear"></div>
 				</div>
 
 				<div class="row">
@@ -36,13 +38,14 @@
 						<input type="text" name="xkey_ext" id="xkey_ext" value="{$xrefInfo.xkey_ext|escape}" />
 						{formhelp note="Variable text element such as url or email address."}
 					{/forminput}
+					<div class="clear"></div>
 				</div>
 
 				{formlabel label="Reference Notes" for="data"}
 				{capture assign=textarea_help}
 					{tr}Keep the text attached to reference items short and use comment records to add larger volumns of text. This should be reserved for simple notes such 'as use after 5PM' or the link.{/tr}
 				{/capture}
-				{textarea rows=5 noformat=1}{$xrefInfo.data}{/textarea}
+				{textarea rows=5 noformat=1 edit=$xrefInfo.data}
 			{/legend}
 				<div class="row submit">
 					<input type="submit" name="fCancel" value="{tr}Cancel{/tr}" />&nbsp;
