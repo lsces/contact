@@ -657,8 +657,10 @@ class Contact extends LibertyContent {
 
 			$result = $this->mDb->query( $sql, $bindVars );
 
-			while( $res = $result->fetchRow() ) {
-				$this->mInfo[$res['type_source']][] = $res;
+			if($result) {
+				while( $res = $result->fetchRow() ) {
+					$this->mInfo[$res['type_source']][] = $res;
+				}
 			}
 		}
 	}
