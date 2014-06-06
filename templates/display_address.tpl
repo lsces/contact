@@ -1,4 +1,4 @@
-		<div class="row">
+		<div class="form-group">
 			{formlabel label="$header" for="lpi"}
 			{forminput}
 				{if isset($address.sao) && ($address.sao <> '') }
@@ -26,7 +26,7 @@
 			<div class="clear"></div>
 		</div>
 		{if $locate == 1 && isset($address.x_coordinate) && ($address.x_coordinate <> '') }
-		<div class="row">
+		<div class="form-group">
 			{formlabel label="Visual Centre Coordinates" for="street_start_x"}
 			{forminput}
 				Lat: {$address.y_coordinate|escape} Lon: {$address.x_coordinate|escape}

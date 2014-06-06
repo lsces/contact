@@ -6,7 +6,7 @@
 
 	<div class="body">
 		{legend legend="Contents"}
-			<div class="row">
+			<div class="form-group">
 				{formlabel label="`$xrefInfo.template_title` Number" for="xkey"}
 				{forminput}
 					{if $xrefInfo.xkey }
@@ -19,7 +19,7 @@
 				<div class="clear"></div>
 			</div>
 
-			<div class="row">
+			<div class="form-group">
 				{formlabel label="`$xrefInfo.template_title` Number Notes" for="data"}
 				{forminput}
 					{$xrefInfo.data|escape}
@@ -30,7 +30,7 @@
 		{/legend}
 
 		{legend legend="Start and Stop Dates"}
-			<div class="row">
+			<div class="form-group">
 				{formlabel label="Start Date" for=""}
 				{forminput}
 					{if $xrefInfo.ignore_start_date eq "y"}
@@ -43,7 +43,7 @@
 				<div class="clear"></div>
 			</div>
 
-			<div class="row">
+			<div class="form-group">
 				{formlabel label="End Date" for=""}
 				{forminput}
 					{if $xrefInfo.ignore_end_date eq "y"}

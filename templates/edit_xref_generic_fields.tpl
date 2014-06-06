@@ -1,5 +1,5 @@
 {strip}
-<div class="row">
+<div class="form-group">
 	{formlabel label="Cross Reference Link" for="xref"}
 	{forminput}
 		<input type="text" name="xref" id="xref" value="{$xrefInfo.xref|escape}" />
@@ -7,7 +7,7 @@
 	{/forminput}
 	<div class="clear"></div>
 </div>
-<div class="row">
+<div class="form-group">
 	{formlabel label="Reference Key" for="xkey"}
 	{forminput}
 		<input type="text" name="xkey" id="xkey" value="{$xrefInfo.xkey|escape}" />
@@ -15,7 +15,7 @@
 	{/forminput}
 	<div class="clear"></div>
 </div>
-<div class="row">
+<div class="form-group">
 	{formlabel label="Reference Text" for="xkey_ext"}
 	{forminput}
 		<input type="text" name="xkey_ext" id="xkey_ext" value="{$xrefInfo.xkey_ext|escape}" />

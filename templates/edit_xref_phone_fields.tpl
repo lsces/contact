@@ -1,5 +1,5 @@
 {strip}
-<div class="row">
+<div class="form-group">
 	{formlabel label="`$xrefInfo.template_title` Number" for="`$output`xkey"}
 	{forminput}
 		<input type="text" name="{$output}xkey" id="xkey" value="{$xrefInfo.xkey|escape}" />

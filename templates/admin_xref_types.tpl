@@ -14,7 +14,7 @@
 		{form legend="Create a new Source Type" enctype="multipart/form-data"}
 			<input type="hidden" name="MAX_FILE_SIZE" value="1000000" />
 
-			<div class="control-group column-group gutters">
+			<div class="form-group">
 				{formlabel label="Source Type Title" for="cross_ref_title"}
 				{forminput}
 					<input type="text" id="cross_ref_title" name="cross_ref_title" />
@@ -22,7 +22,7 @@
 				{/forminput}
 			</div> 
 
-			<div class="control-group column-group gutters">
+			<div class="form-group">
 				{formlabel label="Source Template" for="topic_name"}
 				{forminput}
 					<input type="text" id="template" name="template" />
@@ -30,8 +30,8 @@
 				{/forminput}
 			</div> 
 
-			<div class="control-group submit">
-				<input type="submit" class="ink-button" name="fSubmitAddTopic" value="{tr}Add Topic{/tr}" />
+			<div class="form-group submit">
+				<input type="submit" class="btn btn-default" name="fSubmitAddTopic" value="{tr}Add Topic{/tr}" />
 			</div>
 		{/form}
 

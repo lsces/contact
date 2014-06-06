@@ -16,7 +16,7 @@
 			{jstabs}
 				{jstab title="Details"}
 					{legend legend="Contents"}
-						<div class="row">
+						<div class="form-group">
 							{formlabel label="`$xrefInfo.template_title` Number" for="xkey_ext"}
 							{forminput}
 								<input type="text" name="xkey_ext" id="xkey_ext" value="{$xrefInfo.xkey_ext|escape}" />
@@ -35,7 +35,7 @@
 
 				{jstab title="Time period"}
 					{legend legend="Start and Stop Dates"}
-						<div class="row">
+						<div class="form-group">
 							<input type="hidden" name="startDateInput" value="1" />
 							&nbsp;Ignore Date <input type="checkbox" name="ignore_start_date" {if $xrefInfo.ignore_start_date eq "y"}checked{/if} />
 							{formlabel label="Start Date" for=""}
@@ -47,7 +47,7 @@
 							<div class="clear"></div>
 						</div>
 		
-						<div class="row">
+						<div class="form-group">
 							<input type="hidden" name="endDateInput" value="1" />
 							&nbsp;Ignore Date <input type="checkbox" name="ignore_end_date" {if $xrefInfo.ignore_end_date eq "y"}checked{/if} />
 							{formlabel label="End Date" for=""}
@@ -61,7 +61,7 @@
 					{/legend}
 				{/jstab}
 			
-				<div class="row submit">
+				<div class="form-group submit">
 					<input type="submit" name="fCancel" value="{tr}Cancel{/tr}" />&nbsp;
 					<input type="submit" name="fSaveXref" value="{tr}Save{/tr}" />
 				</div>

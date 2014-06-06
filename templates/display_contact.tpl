@@ -1,7 +1,7 @@
 		{include file="bitpackage:contact/display_type_header.tpl"}
 
 		{if isset($pageInfo.usn) && ($pageInfo.usn <> '') }
-		<div class="row">
+		<div class="form-group">
 			{formlabel label="USN" for="usn"}
 			{forminput}
 				{$pageInfo.usn|escape} 
@@ -10,7 +10,7 @@
 		</div>
 		{/if}
 		{if isset($pageInfo.name) && ($pageInfo.name <> '') }
-		<div class="row">
+		<div class="form-group">
 			{formlabel label="Name" for="name"}
 			{forminput}
 				{$pageInfo.name|escape} 
@@ -19,7 +19,7 @@
 		</div>
 		{/if}
 		{if isset($pageInfo.organisation) && ($pageInfo.organisation <> '') }
-		<div class="row">
+		<div class="form-group">
 			{formlabel label="Organisation" for="organisation"}
 			{forminput}
 				{$pageInfo.organisation|escape} 
@@ -28,7 +28,7 @@
 		</div>
 		{/if}
 		{if isset($pageInfo.dob) && ($pageInfo.dob <> '') }
-		<div class="row">
+		<div class="form-group">
 			{formlabel label="Date of Birth" for="dob"}
 			{forminput}
 				{$pageInfo.dob|bit_long_date}
@@ -37,7 +37,7 @@
 		</div>
 		{/if}
 		{if isset($pageInfo.nino) && ($pageInfo.nino <> '') }
-		<div class="row">
+		<div class="form-group">
 			{formlabel label="National Insurance Number" for="nino"}
 			{forminput}
 				{$pageInfo.nino|escape}
@@ -56,7 +56,7 @@
 			</li>
 		{/section}
 
-		<div class="row">
+		<div class="form-group">
 			{formlabel label="General Notes" for="data"}
 			{forminput}
 				{$pageInfo.data}

@@ -1,4 +1,4 @@
-<div class="row">
+<div class="form-group">
 	{formlabel label="Content Types" for=content_types}
 	{forminput}
 		{if isset( $pageInfo.contact_types ) }

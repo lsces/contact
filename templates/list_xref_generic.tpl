@@ -2,7 +2,7 @@
 		{assign var=xrefcnt value=$pageInfo.$source|@count}
 		{jstab title="$source_title ($xrefcnt)"}
 		{legend legend=$source_title}
-		<div class="row">
+		<div class="form-group">
 			<table>
 				<thead>
 					<tr>

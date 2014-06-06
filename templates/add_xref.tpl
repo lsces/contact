@@ -35,7 +35,7 @@ function updateContactXrefFormat() { {/literal}
 					{legend legend="XRef Contents"}
 						{formfeedback error=$errors warning=$contactWarnings success=$contactSuccess}
 						
-						<div class="row">
+						<div class="form-group">
 							{formlabel label="Reference Type" for="source"}
 							{forminput}
 								{html_options name="source" id="source" options=$xrefInfo.xref_type_list.list selected=$smarty.const.CONTACT_FORMAT_GENERIC onchange="updateContactXrefFormat();}
@@ -59,7 +59,7 @@ function updateContactXrefFormat() { {/literal}
 
 				{include file="bitpackage:contact/edit_xref_dates.tpl"}
 
-				<div class="row submit">
+				<div class="form-group submit">
 					<input type="submit" name="fCancel" value="{tr}Cancel{/tr}" />&nbsp;
 					<input type="submit" name="fAddXref" value="{tr}Save{/tr}" />
 				</div>

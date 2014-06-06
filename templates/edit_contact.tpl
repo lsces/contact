@@ -37,42 +37,42 @@
 
 			{include file="bitpackage:contact/edit_type_header.tpl"}
 
-{*			<div class="row">
+{*			<div class="form-group">
 				{formlabel label="Title" for="title"}
 				{forminput}
 					<input size="60" type="text" name="prefix" id="prefix" value="{$pageInfo.prefix|escape}" />
 				{/forminput}
 				<div class="clear"></div>
 			</div>
-			<div class="row">
+			<div class="form-group">
 				{formlabel label="Forename" for="forename"}
 				{forminput}
 					<input size="60" type="text" name="forename" id="forename" value="{$pageInfo.forename|escape}" />
 				{/forminput}
 				<div class="clear"></div>
 			</div>
-			<div class="row">
+			<div class="form-group">
 				{formlabel label="Surname" for="surname"}
 				{forminput}
 					<input size="60" type="text" name="surname" id="surname" value="{$pageInfo.surname|escape}" />
 				{/forminput}
 				<div class="clear"></div>
 			</div>
-			<div class="row">
+			<div class="form-group">
 				{formlabel label="Suffix" for="suffix"}
 				{forminput}
 					<input size="60" type="text" name="suffix" id="suffix" value="{$pageInfo.suffix|escape}" />
 				{/forminput}
 				<div class="clear"></div>
 			</div>
-			<div class="row">
+			<div class="form-group">
 				{formlabel label="Organisation" for="organisation"}
 				{forminput}
 					<input size="60" type="text" name="organisation" id="organisation" value="{$pageInfo.organisation|escape}" />
 				{/forminput}
 				<div class="clear"></div>
 			</div>
-			<div class="row">
+			<div class="form-group">
 				{formlabel label="NI Number" for="nino"}
 				{forminput}
 					<input size="10" type="text" name="nino" id="nino" value="{$pageInfo.nino|escape}" />
@@ -80,14 +80,14 @@
 				<div class="clear"></div>
 			</div>
 *}
-			<div class="row">
+			<div class="form-group">
 				{formlabel label="Note" for="description"}
 				{forminput}
 					<input size="60" type="text" name="description" id="description" value="{$pageInfo.description|escape}" />
 				{/forminput}
 				<div class="clear"></div>
 			</div>
-			<div class="row">
+			<div class="form-group">
 				{formlabel label="Memo" for="$textarea_id"}
 				{forminput}
 					<input type="hidden" name="rows" value="{$rows}" />
@@ -97,7 +97,7 @@
 				<div class="clear"></div>
 			</div>
 
-			<div class="row submit">
+			<div class="form-group submit">
 				<input type="submit" name="preview" value="{tr}Preview{/tr}" /> 
 				<input type="submit" name="fSavePage" value="{tr}Save{/tr}" />&nbsp;
 				<input type="submit" name="cancel" value="{tr}Cancel{/tr}" />

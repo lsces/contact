@@ -2,7 +2,7 @@
 		{assign var=xrefcnt value=$pageInfo.xref|@count}
 		{jstab title="Cross reference ($xrefcnt)"}
 		{legend legend="Information References"}
-		<div class="row">
+		<div class="form-group">
 			{formlabel label="Cross reference" for="xref"}
 			{forminput}
 			<table>

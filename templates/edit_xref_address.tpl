@@ -27,7 +27,7 @@
 				{/jstab}
 				{include file="bitpackage:contact/edit_xref_dates.tpl"}
 			
-				<div class="row submit">
+				<div class="form-group submit">
 					<input type="submit" name="fCancel" value="{tr}Cancel{/tr}" />&nbsp;
 					<input type="submit" name="fSaveXref" value="{tr}Save{/tr}" />
 				</div>

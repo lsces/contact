@@ -35,7 +35,7 @@
 					{legend legend="$editLabel Details"}
 						<input type="hidden" name="content_id" value="{$pageInfo.content_id}" />
 						
-						<div class="row">
+						<div class="form-group">
 							{formfeedback warning=$errors.names}
 							{formfeedback warning=$errors.store}
 
@@ -55,28 +55,28 @@
 						{include file="bitpackage:contact/edit_type_header.tpl"}
 							
 						{if $pageInfo.name or $pageInfo.contact_types.0.content_id or !isset( $pageInfo.contact_types ) }
-							<div class="row">
+							<div class="form-group">
 								{formlabel label="Title" for="prefix"}
 								{forminput}
 									<input size="60" type="text" name="prefix" id="prefix" value="{$pageInfo.prefix|escape}" />
 								{/forminput}
 								<div class="clear"></div>
 							</div>
-							<div class="row">
+							<div class="form-group">
 								{formlabel label="Forename" for="forename"}
 								{forminput}
 									<input size="60" type="text" name="forename" id="forename" value="{$pageInfo.forename|escape}" />
 								{/forminput}
 								<div class="clear"></div>
 							</div>
-							<div class="row">
+							<div class="form-group">
 								{formlabel label="Surname" for="surname"}
 								{forminput}
 									<input size="60" type="text" name="surname" id="surname" value="{$pageInfo.surname|escape}" />
 								{/forminput}
 								<div class="clear"></div>
 							</div>
-							<div class="row">
+							<div class="form-group">
 								{formlabel label="Suffix" for="suffix"}
 								{forminput}
 									<input size="60" type="text" name="suffix" id="suffix" value="{$pageInfo.suffix|escape}" />
@@ -85,7 +85,7 @@
 							</div>
 						{/if}
 						{if $pageInfo.organisation or $pageInfo.contact_types.1.content_id or !isset( $pageInfo.contact_types ) }
-							<div class="row">
+							<div class="form-group">
 								{formlabel label="Organisation" for="organisation"}
 								{forminput}
 									<input size="60" type="text" name="organisation" id="organisation" value="{$pageInfo.organisation|escape}" />
@@ -95,7 +95,7 @@
 						{/if}
 {* include edit_personal.tpl *}
 
-						<div class="row">
+						<div class="form-group">
 							{formlabel label="Key Number" for="xkey"}
 							{forminput}
 								<input size="10" type="text" name="xkey" id="xkey" value="{$pageInfo.xkey|escape}" />
@@ -103,7 +103,7 @@
 							<div class="clear"></div>
 						</div>
 
-						<div class="row">
+						<div class="form-group">
 							{formlabel label="Note" for="description"}
 							{forminput}
 								<input size="60" type="text" name="description" id="description" value="{$pageInfo.description|escape}" />
@@ -115,12 +115,12 @@
 
 				{jstab title="Contact Notes"}
 					{legend legend="Notes Body"}
-						<div class="row">
+						<div class="form-group">
 							{textarea rows=30 noformat=1 edit=$pageInfo.edit}
 						</div>
 
 						{if $page ne 'SandBox'}
-							<div class="row">
+							<div class="form-group">
 								{formlabel label="Comment" for="comment"}
 								{forminput}
 									<input size="50" type="text" name="comment" id="comment" value="{$pageInfo.comment}" />
@@ -143,7 +143,7 @@
 				{/jstab}
 			{/jstabs}
 
-			<div class="row submit">
+			<div class="form-group submit">
 				<input type="submit" name="fCancel" value="{tr}Cancel{/tr}" />&nbsp;
 				<input type="submit" name="fSaveContact" value="{tr}Save{/tr}" />
 			</div>

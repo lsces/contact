@@ -1,5 +1,5 @@
 {if isset( $pageInfo.xref_type ) }
-		<div class="row">
+		<div class="form-group">
 			<table>
 				<thead>
 					<tr>

@@ -1,5 +1,5 @@
 {strip}
-<div class="row">
+<div class="form-group">
 	{formlabel label="`$xrefInfo.template_title` Phone Number" for="`$output`xkey"}
 	{forminput}
 		<input type="text" name="{$output}xkey" id="xkey" value="{$xrefInfo.xkey|escape}" />
@@ -8,7 +8,7 @@
 	<div class="clear"></div>
 </div>
 
-<div class="row">
+<div class="form-group">
 	{formlabel label="`$xrefInfo.template_title` Name" for="`$output`xkey_ext"}
 	{forminput}
 		<input type="text" name="{$output}xkey_ext" id="xkey_ext" value="{$xrefInfo.xkey_ext|escape}" />

@@ -14,7 +14,7 @@
 			<input type="hidden" name="xref_id" value="{$xrefInfo.xref_id}" />
 
 			{legend legend="Break Seal Contents"}
-				<div class="row">
+				<div class="form-group">
 					{formlabel label="Seal Break Job Reference" for="xref"}
 					{forminput}
 						<input type="text" name="xref" id="xref" value="{$xrefInfo.xref|escape}" />
@@ -23,7 +23,7 @@
 					<div class="clear"></div>
 				</div>
 
-				<div class="row">
+				<div class="form-group">
 					{formlabel label="Reference Key" for="xkey"}
 					{forminput}
 						<input type="text" name="xkey" id="xkey" value="{$xrefInfo.xkey|escape}" />
@@ -32,7 +32,7 @@
 					<div class="clear"></div>
 				</div>
 
-				<div class="row">
+				<div class="form-group">
 					{formlabel label="Reference Text" for="xkey_ext"}
 					{forminput}
 						<input type="text" name="xkey_ext" id="xkey_ext" value="{$xrefInfo.xkey_ext|escape}" />
@@ -47,7 +47,7 @@
 				{/capture}
 				{textarea rows=5 noformat=1 edit=$xrefInfo.data}
 			{/legend}
-				<div class="row submit">
+				<div class="form-group submit">
 					<input type="submit" name="fCancel" value="{tr}Cancel{/tr}" />&nbsp;
 					<input type="submit" name="fSaveXref" value="{tr}Save{/tr}" />
 				</div>

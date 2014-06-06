@@ -1,7 +1,7 @@
 {strip}
 {jstab title="Time period"}
 	{legend legend="Start and Stop Dates"}
-		<div class="row">
+		<div class="form-group">
 			<input type="hidden" name="startDateInput" value="1" />
 			&nbsp;Ignore Date <input type="checkbox" name="ignore_start_date" {if $xrefInfo.ignore_start_date eq "y"}checked{/if} />
 			{formlabel label="Start Date" for=""}
@@ -13,7 +13,7 @@
 			<div class="clear"></div>
 		</div>
 
-		<div class="row">
+		<div class="form-group">
 			<input type="hidden" name="endDateInput" value="1" />
 			&nbsp;Ignore Date <input type="checkbox" name="ignore_end_date" {if $xrefInfo.ignore_end_date eq "y"}checked{/if} />
 			{formlabel label="End Date" for=""}

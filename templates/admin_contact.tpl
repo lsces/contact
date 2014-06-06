@@ -3,7 +3,7 @@
 	<input type="hidden" name="page" value="{$page}" />
 
 	{foreach from=$formContactListFeatures key=item item=output}
-		<div class="row">
+		<div class="form-group">
 			{formlabel label=$output.label for=$item}
 			{forminput}
 				{html_checkboxes name="$item" values="y" checked=$gBitSystem->getConfig($item) labels=false id=$item}
@@ -12,7 +12,7 @@
 		</div>
 	{/foreach}
 
-		<div class="row">
+		<div class="form-group">
 			{formlabel label="Default Contact Types"}
 			{forminput}
 				{html_checkboxes name="defaultTypes" options=$contactTypeDefaults selected=$contactTypesSelected separator="<br />"}
@@ -20,7 +20,7 @@
 			{/forminput}
 		</div>
 
-	<div class="row submit">
+	<div class="form-group submit">
 		<input type="submit" name="contactlistfeatures" value="{tr}Change preferences{/tr}" />
 	</div>
 {/form}
