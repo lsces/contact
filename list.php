@@ -27,7 +27,8 @@ $gContent->invokeServices( 'content_list_function', $_REQUEST );
 $gContent->mTypes->processRequestHash($_REQUEST, $_SESSION['contact']);
 
 $listHash = $_REQUEST;
-// Setup which contact types we want to view.
+/*
+ * Setup which contact types we want to view.
 $contactTypes = $gContent->getContactTypes();
 if( $gBitUser->hasPermission("p_contact_view_changes") && $_SESSION['contact']['contact_type_guid'] ) {
 	$listHash['contact_type_guid'] = $_SESSION['contact']['contact_type_guid'];
@@ -37,7 +38,7 @@ if( $gBitUser->hasPermission("p_contact_view_changes") && $_SESSION['contact']['
 			$listHash['contact_type_guid'][] = $key;
 		}
 	}
-}
+} */
 // Get a list of matching contact entries
 $listcontacts = $gContent->getList( $listHash );
 
