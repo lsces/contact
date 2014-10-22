@@ -19,7 +19,7 @@
 						<div class="form-group">
 							{formlabel label="Address Type" for="source"}
 							{forminput}
-								{html_options name="$xrefInfo.xref_type_list[$xrefInfo.source]" options=$xrefInfo.xref_type_list selected=`$xrefInfo.source`}
+								{html_options name="$xrefInfo.xref_type_list[$xrefInfo.source]" options=$xrefInfo.xref_type_list selected=$xrefInfo.source}
 								{formhelp note="Type of cross link reference to add."}
 							{/forminput}
 						</div>
@@ -44,7 +44,7 @@
 						{capture assign=textarea_help}
 							{tr}Keep the text attached to reference items short and use comment records to add larger volumns of text. This should be reserved for simple notes such 'as use after 5PM' or the link.{/tr}
 						{/capture}
-						{textarea rows=5 noformat=1 edit=$xrefInfo.data}
+						{textarea rows=5 noformat=1 id="edittext" nowysiwyg="yes" edit=$xrefInfo.data}
 					{/legend}
 				{/jstab}
 

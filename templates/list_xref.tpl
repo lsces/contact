@@ -30,7 +30,7 @@
 							<td>
 								{if isset($pageInfo.xref[xref].usn) && ($pageInfo.xref[xref].usn <> '') }
 									{$pageInfo.xref[xref].usn|escape}
-									{smartlink ititle="Link to" ifile="../property/display_property.php" ibiticon="icons/accessories-text-editor" property_id=$pageInfo.xref[xref].usn}
+									{smartlink ititle="Link to" ifile="../property/display_property.php" booticon="icon-note-edit" property_id=$pageInfo.xref[xref].usn}
 								{/if}
 							</td>
 							{if $gBitSystem->isFeatureActive( 'contact_list_last_modified' )}
@@ -40,10 +40,10 @@
 							{/if}
 							<td>
 								<span class="actionicon">
-									{smartlink ititle="View" ifile="view_xref.php" ibiticon="icons/view-fullscreen" source=$pageInfo.xref[xref].source xref=$pageInfo.xref[xref].cross_reference}
+									{smartlink ititle="View" ifile="view_xref.php" booticon="icon-note-go" source=$pageInfo.xref[xref].source xref=$pageInfo.xref[xref].cross_reference}
 								</span>
 								<span class="actionicon">
-									{smartlink ititle="Edit" ifile="edit_xref.php" ibiticon="icons/accessories-text-editor" source=$pageInfo.xref[xref].source xref=$pageInfo.xref[xref].cross_reference}
+									{smartlink ititle="Edit" ifile="edit_xref.php" booticon="icon-note-edit" source=$pageInfo.xref[xref].source xref=$pageInfo.xref[xref].cross_reference}								</span>
 								</span>
 								<label for="ev_{$pageInfo.xref[xref].cross_reference}">	
 									{$pageInfo.xref[xref].cross_reference}

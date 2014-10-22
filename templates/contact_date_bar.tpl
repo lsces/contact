@@ -1,17 +1,17 @@
 <div class="floaticon">
   {if $lock}
-    {biticon ipackage="icons" iname="locked" iexplain="locked"}{$info.editor|userlink}
+    {booticon iname="icon-lock" ipackage="icons" iexplain="Locked"}{$info.editor|userlink}
   {/if}
   {if $print_page ne 'y'}
     {if !$lock}
       {if $gBitUser->hasPermission('p_edit_contact')}
-		{smartlink ititle="Add additional crossref record" ifile="add_xref.php" ibiticon="icons/bookmark-new" content_id=$pageInfo.content_id xref_type=-1}
-		{smartlink ititle="Edit Contact" ifile="edit.php" ibiticon="icons/accessories-text-editor" content_id=$pageInfo.content_id}
+		{smartlink ititle='Add additional crossref record' ifile="add_xref.php" booticon="icon-note-add" content_id=$pageInfo.content_id xref_type=-1}
+		{smartlink ititle="Edit Contact" ifile="edit.php" booticon="icon-user-edit" content_id=$pageInfo.content_id}
       {/if}
     {/if}
-    <a title="{tr}print{/tr}" href="print.php?content_id={$pageInfo.content_id}">{biticon ipackage="icons" iname="document-print" iexplain="print"}</a>
+    <a title="{tr}print{/tr}" href="print.php?content_id={$pageInfo.content_id}">{booticon ipackage="icons" iname="icon-print" iexplain="print"}</a>
       {if $gBitUser->hasPermission('p_remove_contact')}
-        <a title="{tr}remove this contact{/tr}" href="remove_contact.php?content_id={$pageInfo.content_id}">{biticon ipackage="icons" iname="edit-delete" iexplain="delete"}</a>
+        <a title="{tr}remove this contact{/tr}" href="remove_contact.php?content_id={$pageInfo.content_id}">{booticon ipackage="icons" iname="icon-user-delete" iexplain="delete"}</a>
       {/if}
   {/if} {* end print_page *}
 </div> {*end .floaticon *}

@@ -45,7 +45,7 @@
 				{capture assign=textarea_help}
 					{tr}Keep the text attached to reference items short and use comment records to add larger volumns of text. This should be reserved for simple notes such 'as use after 5PM' or the link.{/tr}
 				{/capture}
-				{textarea rows=5 noformat=1 edit=$xrefInfo.data}
+				{textarea rows=5 noformat=1 id="edittext" nowysiwyg="yes" edit=$xrefInfo.data}
 			{/legend}
 				<div class="form-group submit">
 					<input type="submit" name="fCancel" value="{tr}Cancel{/tr}" />&nbsp;

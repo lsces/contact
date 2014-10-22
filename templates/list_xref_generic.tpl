@@ -31,7 +31,7 @@
 							<td>
 								{if isset($pageInfo.$source[xref].xref) && $pageInfo.$source[xref].xref <> '' && $pageInfo.$source[xref].xref > 100 }
 									{$pageInfo.$source[xref].xref|escape}
-									{smartlink ititle="Link to" ifile="display_contact.php" ibiticon="icons/accessories-text-editor" content_id=$pageInfo.$source[xref].xref}
+									{smartlink ititle="Link to" ifile="display_contact.php" booticon="icon-note-edit" content_id=$pageInfo.$source[xref].xref}
 								{else}
 									------
 								{/if}
@@ -57,21 +57,21 @@
 							<td>
 								<span class="actionicon">
 									{if $gBitUser->hasPermission( 'p_contact_view_detail' )}
-										{smartlink ititle="View" ifile="view_xref.php" ibiticon="icons/view-fullscreen" content_id=$pageInfo.content_id xref_id=$pageInfo.$source[xref].xref_id}
+										{smartlink ititle="View" ifile="view_xref.php" booticon="icon-view" content_id=$pageInfo.content_id xref_id=$pageInfo.$source[xref].xref_id}
 									{/if}	
 									{if $gBitUser->hasPermission( 'p_contact_update' ) and $source ne 'history' }
 										{if $pageInfo.$source[xref].source eq 'KEY_B' }
-											{smartlink ititle="Callout" ifile="edit_key_break.php" ibiticon="icons/edit-redo" expunge=0 content_id=$pageInfo.content_id xref_id=$pageInfo.$source[xref].xref_id}
-											{smartlink ititle="Reseal" ifile="edit_key_break.php" ibiticon="icons/edit-undo" expunge=2 content_id=$pageInfo.content_id xref_id=$pageInfo.$source[xref].xref_id}
+											{smartlink ititle="Callout" ifile="edit_key_break.php" booticon="icon-redo" expunge=0 content_id=$pageInfo.content_id xref_id=$pageInfo.$source[xref].xref_id}
+											{smartlink ititle="Reseal" ifile="edit_key_break.php" booticon="icon-undo" expunge=2 content_id=$pageInfo.content_id xref_id=$pageInfo.$source[xref].xref_id}
 										{else}
-											{smartlink ititle="Edit" ifile="edit_xref.php" ibiticon="icons/accessories-text-editor" content_id=$pageInfo.content_id xref_id=$pageInfo.$source[xref].xref_id}
+											{smartlink ititle="Edit" ifile="edit_xref.php" booticon="icon-note-edit" content_id=$pageInfo.content_id xref_id=$pageInfo.$source[xref].xref_id}
 										{/if}
 									{/if}	
 									{if $gBitUser->hasPermission( 'p_contact_expunge' ) and $pageInfo.$source[xref].source ne 'KEY_B' }
 										{if $source eq 'history' }
-											{smartlink ititle="Restore" ifile="edit_xref.php" ibiticon="icons/edit-undo" content_id=$pageInfo.content_id xref_id=$pageInfo.$source[xref].xref_id expunge=-1}
+											{smartlink ititle="Restore" ifile="edit_xref.php" booticon="icon-note-edit" content_id=$pageInfo.content_id xref_id=$pageInfo.$source[xref].xref_id expunge=-1}
 										{else}
-											{smartlink ititle="Delete" ifile="edit_xref.php" ibiticon="icons/edit-delete" content_id=$pageInfo.content_id xref_id=$pageInfo.$source[xref].xref_id expunge=1}
+											{smartlink ititle="Delete" ifile="edit_xref.php" booticon="icon-note-delete" content_id=$pageInfo.content_id xref_id=$pageInfo.$source[xref].xref_id expunge=1}
 										{/if}	
 									{/if}	
 								</span>
@@ -90,7 +90,7 @@
 		{if $gBitUser->hasPermission('p_contact_update')}
 			<div>
 				{if $source ne 'history' }
-					{smartlink ititle="Add additional detail record" ifile="add_xref.php" ibiticon="icons/bookmark-new" content_id=$pageInfo.content_id xref_type=$xref_type}
+					{smartlink ititle="Add additional detail record" ifile="add_xref.php" booticon="icon-note-add" content_id=$pageInfo.content_id xref_type=$xref_type}
 				{/if}	
 			</div>
 		{/if}

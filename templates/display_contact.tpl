@@ -51,7 +51,7 @@
 			<li class="item norecords">
 				{tr}No addresses found{/tr}
 				{if $gBitUser->hasPermission('p_edit_contact')}
-					{smartlink ititle="Add an address record" ifile="add_xref_address.php" ibiticon="icons/bookmark-new" content_id=$pageInfo.content_id}
+					{smartlink ititle="Add an address record" ifile="add_xref_address.php" booticon="icon-note-add" content_id=$pageInfo.content_id}
 				{/if}
 			</li>
 		{/section}

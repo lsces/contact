@@ -47,7 +47,7 @@
 						{capture assign=textarea_help}
 							{tr}Directions to assist finding the actual location where site is not accessable via the postcode.{/tr}
 						{/capture}
-						{textarea rows=5 noformat=1 edit=$xrefInfo.data}
+						{textarea rows=5 noformat=1 id="edittext" nowysiwyg="yes" edit=$xrefInfo.data}
 					{/legend}
 				{/jstab}
 

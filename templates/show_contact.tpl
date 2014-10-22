@@ -18,7 +18,7 @@
 			{/jstab}
 		{/if}
 		{jstab title="Images" class="contact_pics"}
-			{include file="`$smarty.const.FISHEYE_PKG_PATH`gallery_views/`$galLayout`/fisheye_`$galLayout`_test.tpl" }
+			{include file="`$smarty.const.FISHEYE_PKG_PATH`gallery_views/fixed_grid/fisheye_fixed_grid_test.tpl" }
 		{/jstab}
 	{/jstabs}
 	</div> {* end .body *}
