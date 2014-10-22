@@ -156,14 +156,14 @@ class Contact extends LibertyContent {
 
 		if( isset( $pParamHash['surname'] ) ) {
 			$pParamHash['name'] = $pParamHash['prefix'].'|'.$pParamHash['forename'].'|'.$pParamHash['surname'].'|'.$pParamHash['suffix'];
-		}
 
-		$pParamHash['title'] = $pParamHash['organisation'];
-		if ( strlen($pParamHash['surname']) > 0 ) {
-			$pParamHash['title'] = $pParamHash['surname'];
-			if ( strlen($pParamHash['prefix']) > 0 ) $pParamHash['title'] .= ', '.$pParamHash['prefix'].' '.$pParamHash['forename'];
-			else if ( strlen($pParamHash['forename']) > 0 ) $pParamHash['title'] .= ', '.$pParamHash['forename'];
+			if ( strlen($pParamHash['surname']) > 0 ) {
+				$pParamHash['title'] = $pParamHash['surname'];
+				if ( strlen($pParamHash['prefix']) > 0 ) $pParamHash['title'] .= ', '.$pParamHash['prefix'].' '.$pParamHash['forename'];
+				else if ( strlen($pParamHash['forename']) > 0 ) $pParamHash['title'] .= ', '.$pParamHash['forename'];
+			}
 		}
+		$pParamHash['title'] = $pParamHash['organisation'];
 		$pParamHash['title'] = trim( $pParamHash['title'] );
 		$pParamHash['contact_store']['xkey'] = $pParamHash['xkey'];
 		return( count( $this->mErrors ) == 0 );
