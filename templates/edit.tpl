@@ -1,4 +1,4 @@
-{* $Header: /cvsroot/bitweaver/_bit_contact/templates/edit.tpl,v 1.4 2010/04/17 04:28:30 wjames5 Exp $ *}
+{strip}
 <div class="floaticon">{bithelp}</div>
 
 {assign var=serviceEditTpls value=$gLibertySystem->getServiceValues('content_edit_tpl')}
@@ -27,7 +27,6 @@
 		{formfeedback warning=$errors.edit_conflict}
 	{/if}
 
-	{strip}
 	<div class="body">
 		{form enctype="multipart/form-data" id="editpageform"}
 			{jstabs}
@@ -151,5 +150,4 @@
 
 	</div><!-- end .body -->
 </div><!-- end .admin -->
-
 {/strip}
