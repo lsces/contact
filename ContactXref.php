@@ -24,7 +24,7 @@ class ContactXref extends BitBase {
 	var $mContentId;
 	var $mDate;
 
-	function ContactXref( $iXrefId = NULL ) {
+	function __construct( $iXrefId = NULL ) {
 		$this->mXrefId = NULL;
 		$this->mSource = NULL;
 		parent::__construct();

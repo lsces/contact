@@ -20,7 +20,7 @@ require_once( KERNEL_PKG_PATH."BitBase.php" );
 class ContactType extends BitBase {
 	var $mContactType;
 
-	function ContactType() {
+	function __construct() {
 		parent::__construct();
 	}
 
