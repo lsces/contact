@@ -29,8 +29,8 @@ if ( !isset($_REQUEST['contract'])) {
 // Get a list of Contracts 
 $contracts = $contacts->getContractList( $_REQUEST['contract'] );
 
-$gBitSmarty->assign_by_ref('listInfo', $_REQUEST['listInfo']);
-$gBitSmarty->assign_by_ref('list', $contracts);
+$gBitSmarty->assignByRef('listInfo', $_REQUEST['listInfo']);
+$gBitSmarty->assignByRef('list', $contracts);
 
 // Display the template
 $gBitSystem->display( 'bitpackage:contact/list_contracts.tpl', NULL, array( 'display_mode' => 'list' ));

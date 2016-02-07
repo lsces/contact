@@ -30,8 +30,8 @@ if ( empty( $_REQUEST["sort_mode"] ) ) {
 // Get a list of Contacts 
 $contacts->getList( $_REQUEST );
 
-$smarty->assign_by_ref('listInfo', $_REQUEST['listInfo']);
-$smarty->assign_by_ref('list', $contacts);
+$smarty->assignByRef('listInfo', $_REQUEST['listInfo']);
+$smarty->assignByRef('list', $contacts);
 
 
 // Display the template

@@ -46,8 +46,8 @@ if ( $listHash['listInfo']['count'] == 1 ){
 	bit_redirect( CONTACT_PKG_URL."display_contact.php?content_id=".$listcontacts[0]['content_id'] );
 }
 
-$gBitSmarty->assign_by_ref( 'listcontacts', $listcontacts );
-$gBitSmarty->assign_by_ref( 'listInfo', $listHash['listInfo'] );
+$gBitSmarty->assignByRef( 'listcontacts', $listcontacts );
+$gBitSmarty->assignByRef( 'listInfo', $listHash['listInfo'] );
 
 $gBitSystem->setBrowserTitle("View Contacts List");
 // Display the template

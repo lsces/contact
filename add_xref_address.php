@@ -51,9 +51,9 @@ $gContent->mInfo['format_guid'] = 'text';
 $xrefInfo['ignore_start_date'] = 'n';
 $xrefInfo['ignore_end_date'] = 'y';
 
-$gBitSmarty->assign_by_ref( 'xrefInfo', $xrefInfo );
-$gBitSmarty->assign_by_ref( 'title', $gContent->mInfo['title'] );
+$gBitSmarty->assignByRef( 'xrefInfo', $xrefInfo );
+$gBitSmarty->assignByRef( 'title', $gContent->mInfo['title'] );
 
-$gBitSmarty->assign_by_ref( 'errors', $gContent->mErrors );
+$gBitSmarty->assignByRef( 'errors', $gContent->mErrors );
 $gBitSystem->display( 'bitpackage:contact/add_xref_address.tpl', 'Edit: ' , array( 'display_mode' => 'edit' ));
 ?>

@@ -45,10 +45,10 @@ if( empty( $xrefInfo['content_id'] ) ) {
 
 // Ensure simple text edit boxes for xref entries
 $gContent->mInfo['format_guid'] = 'text';
-$gBitSmarty->assign_by_ref( 'xrefInfo', $xrefInfo );
-$gBitSmarty->assign_by_ref( 'title', $gContent->mInfo['title'] );
-$gBitSmarty->assign_by_ref( 'xref_title', $gContent->mInfo['xref_title'] );
+$gBitSmarty->assignByRef( 'xrefInfo', $xrefInfo );
+$gBitSmarty->assignByRef( 'title', $gContent->mInfo['title'] );
+$gBitSmarty->assignByRef( 'xref_title', $gContent->mInfo['xref_title'] );
 
-$gBitSmarty->assign_by_ref( 'errors', $gContent->mErrors );
+$gBitSmarty->assignByRef( 'errors', $gContent->mErrors );
 $gBitSystem->display( 'bitpackage:contact/edit_key_break.tpl', 'Edit: ' , array( 'display_mode' => 'edit' ));
 ?>

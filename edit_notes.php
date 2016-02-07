@@ -69,9 +69,9 @@ if( empty( $formInfo ) ) {
 }
 
 $formInfo['contact_type_list'] = $gContent->getContactSourceList();
-$gBitSmarty->assign_by_ref( 'pageInfo', $formInfo );
+$gBitSmarty->assignByRef( 'pageInfo', $formInfo );
 
-$gBitSmarty->assign_by_ref( 'errors', $gContent->mErrors );
+$gBitSmarty->assignByRef( 'errors', $gContent->mErrors );
 $gBitSmarty->assign( (!empty( $_REQUEST['tab'] ) ? $_REQUEST['tab'] : 'body').'TabSelect', 'tdefault' );
 $gBitSmarty->assign('show_page_bar', 'y');
 

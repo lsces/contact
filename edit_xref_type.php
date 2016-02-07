@@ -16,7 +16,7 @@ $gBitSystem->verifyPermission( 'p_contact_update' );
 include_once( CONTACT_PKG_PATH.'Contact.php' );
 $gContent = new Contact();
 
-$gBitSmarty->assign_by_ref( 'xref_type_info', $gContent->mInfo);
+$gBitSmarty->assignByRef( 'xref_type_info', $gContent->mInfo);
 
 if( isset( $_REQUEST["fSubmitSaveXrefType"] ) ) {
     $gContent->storeXrefType( $_REQUEST );

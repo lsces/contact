@@ -21,14 +21,14 @@ require_once( LIBERTY_PKG_PATH.'lookup_content_inc.php' );
 			$gContent = new Contact();
 		}
 	
-		$gBitSmarty->clear_assign( 'gContent' );
+		$gBitSmarty->clearAssign( 'gContent' );
 		$gBitSmarty->assign( 'gContent', $gContent );
 	}
 /*
 if( is_object( $gContent ) ) {
 	$gTask = new Tasks( NULL, $_REQUEST['content_id'] );
 	$gTask->mInfo['tasks'] = $gTask->getList( $_REQUEST );
-	$gBitSmarty->assign_by_ref( 'taskInfo', $gTask->mInfo );
+	$gBitSmarty->assignByRef( 'taskInfo', $gTask->mInfo );
 }
 */
 ?>

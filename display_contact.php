@@ -27,8 +27,8 @@ $lookup = array();
 $gGallery = new FisheyeGallery(4);
 $gGallery->load();
 $gGallery->loadImages(0,4);
-$gBitSmarty->assign_by_ref('gGallery', $gGallery);
-$gBitSmarty->assign_by_ref('galleryId', $gGallery->mGalleryId);
+$gBitSmarty->assignByRef('gGallery', $gGallery);
+$gBitSmarty->assignByRef('galleryId', $gGallery->mGalleryId);
 $gBitSmarty->assign('galLayout', 'fixed_grid');
 
 if ( !$gContent->isValid() ) {

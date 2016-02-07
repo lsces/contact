@@ -13,7 +13,7 @@ $gBitSystem->verifyPermission( 'p_contact_admin' );
 if( isset( $_REQUEST["fSubmitAddXrefType"] ) ) {
 	$gContent->storeXrefType( $_REQUEST );
 	if ( !empty( $gContent->mErrors ) ) {
-		$gBitSmarty->assign_by_ref('errors', $gContent->mErrors );
+		$gBitSmarty->assignByRef('errors', $gContent->mErrors );
 	}
 } elseif( !empty( $_REQUEST['fActivateXrefType'] )&& $gContent ) {
 	$gContent->activateXrefType();
