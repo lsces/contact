@@ -9,6 +9,3 @@
  * @package contact
  * @subpackage functions
  */
-
-
-?>

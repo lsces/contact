@@ -73,6 +73,6 @@
 
 </div><!-- end .body -->
 
-{libertypagination}
+{pagination}
 
 </div> {* end .admin *}

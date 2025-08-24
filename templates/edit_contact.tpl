@@ -5,7 +5,7 @@
 
 {* Check to see if there is an editing conflict *}
 {if $editpageconflict == 'y'}
-	<script language="javascript" type="text/javascript">
+	<script>
 		<!-- Hide Script
 			alert("{tr}This page is being edited by{/tr} {$semUser}. {tr}Proceed at your own peril{/tr}.")
 		//End Hide Script-->
@@ -15,16 +15,16 @@
 <div class="admin contact">
 
 	{if $preview}
-		<h2>Preview - {$pageInfo.title}</h2>
+		<h2>Preview - {$gContent->mInfo.title}</h2>
 		<div class="preview">
-			{include file="bitpackage:contact/contact_display.tpl" page=`$pageInfo.content_id`}
+			{include file="bitpackage:contact/contact_display.tpl" page=`$gContent->mInfo.content_id`}
 		</div>
 	{/if}
 
 	<div class="header">
 		<h1>
-		{if $pageInfo.content_id}
-			{tr}{tr}Edit - {/tr} {$pageInfo.title}{/tr}
+		{if $gContent->mInfo.content_id}
+			{tr}{tr}Edit - {/tr} {$gContent->mInfo.title}{/tr}
 		{else}
 			{tr}Create New Record{/tr}
 		{/if}
@@ -33,49 +33,49 @@
 
 	<div class="body">
 		{form legend="Edit/Create Contact Record" enctype="multipart/form-data" id="editpageform"}
-			<input type="hidden" name="content_id" value="{$pageInfo.content_id}" />
+			<input type="hidden" name="content_id" value="{$gContent->mInfo.content_id}" />
 
 			{include file="bitpackage:contact/edit_type_header.tpl"}
 
 {*			<div class="form-group">
 				{formlabel label="Title" for="title"}
 				{forminput}
-					<input size="60" type="text" name="prefix" id="prefix" value="{$pageInfo.prefix|escape}" />
+					<input size="60" type="text" name="prefix" id="prefix" value="{$gContent->mInfo.prefix|escape}" />
 				{/forminput}
 				<div class="clear"></div>
 			</div>
 			<div class="form-group">
 				{formlabel label="Forename" for="forename"}
 				{forminput}
-					<input size="60" type="text" name="forename" id="forename" value="{$pageInfo.forename|escape}" />
+					<input size="60" type="text" name="forename" id="forename" value="{$gContent->mInfo.forename|escape}" />
 				{/forminput}
 				<div class="clear"></div>
 			</div>
 			<div class="form-group">
 				{formlabel label="Surname" for="surname"}
 				{forminput}
-					<input size="60" type="text" name="surname" id="surname" value="{$pageInfo.surname|escape}" />
+					<input size="60" type="text" name="surname" id="surname" value="{$gContent->mInfo.surname|escape}" />
 				{/forminput}
 				<div class="clear"></div>
 			</div>
 			<div class="form-group">
 				{formlabel label="Suffix" for="suffix"}
 				{forminput}
-					<input size="60" type="text" name="suffix" id="suffix" value="{$pageInfo.suffix|escape}" />
+					<input size="60" type="text" name="suffix" id="suffix" value="{$gContent->mInfo.suffix|escape}" />
 				{/forminput}
 				<div class="clear"></div>
 			</div>
 			<div class="form-group">
 				{formlabel label="Organisation" for="organisation"}
 				{forminput}
-					<input size="60" type="text" name="organisation" id="organisation" value="{$pageInfo.organisation|escape}" />
+					<input size="60" type="text" name="organisation" id="organisation" value="{$gContent->mInfo.organisation|escape}" />
 				{/forminput}
 				<div class="clear"></div>
 			</div>
 			<div class="form-group">
 				{formlabel label="NI Number" for="nino"}
 				{forminput}
-					<input size="10" type="text" name="nino" id="nino" value="{$pageInfo.nino|escape}" />
+					<input size="10" type="text" name="nino" id="nino" value="{$gContent->mInfo.nino|escape}" />
 				{/forminput}
 				<div class="clear"></div>
 			</div>
@@ -83,7 +83,7 @@
 			<div class="form-group">
 				{formlabel label="Note" for="description"}
 				{forminput}
-					<input size="60" type="text" name="description" id="description" value="{$pageInfo.description|escape}" />
+					<input size="60" type="text" name="description" id="description" value="{$gContent->mInfo.description|escape}" />
 				{/forminput}
 				<div class="clear"></div>
 			</div>
@@ -92,7 +92,7 @@
 				{forminput}
 					<input type="hidden" name="rows" value="{$rows}" />
 					<input type="hidden" name="cols" value="{$cols}" />
-					<textarea id="{$textarea_id}" name="edit" rows="{$rows|default:20}" cols="{$cols|default:80}">{if !$preview}{$pageInfo.data|escape}{else}{$edit}{/if}</textarea>
+					<textarea id="{$textarea_id}" name="edit" rows="{$rows|default:20}" cols="{$cols|default:80}">{if !$preview}{$gContent->mInfo.data|escape}{else}{$edit}{/if}</textarea>
 				{/forminput}
 				<div class="clear"></div>
 			</div>

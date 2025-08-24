@@ -1,5 +1,5 @@
 
-		{assign var=xrefcnt value=$pageInfo.xref|@count}
+		{assign var=xrefcnt value=$gContent->mInfo.xref|@count}
 		{jstab title="Cross reference ($xrefcnt)"}
 		{legend legend="Information References"}
 		<div class="form-group">
@@ -19,34 +19,34 @@
 					</tr>
 				</thead>
 				<tbody>
-					{section name=xref loop=$pageInfo.xref}
+					{section name=xref loop=$gContent->mInfo.xref}
 						<tr class="{cycle values="even,odd"}" title="{$list[county].title|escape}">
 							<td>
-								{$pageInfo.xref[xref].source_title|escape}
+								{$gContent->mInfo.xref[xref].source_title|escape}
 							</td>
 							<td>
-								{$pageInfo.xref[xref].data|escape}
+								{$gContent->mInfo.xref[xref].data|escape}
 							</td>
 							<td>
-								{if isset($pageInfo.xref[xref].usn) && ($pageInfo.xref[xref].usn <> '') }
-									{$pageInfo.xref[xref].usn|escape}
-									{smartlink ititle="Link to" ifile="../property/display_property.php" booticon="icon-note-edit" property_id=$pageInfo.xref[xref].usn}
+								{if isset($gContent->mInfo.xref[xref].usn) && ($gContent->mInfo.xref[xref].usn <> '') }
+									{$gContent->mInfo.xref[xref].usn|escape}
+									{smartlink ititle="Link to" ifile="../property/display_property.php" booticon="icon-note-edit" property_id=$gContent->mInfo.xref[xref].usn}
 								{/if}
 							</td>
 							{if $gBitSystem->isFeatureActive( 'contact_list_last_modified' )}
 								<td>
-									{$pageInfo.xref[xref].last_update_date|bit_long_date}
+									{$gContent->mInfo.xref[xref].last_update_date|bit_long_date}
 								</td>
 							{/if}
 							<td>
 								<span class="actionicon">
-									{smartlink ititle="View" ifile="view_xref.php" booticon="icon-note-go" source=$pageInfo.xref[xref].source xref=$pageInfo.xref[xref].cross_reference}
+									{smartlink ititle="View" ifile="view_xref.php" booticon="icon-note-go" source=$gContent->mInfo.xref[xref].source xref=$gContent->mInfo.xref[xref].cross_reference}
 								</span>
 								<span class="actionicon">
-									{smartlink ititle="Edit" ifile="edit_xref.php" booticon="icon-note-edit" source=$pageInfo.xref[xref].source xref=$pageInfo.xref[xref].cross_reference}								</span>
+									{smartlink ititle="Edit" ifile="edit_xref.php" booticon="icon-note-edit" source=$gContent->mInfo.xref[xref].source xref=$gContent->mInfo.xref[xref].cross_reference}								</span>
 								</span>
-								<label for="ev_{$pageInfo.xref[xref].cross_reference}">	
-									{$pageInfo.xref[xref].cross_reference}
+								<label for="ev_{$gContent->mInfo.xref[xref].cross_reference}">	
+									{$gContent->mInfo.xref[xref].cross_reference}
 								</label>
 							</td>
 						</tr>

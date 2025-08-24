@@ -11,20 +11,21 @@
 /**
  * Required setup
  */
-global $gBitSystem;
-require_once( CONTACT_PKG_PATH.'ContactXrefType.php' );
+namespace Bitweaver\Contact;
+use Bitweaver\BitBase;
+use Bitweaver\BitDate;
 
 /**
  * @package contact
  */
 class ContactXref extends BitBase {
-	var $mType;
-	var $mSource;
-	var $mXrefId;
-	var $mContentId;
-	var $mDate;
+	public $mType;
+	public $mSource;
+	public $mXrefId;
+	public $mContentId;
+	public $mDate;
 
-	function __construct( $iXrefId = NULL ) {
+	public function __construct( $iXrefId = NULL ) {
 		$this->mXrefId = NULL;
 		$this->mSource = NULL;
 		parent::__construct();
@@ -37,12 +38,12 @@ class ContactXref extends BitBase {
 		$offset = $this->mDate->get_display_offset();
 	}
 
-	function isValid() {
-		return ($this->verifyId($this->mXrefId));
+	public function isValid() {
+		return $this->verifyId( $this->mXrefId );
 	}
 
-	function load( $pXref_id = NULL ) {
-		if( @BitBase::verifyId( $pXref_id ) ) {
+	public function load( $pXref_id = NULL ) {
+		if( BitBase::verifyId( $pXref_id ) ) {
 			$sql = "SELECT x.*, CASE
 					WHEN x.`xorder` = 0 THEN s.`cross_ref_title`
 					ELSE s.`cross_ref_title` || '-' || x.`xorder` END
@@ -68,21 +69,23 @@ class ContactXref extends BitBase {
 		}
 	}
 
-	function verify( &$pParamHash ) {
+	public function verify( &$pParamHash ) {
 //		if ( $this->isValid() ) {
 			// Validate the (optional) xref_id parameter
-			if (@$this->verifyId($pParamHash['xref_id'])) {
-				$pParamHash['xref_id'] = (int)$pParamHash['xref_id'];
-			} else {
-				$pParamHash['xref_id'] = NULL;
-			}
+			$pParamHash['xref_id'] = ( @$this->verifyId( $pParamHash['xref_id'] ) ) ? (int) $pParamHash['xref_id'] : null;
+
+			if ( isset( $pParamHash['content_id'] )) {
+				$pParamHash['xref_store']['content_id'] = $pParamHash['content_id'];
+			} 
+
+			if ( isset( $pParamHash['source'] )) {
+				$pParamHash['xref_store']['source'] = $pParamHash['source'];
+			} 
+			
+			$pParamHash['xref_store']['xorder'] = 0;
 
 			if ( isset ( $pParamHash['fAddXref'] ) ) {
-				if ( isset( $pParamHash['Array_xref_type_list'] )) {
-					$pParamHash['xref_store']['source'] = $pParamHash['Array_xref_type_list']['Array.source'];
-				} else {
-					$pParamHash['xref_store']['source'] = $pParamHash['source'];
-				}
+				$pParamHash['xref_store']['source'] = isset( $pParamHash['Array_xref_type_list'] ) ? $pParamHash['Array_xref_type_list']['Array.source'] : $pParamHash['source'];
 				$pParamHash['xref_store']['content_id'] = $pParamHash['content_id'];
 				$sql = "SELECT x.`multi` FROM `".BIT_DB_PREFIX."contact_xref_source` x WHERE x.`source` = ?";				
 				$next = $this->mDb->getOne( $sql, array(  $pParamHash['xref_store']['source'] ) );
@@ -165,10 +168,10 @@ class ContactXref extends BitBase {
 				$pParamHash['xref_store']['end_date'] = '';
 			}
 //		}
-		return(count($this->mErrors) == 0);
+		return count( $this->mErrors ) == 0;
 	}
 
-	function store( &$pParamHash = NULL ) {
+	public function store( &$pParamHash = NULL ) {
 		if( $this->verify( $pParamHash ) ) {
 			$table = BIT_DB_PREFIX."contact_xref";
 
@@ -190,17 +193,21 @@ class ContactXref extends BitBase {
 		}
 	}
 
-	function stepXref( &$pParamHash = NULL ) {
+	public function stepXref( &$pParamHash = NULL ) {
 		if ( isset($pParamHash["expunge"]) ) {
-			if ( $pParamHash["expunge"] == 2 ) {
-				$pParamHash['end_date'] = $this->mDb->NOW();
-				$this->store( $pParamHash );
-				unset($pParamHash['xref_id']);
-				$pParamHash['fStepXref'] = 1;
-			} else if ( $pParamHash["expunge"] == 1 ) {
-				$pParamHash['end_date'] = $this->mDb->NOW();
-			} else {
-				$pParamHash['ignore_end_date'] = 'on';
+			switch ($pParamHash["expunge"]) {
+				case 2:
+					$pParamHash['end_date'] = $this->mDb->NOW();
+					$this->store( $pParamHash );
+					unset( $pParamHash['xref_id'] );
+					$pParamHash['fStepXref'] = 1;
+					break;
+				case 1:
+					$pParamHash['end_date'] = $this->mDb->NOW();
+					break;
+				default:
+					$pParamHash['ignore_end_date'] = 'on';
+					break;
 			}
 		}
 		$this->store( $pParamHash );
@@ -208,4 +215,3 @@ class ContactXref extends BitBase {
 	}
 	
 }
-?>

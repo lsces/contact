@@ -12,8 +12,8 @@
 /**
  * required setup
  */
-require_once( LIBERTY_PKG_PATH.'LibertyContent.php' );		// Contact base class
-require_once( NLPG_PKG_PATH.'lib/phpcoord-2.3.php' );
+use Bitweaver\Liberty\LibertyBase;		// Contact base class
+require_once CONTACT_PKG_PATH . 'lib/phpcoord-2.3.php';
 
 define( 'CONTACT_CONTENT_TYPE_GUID', 'contact' );
 
@@ -246,8 +246,6 @@ class Contact extends LibertyBase {
 	/**
 	 * Returns list of contract entries
 	 *
-	 * @param integer 
-	 * @param integer 
 	 * @param integer 
 	 * @return string Text for the title description
 	 */

@@ -13,9 +13,10 @@
 /**
  * required setup
  */
-require_once( '../kernel/setup_inc.php' );
+require_once '../kernel/includes/setup_inc.php';
 
-include_once( CONTACT_PKG_PATH.'Contact.php' );
+use Bitweaver\Contact\Contact;
+use Bitweaver\KernelTools;
 
 $gBitSystem->verifyPackage( 'contact' );
 $gBitSystem->verifyPermission( 'p_contact_view' );
@@ -43,14 +44,12 @@ if( $gBitUser->hasPermission("p_contact_view_changes") && $_SESSION['contact']['
 $listcontacts = $gContent->getList( $listHash );
 
 if ( $listHash['listInfo']['count'] == 1 ){
-	bit_redirect( CONTACT_PKG_URL."display_contact.php?content_id=".$listcontacts[0]['content_id'] );
+	KernelTools::bit_redirect( CONTACT_PKG_URL."display_contact.php?content_id=".$listcontacts[0]['content_id'] );
 }
 
-$gBitSmarty->assignByRef( 'listcontacts', $listcontacts );
-$gBitSmarty->assignByRef( 'listInfo', $listHash['listInfo'] );
+$gBitSmarty->assign( 'listcontacts', $listcontacts );
+$gBitSmarty->assign( 'listInfo', $listHash['listInfo'] );
 
 $gBitSystem->setBrowserTitle("View Contacts List");
 // Display the template
 $gBitSystem->display( 'bitpackage:contact/list.tpl', NULL, array( 'display_mode' => 'list' ));
-
-?>

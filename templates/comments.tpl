@@ -7,7 +7,7 @@
 
 		<div class="body"{if !( $post_comment_request || $post_comment_preview )} id="editcomments"{/if}>
 			<div id="edit_comments" {if $comments_ajax}style="display:none"{/if}>
-				{include file="bitpackage:contact/comments_post_inc.tpl" post_title="Post Comment"}
+				{include file="bitpackage:liberty/comments_post_inc.tpl" post_title="Post Comment"}
 			</div>
 
 			{include file="bitpackage:liberty/comments_display_option_bar.tpl"}
@@ -20,11 +20,11 @@
 
 			<div id="comment_{$gContent->mContentId}"></div>
 				{foreach name=comments_loop key=key item=item from=$comments}
-					{displaycomment comment="$item"}
+					{displaycomment comment=$item}
 				{/foreach}
 			<div id="comment_{$gContent->mContentId}_footer"></div>
 
-			{libertypagination ihash=$commentsPgnHash}
+			{pagination}
 		</div><!-- end .body -->
 	</div><!-- end .comment -->
 	{/strip}

@@ -1,10 +1,11 @@
 <?php
 // $Header$
-require_once( '../../kernel/setup_inc.php' );
+require_once '../../kernel/includes/setup_inc.php';
 
-include_once( CONTACT_PKG_PATH.'Contact.php' );
-include_once( CONTACT_PKG_PATH.'ContactXrefType.php' );
-include_once( CONTACT_PKG_PATH.'lookup_contact_xref_type_inc.php' );
+use Bitweaver\Contact\Contact;
+use Bitweaver\Contact\ContactXrefType;
+use Bitweaver\KernelTools;
+include_once CONTACT_PKG_INCLUDE_PATH . 'lookup_contact_xref_type_inc.php';
 
 // Is package installed and enabled
 $gBitSystem->verifyPackage( 'contact' );
@@ -13,7 +14,7 @@ $gBitSystem->verifyPermission( 'p_contact_admin' );
 if( isset( $_REQUEST["fSubmitAddXrefType"] ) ) {
 	$gContent->storeXrefType( $_REQUEST );
 	if ( !empty( $gContent->mErrors ) ) {
-		$gBitSmarty->assignByRef('errors', $gContent->mErrors );
+		$gBitSmarty->assign('errors', $gContent->mErrors );
 	}
 } elseif( !empty( $_REQUEST['fActivateXrefType'] )&& $gContent ) {
 	$gContent->activateXrefType();
@@ -28,5 +29,4 @@ if( isset( $_REQUEST["fSubmitAddXrefType"] ) ) {
 $xref_types = ContactXrefType::getContactXrefTypeList();
 $gBitSmarty->assign( 'xref_types', $xref_types );
 
-$gBitSystem->display( 'bitpackage:contact/admin_xref_types.tpl', tra( 'Edit XrefTypes' ) , array( 'display_mode' => 'admin' ));
-?>
+$gBitSystem->display( 'bitpackage:contact/admin_xref_types.tpl', KernelTools::tra( 'Edit XrefTypes' ) , array( 'display_mode' => 'admin' ));

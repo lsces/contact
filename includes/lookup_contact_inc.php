@@ -8,13 +8,13 @@
 /**
  * Initialization
  */
-require_once( CONTACT_PKG_PATH.'Contact.php');
+use Bitweaver\BitBase;
+use Bitweaver\Contact\Contact;
 //require_once( TASKS_PKG_PATH.'Tasks.php');
-require_once( LIBERTY_PKG_PATH.'lookup_content_inc.php' );
 
-	// if we already have a gContent, we assume someone else created it for us, and has properly loaded everything up.
+// if we already have a gContent, we assume someone else created it for us, and has properly loaded everything up.
 	if( empty( $gContent ) || !is_object( $gContent ) ) {
-		if( @BitBase::verifyId( $_REQUEST['content_id'] ) ) {
+		if( BitBase::verifyId( $_REQUEST['content_id'] ?? 0 ) ) {
 			$gContent = new Contact( NULL, $_REQUEST['content_id'] );
 			$gContent->load();
 		} else {
@@ -28,7 +28,6 @@ require_once( LIBERTY_PKG_PATH.'lookup_content_inc.php' );
 if( is_object( $gContent ) ) {
 	$gTask = new Tasks( NULL, $_REQUEST['content_id'] );
 	$gTask->mInfo['tasks'] = $gTask->getList( $_REQUEST );
-	$gBitSmarty->assignByRef( 'taskInfo', $gTask->mInfo );
+	$gBitSmarty->assign( 'taskInfo', $gTask->mInfo );
 }
 */
-?>

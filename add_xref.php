@@ -13,12 +13,12 @@
 /**
  * required setup
  */
-require_once( '../kernel/setup_inc.php' );
+require_once '../kernel/includes/setup_inc.php';
 
 $gBitSystem->verifyPackage( 'contact' );
 $gBitSystem->verifyPermission( 'p_contact_update' );
 
-include_once( CONTACT_PKG_PATH.'lookup_contact_inc.php' );
+include_once CONTACT_PKG_INCLUDE_PATH . 'lookup_contact_inc.php';
 
 if (isset($_REQUEST["fCancel"])) {
 	if( !empty( $gContent->mContentId ) ) {
@@ -61,11 +61,11 @@ $xrefInfo['xref_format_list'] = $gContent->getXrefFormatList();
 $gContent->mInfo['format_guid'] = 'text';
 // Default dates for creating new record
 $xrefInfo['ignore_start_date'] = 'n';
+$xrefInfo['start_date'] = $gContent->mDate->getUTCTime();
 $xrefInfo['ignore_end_date'] = 'y';
 
-$gBitSmarty->assignByRef( 'xrefInfo', $xrefInfo );
-$gBitSmarty->assignByRef( 'title', $gContent->mInfo['title'] );
+$gBitSmarty->assign( 'xrefInfo', $xrefInfo );
+$gBitSmarty->assign( 'title', $gContent->mInfo['title'] );
 
-$gBitSmarty->assignByRef( 'errors', $gContent->mErrors );
+$gBitSmarty->assign( 'errors', $gContent->mErrors );
 $gBitSystem->display( 'bitpackage:contact/add_xref.tpl', 'Edit: ' , array( 'display_mode' => 'edit' ));
-?>

@@ -1,17 +1,17 @@
 <div class="body">
 	<div class="content">
 		{include file="bitpackage:liberty/storage_thumbs.tpl"}
-		Title: {$pageInfo.prefix}<br />
-		Forename: {$pageInfo.forename}<br />
-		Surname: {$pageInfo.surname}<br />
-		Suffix: {$pageInfo.suffix}<br />
+		Title: {$gContent->mInfo.prefix}<br />
+		Forename: {$gContent->mInfo.forename}<br />
+		Surname: {$gContent->mInfo.surname}<br />
+		Suffix: {$gContent->mInfo.suffix}<br />
 		<br />
-		Organisation: {$pageInfo.organisation}<br />
+		Organisation: {$gContent->mInfo.organisation}<br />
 		<br />
-		NI Number:{$pageInfo.nino} Date of Birth:{$pageInfo.dob} Date of eighteenth:{$pageInfo.eighteenth} Date of Death:{$pageInfo.dod} <br />
+		NI Number:{$gContent->mInfo.nino} Date of Birth:{$gContent->mInfo.dob} Date of eighteenth:{$gContent->mInfo.eighteenth} Date of Death:{$gContent->mInfo.dod} <br />
 		<br />
-		Note: {$pageInfo.note}<br />
+		Note: {$gContent->mInfo.note}<br />
 		Memo:<br />
-		{$pageInfo.data}<br />
+		{$gContent->mInfo.data}<br />
 	</div><!-- end .content -->
 </div><!-- end .body -->

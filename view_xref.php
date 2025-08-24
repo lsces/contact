@@ -13,12 +13,12 @@
 /**
  * required setup
  */
-require_once( '../kernel/setup_inc.php' );
+require_once '../kernel/includes/setup_inc.php';
 
 $gBitSystem->verifyPackage( 'contact' );
 $gBitSystem->verifyPermission( 'p_contact_update' );
 
-include_once( CONTACT_PKG_PATH.'lookup_contact_inc.php' );
+include_once CONTACT_PKG_INCLUDE_PATH . 'lookup_contact_inc.php';
 
 if( !empty( $_REQUEST['xref_id'] ) ) {
 	$gContent->loadXref( $_REQUEST['xref_id'] );
@@ -46,14 +46,13 @@ if( empty( $xrefInfo ) ) {
 	$xrefInfo = &$gContent->mInfo['xref_store']['data'];
 }
 
-$gBitSmarty->assignByRef( 'xrefInfo', $xrefInfo );
-$gBitSmarty->assignByRef( 'title', $gContent->mInfo['title'] );
-$gBitSmarty->assignByRef( 'xref_title', $gContent->mInfo['xref_title'] );
+$gBitSmarty->assign( 'xrefInfo', $xrefInfo );
+$gBitSmarty->assign( 'title', $gContent->mInfo['title'] );
+$gBitSmarty->assign( 'xref_title', $gContent->mInfo['xref_title'] );
 
-$gBitSmarty->assignByRef( 'errors', $gContent->mErrors );
+$gBitSmarty->assign( 'errors', $gContent->mErrors );
 if( isset($xrefInfo['template']) ) {
 	$gBitSystem->display( 'bitpackage:contact/view_xref_'.$xrefInfo['template'].'.tpl', 'View: ' , array( 'display_mode' => 'view' ));
 } else {
 	$gBitSystem->display( 'bitpackage:contact/view_xref.tpl', 'View: ' , array( 'display_mode' => 'view' ));
 }
-?>

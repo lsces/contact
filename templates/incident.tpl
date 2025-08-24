@@ -1,0 +1,41 @@
+{strip}
+<form id="employmentForm" class="form-horizontal" method="post" action="process.php?form=incident"
+  	data-fv-framework="bootstrap"
+	data-fv-icon-valid="icon-tick"
+	data-fv-icon-invalid="icon-cross"
+	data-fv-icon-validating="icon-recycle">
+
+	<input type="hidden" value="form_incident" name="formID" />
+	<div class="col-lg-2 col-md-1 hidden-sm hidden-xs">&nbsp;</div>
+	<div class="form-all col-lg-8 col-md-10 col-sm-12 col-xs-12">
+
+        <div class="form-header-group">
+          <div class="header-text httal htvam">
+            <h3 class="form-header" id="header_1">
+              Incident Report
+            </h3>
+          </div>
+        </div>
+
+		<div class="form-input-wide" id="cid_18">
+			<div class="form-html" id="text_18">
+				<p>
+					<span style="color: #ff0000;"><strong>OK14A Rev: 1 Date: 04/2014 Pages: 1 of 1</strong></span>
+				</p>
+			</div>
+		</div>
+
+		{foreach from=$formInfo key=i item=item}
+			{include file="bitpackage:form/`$item['form_template']`.tpl" name=$item['cross_ref_title'] value1=$item['xkey'] value2=$item['xkey_ext'] value3=$item['xdata']}
+		{/foreach}
+
+		<div class="form-group">
+			<div class="col-xs-9 col-xs-offset-3">
+				<button type="submit" class="btn btn-primary" name="signup"
+					value="Sign up">Submit</button>
+			</div>
+		</div>
+	</div>
+	<div class="col-lg-2 col-md-1 hidden-sm hidden-xs">&nbsp;</div>
+</form>
+{/strip}

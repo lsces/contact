@@ -11,15 +11,15 @@
 /**
  * Required setup
  */
-global $gBitSystem;
-require_once( KERNEL_PKG_PATH."BitBase.php" );
+namespace Bitweaver\Contact;
+use Bitweaver\BitBase;
 
 /**
  * @package contact
  */
 class ContactXrefType extends BitBase {
 
-	function __construct() {
+	public function __construct() {
 		parent::__construct();
 
 	}
@@ -44,7 +44,7 @@ class ContactXrefType extends BitBase {
 
 		$result = $gBitSystem->mDb->query( $query, $bindVars );
 
-        $ret = array();
+        $ret = [];
 
         while( $res = $result->fetchRow() ) {
 			$res["num_entries"] = $gBitSystem->mDb->getOne( "SELECT COUNT(*) FROM `".BIT_DB_PREFIX."contact_xref` WHERE `source`= ?", array( $res["source"] ) );
@@ -54,6 +54,4 @@ class ContactXrefType extends BitBase {
 
         return $ret;
     }
-
 }
-?>

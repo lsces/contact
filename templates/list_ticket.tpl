@@ -1,6 +1,6 @@
 
 
-		{assign var=ticketscnt value=$pageInfo.tickets|@count}
+		{assign var=ticketscnt value=$gContent->mInfo.tickets|@count}
 		{jstab title="Ticket History ($ticketscnt)"}
 		{legend legend="Ticket History"}
 		<div class="form-group">
@@ -16,20 +16,20 @@
 					</tr>
 				</thead>
 				<tbody>
-					{section name=ticket loop=$pageInfo.tickets}
-						<tr class="{cycle values="even,odd"}" title="{$pageInfo.ticket[ticket].title|escape}">
+					{section name=ticket loop=$gContent->mInfo.tickets}
+						<tr class="{cycle values="even,odd"}" title="{$gContent->mInfo.ticket[ticket].title|escape}">
 							<td>
-								{$pageInfo.tickets[ticket].ticket_ref|bit_long_date} - {$pageInfo.tickets[ticket].ticket_no}
+								{$gContent->mInfo.tickets[ticket].ticket_ref|bit_long_date} - {$gContent->mInfo.tickets[ticket].ticket_no}
 							</td>
 							<td>
-								{$pageInfo.tickets[ticket].tags|escape}
+								{$gContent->mInfo.tickets[ticket].tags|escape}
 							</td>
 							<td>
 								<span class="actionicon">
-									{smartlink ititle="View" ifile="view_ticket.php" booticon="icon-note-edit" ticket_id=$pageInfo.tickets[ticket].ticket_id}
+									{smartlink ititle="View" ifile="view_ticket.php" booticon="icon-note-edit" ticket_id=$gContent->mInfo.tickets[ticket].ticket_id}
 								</span>
-								<label for="ev_{$pageInfo.tickets[ticket].ticket_no}">	
-									{$pageInfo.tickets[ticket].staff_id}
+								<label for="ev_{$gContent->mInfo.tickets[ticket].ticket_no}">	
+									{$gContent->mInfo.tickets[ticket].staff_id}
 								</label>
 							</td>
 						</tr>

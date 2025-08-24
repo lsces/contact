@@ -54,7 +54,7 @@
 							{formhelp note=""}
 						{/forminput}
 					</div>
-					{captcha variant="row" id="post-captcha" style="display:none"}
+					{* captcha variant="row" id="post-captcha" style="display:none" *}
 					<div class="form-group">
 						{forminput}
 							<input type="checkbox" name="anon_post" id="anon-post" value="y" onchange="BitBase.toggleElementDisplay('post-login','block');BitBase.toggleElementDisplay('post-anon','block');BitBase.toggleElementDisplay('post-captcha','block');" /> {tr}Anonymous Post{/tr}

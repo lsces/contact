@@ -5,17 +5,17 @@
 </div> {* end category *}
 {/if}
 
-	<h1>{$pageInfo.xkey}&nbsp;-&nbsp;
-{*		{if isset($pageInfo.organisation) && ($pageInfo.organisation <> '') }
-			{$pageInfo.organisation}
-		{elseif isset($pageInfo.surname) && ($pageInfo.surname <> '') }
-			{$pageInfo.prefix}&nbsp;
-			{$pageInfo.forename}&nbsp;
-			{$pageInfo.surname}
+	<h1>{$gContent->mInfo.xkey}&nbsp;-&nbsp;
+{*		{if isset(gContent->mInfo.organisation) && (gContent->mInfo.organisation <> '') }
+			{$gContent->mInfo.organisation}
+		{elseif isset(gContent->mInfo.surname) && (gContent->mInfo.surname <> '') }
+			{$gContent->mInfo.prefix}&nbsp;
+			{$gContent->mInfo.forename}&nbsp;
+			{$gContent->mInfo.surname}
 		{else}  *}
-			{$pageInfo.title}
+			{$gContent->mInfo.title}
 {*		{/if}  *}
 	</h1>
-	<div class="description">{$pageInfo.description}</div>
+	<div class="description">{$gContent->mInfo.description|default:''}</div>
 
 </div> {* end .header *}

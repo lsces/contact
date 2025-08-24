@@ -1,4 +1,6 @@
 <?php
+
+use Bitweaver\KernelTools;
 /**
  * $Header: /cvsroot/bitweaver/_bit_contact/edit.php,v 1.6 2010/02/08 21:27:22 wjames5 Exp $
  *
@@ -13,12 +15,12 @@
 /**
  * required setup
  */
-require_once( '../kernel/setup_inc.php' );
+require_once '../kernel/includes/setup_inc.php';
 
 $gBitSystem->verifyPackage( 'contact' );
 $gBitSystem->verifyPermission( 'p_contact_update' );
 
-include_once( CONTACT_PKG_PATH.'lookup_contact_inc.php' );
+include_once CONTACT_PKG_INCLUDE_PATH . 'lookup_contact_inc.php';
 if( empty( $gContent ) || !is_object( $gContent ) ) {
 	$gContent = new Contact();
 }
@@ -29,7 +31,7 @@ if( !empty( $_REQUEST['xref_id'] ) ) {
 $gContent->stepXref( $_REQUEST );
 
 if(isset($_REQUEST["fSaveXref"])) {
-	bit_redirect( $gContent->getDisplayUrl() );
+	KernelTools::bit_redirect( $gContent->getDisplayUrl() );
 }
 
 // formInfo might be set due to a error on submit
@@ -45,10 +47,9 @@ if( empty( $xrefInfo['content_id'] ) ) {
 
 // Ensure simple text edit boxes for xref entries
 $gContent->mInfo['format_guid'] = 'text';
-$gBitSmarty->assignByRef( 'xrefInfo', $xrefInfo );
-$gBitSmarty->assignByRef( 'title', $gContent->mInfo['title'] );
-$gBitSmarty->assignByRef( 'xref_title', $gContent->mInfo['xref_title'] );
+$gBitSmarty->assign( 'xrefInfo', $xrefInfo );
+$gBitSmarty->assign( 'title', $gContent->mInfo['title'] );
+$gBitSmarty->assign( 'xref_title', $gContent->mInfo['xref_title'] );
 
-$gBitSmarty->assignByRef( 'errors', $gContent->mErrors );
+$gBitSmarty->assign( 'errors', $gContent->mErrors );
 $gBitSystem->display( 'bitpackage:contact/edit_key_break.tpl', 'Edit: ' , array( 'display_mode' => 'edit' ));
-?>

@@ -1,5 +1,5 @@
 {literal}
-<script type="text/javascript">//<![CDATA[
+<script>//<![CDATA[
 function updateContactXrefFormat() { {/literal}
 {foreach from=$xrefInfo.xref_format_list key=feature item=output}
 	document.getElementById('{$output}-format').style.display = 'none';

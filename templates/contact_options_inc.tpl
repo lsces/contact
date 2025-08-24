@@ -8,7 +8,7 @@
 				{/foreach}
 			/> {$type}&nbsp;&nbsp;
 {/foreach}
-<script type="text/javascript">/* <![CDATA[ */
+<script>/* <![CDATA[ */
 	document.write("<label><input name=\"switcher\" id=\"switcher\" type=\"checkbox\" onclick=\"BitBase.switchCheckboxes(this.form.id,'contact_type_guid[]','switcher')\" /> {tr}Select all{/tr}</label><br />");
 /* ]]> */</script>
 	<input type="submit" name="refresh" value="{tr}Update Contact Filter{/tr}" />&nbsp;&nbsp;&nbsp;&nbsp;

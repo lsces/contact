@@ -13,14 +13,14 @@
 /**
  * required setup
  */
-require_once( '../kernel/setup_inc.php' );
+require_once '../kernel/includes/setup_inc.php';
 
 $gBitSystem->verifyPackage( 'contact' );
 $gBitSystem->verifyPermission( 'p_contact_update' );
 
-include_once( CONTACT_PKG_PATH.'lookup_contact_inc.php' );
+include_once CONTACT_PKG_INCLUDE_PATH . 'lookup_contact_inc.php';
 
-if( !empty( $gContent->mInfo ) ) {
+if (!empty( $gContent->mInfo )) {
 	$formInfo = $gContent->mInfo;
 	$formInfo['edit'] = !empty( $gContent->mInfo['data'] ) ? $gContent->mInfo['data'] : '';
 }
@@ -32,33 +32,34 @@ require_once 'import/mimeDecode.php';
 $file = '/srv/website/bitweaver/contact/data/Stockport';
 echo 'Using file ' . $file . "<br>";
 
-$mbox = new Mail_Mbox($file);
+$mbox = new Mail_Mbox( $file );
 $mbox->open();
 
-for ($n = 0; $n < $mbox->size(); $n++) {
-    $message = $mbox->get($n);
+for ( $n = 0; $n < $mbox->size(); $n++ ) {
+	$message = $mbox->get( $n );
 
-    preg_match('/Subject: (.*)$/m', $message, $matches);
-    $subject = $matches[1];
-    echo 'Mail #' . $n . ': ' . $subject . "<br>";
-    $Decoder = new Mail_mimeDecode( $message );
-    $params = array(
-    'include_bodies' => TRUE,
-    'decode_bodies'  => TRUE,
-    'decode_headers' => TRUE
+	preg_match( '/Subject: (.*)$/m', $message, $matches );
+	$subject = $matches[1];
+	echo 'Mail #' . $n . ': ' . $subject . "<br>";
+	$Decoder = new Mail_mimeDecode( $message );
+	$params = array(
+		'include_bodies' => true,
+		'decode_bodies'  => true,
+		'decode_headers' => true,
 	);
-	$Decoded = $Decoder->decode($params);   
-	if ( $Decoded->ctype_primary == "multipart" ) {
-		vd($Decoded->parts[0]->ctype_primary);	
-		vd($Decoded->parts[0]->ctype_secondary);	
-		print($Decoded->parts[0]->body);
-	} else {
-		vd($Decoded->ctype_primary);	
-		vd($Decoded->ctype_secondary);	
-		print($Decoded->body);
+	$Decoded = $Decoder->decode( $params );
+	if ($Decoded->ctype_primary == "multipart") {
+		\Bitweaver\vd( $Decoded->parts[0]->ctype_primary );
+		\Bitweaver\vd( $Decoded->parts[0]->ctype_secondary );
+		print $Decoded->parts[0]->body;
 	}
-	vd($Decoded->headers);
-	print( $message );
+	else {
+		\Bitweaver\vd( $Decoded->ctype_primary );
+		\Bitweaver\vd( $Decoded->ctype_secondary );
+		print $Decoded->body;
+	}
+	\Bitweaver\vd( $Decoded->headers );
+	print $message;
 }
 
 $mbox->close();
@@ -69,11 +70,10 @@ if( empty( $formInfo ) ) {
 }
 
 $formInfo['contact_type_list'] = $gContent->getContactSourceList();
-$gBitSmarty->assignByRef( 'pageInfo', $formInfo );
+$gBitSmarty->assign( 'pageInfo', $formInfo );
 
-$gBitSmarty->assignByRef( 'errors', $gContent->mErrors );
+$gBitSmarty->assign( 'errors', $gContent->mErrors );
 $gBitSmarty->assign( (!empty( $_REQUEST['tab'] ) ? $_REQUEST['tab'] : 'body').'TabSelect', 'tdefault' );
 $gBitSmarty->assign('show_page_bar', 'y');
 
 $gBitSystem->display( 'bitpackage:contact/edit.tpl', 'Edit: ' , array( 'display_mode' => 'edit' ));
-?>

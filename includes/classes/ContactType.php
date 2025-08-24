@@ -11,16 +11,16 @@
 /**
  * Required setup
  */
-global $gBitSystem;
-require_once( KERNEL_PKG_PATH."BitBase.php" );
+namespace Bitweaver\Contact;
+use Bitweaver\BitBase;
 
 /**
  * @package contact
  */
 class ContactType extends BitBase {
-	var $mContactType;
+	public $mContactType;
 
-	function __construct() {
+	public function __construct() {
 		parent::__construct();
 	}
 
@@ -28,11 +28,11 @@ class ContactType extends BitBase {
 	 * setup()
 	 * Setup the contact types for use in the content filter.
 	 */
-	function setup() {
+	public function setup() {
 		global $gBitUser, $gBitSmarty;
 
 			$roles = array_keys($gBitUser->mRoles);
-			$bindVars = array();
+			$bindVars = [];
 			$bindVars = array_merge( $bindVars, $roles, array( $gBitUser->mUserId ) );
 
 			$sql = "SELECT r.`source`, r.`cross_ref_title`
@@ -48,14 +48,14 @@ class ContactType extends BitBase {
 		}
 
 //		asort($this->mContactType);
-		$gBitSmarty->assignByRef( 'contContactTypes', $this->mContactType );
+		$gBitSmarty->assign( 'contContactTypes', $this->mContactType );
 	}
 
 	/**
 	 * processRequestHash(&$pRequest, &$pStore)
 	 * Build contact_type settins hash for the session
 	 */
-	function processRequestHash(&$pRequest, &$pStore) {
+	public function processRequestHash(&$pRequest, &$pStore) {
 		global $gBitUser;
 		if( !empty( $pRequest["contact_type_guid"] ) ) {
 			if( $gBitUser->isRegistered() ) {
@@ -65,9 +65,9 @@ class ContactType extends BitBase {
 		} elseif( !isset( $pStore['content_type_guid'] ) && $gBitUser->getPreference( 'contact_default_guids' ) && $gBitUser->isRegistered() ) {
 			$pStore['contact_type_guid'] = unserialize( $gBitUser->getPreference( 'contact_default_guids' ) );
 		} elseif( !isset( $pStore['content_type_guid'] ) ) {
-			$pStore['contact_type_guid'] = array();
+			$pStore['contact_type_guid'] = [];
 		} elseif( isset( $pRequest["refresh"] ) && !isset( $pRequest["contact_type_guid"] ) ) {
-			$pStore['contact_type_guid'] = array();
+			$pStore['contact_type_guid'] = [];
 		}
 	}
 
@@ -75,7 +75,7 @@ class ContactType extends BitBase {
 		global $gBitSystem;
 
 		$where = '';
-		$bindVars = array();
+		$bindVars = [];
 		if( !empty( $pOptionHash['active_role'] ) ) {
 			$where = " WHERE cxt.`role_id` = ? ";
 			$bindVars[] = $pOptionHash['active_role'];
@@ -91,7 +91,7 @@ class ContactType extends BitBase {
 
 		$result = $gBitSystem->mDb->query( $query, $bindVars );
 
-        $ret = array();
+        $ret = [];
 
         while( $res = $result->fetchRow() ) {
 			$res["num_types"] = $gBitSystem->mDb->getOne( "SELECT COUNT(*) FROM `".BIT_DB_PREFIX."contact_xref_source` WHERE `xref_type`= ?", array( $res["xref_type"] ) );
@@ -101,6 +101,4 @@ class ContactType extends BitBase {
 
         return $ret;
     }
-
 }
-?>

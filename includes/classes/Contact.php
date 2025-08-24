@@ -12,11 +12,11 @@
 /**
  * required setup
  */
-require_once( CONTACT_PKG_PATH.'ContactXref.php' );
-require_once( CONTACT_PKG_PATH.'ContactType.php' );
-require_once( CONTACT_PKG_PATH.'ContactXrefType.php' );
-require_once( LIBERTY_PKG_PATH.'LibertyContent.php' );		// Contact base class
-require_once( CONTACT_PKG_PATH.'lib/phpcoord-2.3.php' );
+namespace Bitweaver\Contact;
+use Bitweaver\BitBase;
+use Bitweaver\BitDate;
+use Bitweaver\Liberty\LibertyContent;		// Contact base class
+require_once CONTACT_PKG_PATH.'lib/phpcoord-2.3.php';
 
 define( 'CONTACT_CONTENT_TYPE_GUID', 'contact' );
 
@@ -24,9 +24,9 @@ define( 'CONTACT_CONTENT_TYPE_GUID', 'contact' );
  * @package contact
  */
 class Contact extends LibertyContent {
-	var $mParentId;
-	var $mDate;
-	var $mTypes;
+	public $mParentId;
+	public $mDate;
+	public $mTypes;
 
 	/**
 	 * Constructor
@@ -35,8 +35,8 @@ class Contact extends LibertyContent {
 	 * @param integer Contact Id identifer
 	 * @param integer Base content_id identifier
 	 */
-	function __construct( $pContactId = NULL, $pContentId = NULL ) {
-		parent::__construct( $pContentId );
+	public function __construct( $pContactId = NULL, $pContentId = NULL ) {
+		parent::__construct();
 		$this->registerContentType( CONTACT_CONTENT_TYPE_GUID, array(
 				'content_type_guid' => CONTACT_CONTENT_TYPE_GUID,
 				'content_name' => 'Contact Entry',
@@ -68,11 +68,12 @@ class Contact extends LibertyContent {
 	 *
 	 * (Describe Contact object here )
 	 */
-	function load( $pContentId = NULL, $pPluginParams = NULL ) {
+	public function load( $pContentId = NULL, $pPluginParams = NULL ) {
 		if ( $pContentId ) $this->mContentId = (int)$pContentId;
 		if( $this->verifyId( $this->mContentId ) ) {
  			$query = "select con.*, lc.*,
  				ap.*, xhA.`xkey_ext` AS house,
+ 				img.`xkey` AS client_gallery,
  				x00.`xkey_ext` as name, lc.`title` as organisation,
  				xhL.`xkey` as x_coordinate, xhL.`xkey_ext` as y_coordinate,
  				uue.`login` AS modifier_user, uue.`real_name` AS modifier_real_name,
@@ -81,6 +82,7 @@ class Contact extends LibertyContent {
 				LEFT JOIN `".BIT_DB_PREFIX."liberty_content` lc ON lc.content_id = con.content_id
 				LEFT JOIN `".BIT_DB_PREFIX."users_users` uue ON (uue.`user_id` = lc.`modifier_user_id`)
 				LEFT JOIN `".BIT_DB_PREFIX."users_users` uuc ON (uuc.`user_id` = lc.`user_id`)
+				LEFT JOIN `".BIT_DB_PREFIX."contact_xref` img ON img.`content_id` = con.`content_id` AND img.`source` = 'IMG'
 				LEFT JOIN `".BIT_DB_PREFIX."contact_xref` x00 ON x00.`content_id` = con.`content_id` AND x00.`source` = '$00'
 				LEFT JOIN `".BIT_DB_PREFIX."contact_xref` xhA ON xhA.`content_id` = con.`content_id` AND xhA.`source` = '#S' AND ( xhA.`end_date` IS NULL OR xhA.`end_date` > CURRENT_TIMESTAMP )
 				LEFT JOIN `".BIT_DB_PREFIX."contact_xref` xhL ON xhL.`content_id` = con.`content_id` AND xhL.`source` = '#L' AND ( xhL.`end_date` IS NULL OR xhL.`end_date` > CURRENT_TIMESTAMP )
@@ -96,15 +98,15 @@ class Contact extends LibertyContent {
 				$this->mContentId = (int)$result->fields['content_id'];
 //				$this->mParentId = (int)$result->fields['usn'];
 				$this->mContactName = $result->fields['title'];
-				$this->mInfo['creator'] = (isset( $result->fields['creator_real_name'] ) ? $result->fields['creator_real_name'] : $result->fields['creator_user'] );
-				$this->mInfo['editor'] = (isset( $result->fields['modifier_real_name'] ) ? $result->fields['modifier_real_name'] : $result->fields['modifier_user'] );
+				$this->mInfo['creator'] = $result->fields['creator_real_name'] ?? $result->fields['creator_user'];
+				$this->mInfo['editor'] = $result->fields['modifier_real_name'] ?? $result->fields['modifier_user'];
 				$this->mInfo['display_url'] = $this->getDisplayUrl();
 				$this->mInfo['organisation'] = trim($this->mInfo['organisation']);
-				$name = explode( '|', $this->mInfo['name'] );
-				if ( isset( $name[0] ) ) { $this->mInfo['prefix'] = $name[0]; } else { $this->mInfo['prefix'] = ''; }
-				if ( isset( $name[1] ) ) { $this->mInfo['forename'] = $name[1]; } else { $this->mInfo['forename'] = ''; }
-				if ( isset( $name[2] ) ) { $this->mInfo['surname'] = $name[2]; } else { $this->mInfo['surname'] = ''; }
-				if ( isset( $name[3] ) ) { $this->mInfo['suffix'] = $name[3]; } else { $this->mInfo['suffix'] = ''; }
+				$name = explode( '|', $this->mInfo['name'] ?? '' );
+				$this->mInfo['prefix'] = $name[0] ?? '';
+				$this->mInfo['forename'] = $name[1] ?? '';
+				$this->mInfo['surname'] = $name[2] ?? '';
+				$this->mInfo['suffix'] = $name[3] ?? '';
 				$this->mInfo['name'] = $this->mInfo['prefix'];
 				$this->mInfo['name'] = trim($this->mInfo['name']).' '.$this->mInfo['forename'];
 				$this->mInfo['name'] = trim($this->mInfo['name']).' '.$this->mInfo['surname'];
@@ -112,7 +114,7 @@ class Contact extends LibertyContent {
 				$this->mInfo['name'] = trim($this->mInfo['name']);
 
 				if ( !$this->mInfo['x_coordinate'] and $this->mInfo['postcode'] and $this->mInfo['grideast'] <> '00000' ) {
-					$os1 = new OSRef( $this->mInfo['grideast']*10, $this->mInfo['gridnorth']*10 );
+					$os1 = new \OSRef( $this->mInfo['grideast']*10, $this->mInfo['gridnorth']*10 );
 					$ll1 = $os1->toLatLng();
 					$this->mInfo['y_coordinate'] = $ll1->lat;
 					$this->mInfo['x_coordinate'] = $ll1->lng;
@@ -132,11 +134,11 @@ class Contact extends LibertyContent {
 
 	/**
 	* verify, clean up and prepare data to be stored
-	* @param $pParamHash all information that is being stored. will update $pParamHash by reference with fixed array of itmes
+	* @param array $pParamHash all information that is being stored. will update $pParamHash by reference with fixed array of itmes
 	* @return bool TRUE on success, FALSE if store could not occur. If FALSE, $this->mErrors will have reason why
 	* @access private
 	**/
-	function verify( &$pParamHash ) {
+	public function verify( &$pParamHash ): bool {
 		// make sure we're all loaded up if everything is valid
 		if( $this->isValid() && empty( $this->mInfo ) ) {
 			$this->load( TRUE );
@@ -166,17 +168,17 @@ class Contact extends LibertyContent {
 		$pParamHash['title'] = $pParamHash['organisation'];
 		$pParamHash['title'] = trim( $pParamHash['title'] );
 		$pParamHash['contact_store']['xkey'] = $pParamHash['xkey'];
-		return( count( $this->mErrors ) == 0 );
+		return count( $this->mErrors ) == 0;
 	}
 
 	/**
 	* Store contact data
-	* @param $pParamHash contains all data to store the contact
-	* @param $pParamHash[title] title of the new contact
-	* @param $pParamHash[edit] description of the contact
+	* @param array $pParamHash contains all data to store the contact
+	* @var $pParamHash[title] title of the new contact
+	* @var $pParamHash[edit] description of the contact
 	* @return bool TRUE on success, FALSE if store could not occur. If FALSE, $this->mErrors will have reason why
 	**/
-	function store( &$pParamHash ) {
+	public function store( &$pParamHash ): bool {
 		if( $this->verify( $pParamHash ) ) {
 
 			// Start a transaction wrapping the whole insert into liberty
@@ -226,13 +228,13 @@ class Contact extends LibertyContent {
 				$this->mErrors['store'] = 'Failed to store this contact.';
 			}
 		}
-		return( count( $this->mErrors ) == 0 );
+		return count( $this->mErrors ) == 0;
 	}
 
 	/**
 	 * Delete content object and all related records
 	 */
-	function expunge()
+	public function expunge(): bool
 	{
 		$ret = FALSE;
 		if ($this->isValid() ) {
@@ -252,7 +254,7 @@ class Contact extends LibertyContent {
 	/**
 	 * Check if the current post can have comments attached to it
 	 */
-	function isCommentable(){
+	public function isCommentable(){
 		global $gBitSystem;
 		return TRUE; // $gBitSystem->isFeatureActive( 'contact_post_comments' );
 	}
@@ -264,7 +266,7 @@ class Contact extends LibertyContent {
 	 * @param array different possibilities depending on derived class
 	 * @return string the link to display the page.
 	 */
-	function getDisplayUrl( $pContentId=NULL ) {
+	public function getDisplayUrl( $pContentId=NULL ) {
 		global $gBitSystem;
 		if( empty( $pContentId ) ) {
 			$pContentId = $this->mContentId;
@@ -278,16 +280,14 @@ class Contact extends LibertyContent {
 	 *
 	 * @param string Not used ( generated locally )
 	 * @param array mInfo style array of content information
-	 * @return the link to display the page.
+	 * @return string the link to display the page.
 	 */
-	function getDisplayLink( $pLinkText=NULL, $pMixed=NULL, $pAnchor=NULL ) {
-		if ( $this->mContentId != $pMixed['content_id'] ) $this->load($aux['content_id']);
+	public function getDisplayLink( $pLinkText=NULL, $pMixed=NULL, $pAnchor=NULL ) {
+		if ( $this->mContentId != $pMixed['content_id'] ) $this->load($pMixed['content_id']);
 
-		if (empty($this->mInfo['content_id']) ) {
-			$ret = '<a href="'.$this->getDisplayUrl($pMixed['content_id']).'">'.$pMixed['title'].'</a>';
-		} else {
-			$ret = '<a href="'.$this->getDisplayUrl($pMixed['content_id']).'">'."Contact - ".$this->mInfo['title'].'</a>';
-		}
+		$ret = ( empty( $this->mInfo['content_id'] ) ) 
+			? '<a href="' . $this->getDisplayUrl( $pMixed['content_id'] ) . '">' . $pMixed['title'] . '</a>' 
+			: '<a href="' . $this->getDisplayUrl( $pMixed['content_id'] ) . '">' . "Contact - " . $this->mInfo['title'] . '</a>';
 		return $ret;
 	}
 
@@ -297,7 +297,7 @@ class Contact extends LibertyContent {
 	 * @param array mInfo style array of content information
 	 * @return string Text for the title description
 	 */
-	function getTitle( $pHash = NULL, $pDefault=TRUE ) {
+	public function getTitle( $pHash = NULL, $pDefault=TRUE ) {
 		$ret = NULL;
 		if( empty( $pHash ) ) {
 			$pHash = &$this->mInfo;
@@ -322,7 +322,7 @@ class Contact extends LibertyContent {
 	 * @param integer
 	 * @return array of contact entries
 	 */
-	function getList( &$pParamHash ) {
+	public function getList( &$pParamHash ) {
 		global $gBitSystem, $gBitUser;
 
 		LibertyContent::prepGetList( $pParamHash );
@@ -460,7 +460,7 @@ class Contact extends LibertyContent {
 	*
 	* @return array List of contact type names from the contact mamager in alphabetical order
 	*/
-	function getContactGroupList() {
+	public function getContactGroupList() {
 		global $gBitUser, $gBitSmarty;
 
 		$roles = array_keys($gBitUser->mRoles);
@@ -484,11 +484,11 @@ class Contact extends LibertyContent {
 	*
 	* @return array List of contact type names from the contact mamager in alphabetical order
 	*/
-	function getContactSourceList() {
+	public function getContactSourceList() {
 		global $gBitUser, $gBitSmarty;
 
 		$roles = array_keys($gBitUser->mRoles);
-		$bindVars = array();
+		$bindVars = [];
 		$bindVars = array_merge( $bindVars, $roles, array( $gBitUser->mUserId ) );
 
 		$query = "SELECT g.`cross_ref_title` AS `type_name`, g.`source` FROM `".BIT_DB_PREFIX."contact_xref_source` g
@@ -496,7 +496,7 @@ class Contact extends LibertyContent {
 				  WHERE g.`xref_type` = 0 AND (g.`role_id` IN(". implode(',', array_fill(0, count($roles), '?')) ." ) OR purm.`user_id`=?)
 				  ORDER BY g.`source`";
 		$result = $this->mDb->query( $query, $bindVars );
-		$ret = array();
+		$ret = [];
 		$cnt = 0;
 		while ($res = $result->fetchRow()) {
 			$ret[$cnt]['source'] = $res["source"];
@@ -510,7 +510,7 @@ class Contact extends LibertyContent {
 	* @param $xrefGroup selects a single group of xref types
 	* @return array List of xref type names from the contact mamager in alphabetical order
 	*/
-	function getXrefTypeList( $xrefGroup = 0, $xrefTemplate = NULL ) {
+	public function getXrefTypeList( $xrefGroup = 0, $xrefTemplate = NULL ) {
 		if ( $xrefTemplate ) {
 			$query = "SELECT s.`cross_ref_title` AS `type_name`, s.`source`, s.`template`  FROM `".BIT_DB_PREFIX."contact_xref_source` s
 					  WHERE s.`template` = '$xrefTemplate'
@@ -543,7 +543,7 @@ class Contact extends LibertyContent {
 	*
 	* @return array List of contact format templates names from the contact mamager in alphabetical order
 	*/
-	function getXrefFormatList() {
+	public function getXrefFormatList() {
 		global $gBitUser, $gBitSmarty;
 
 		$roles = array_keys($gBitUser->mRoles);
@@ -568,7 +568,7 @@ class Contact extends LibertyContent {
 	* @param $contract selects a single type of contract to list
 	* @return array List of contact numbers in contract number order
 	*/
-	function getContractList( $contract = 0 ) {
+	public function getContractList( $contract = 0 ) {
 		$query = "SELECT r.`xkey_ext` AS `contract`, r.`content_id`, lc.`title`, r.`xref`, r.`xkey`, r.`data`,
 				ap.*, xhA.`xkey_ext` AS house, r.xref,
 				CASE WHEN r.`xkey_ext` STARTING 'C' THEN CAST ( SUBSTRING ( r.`xkey_ext` FROM 2 FOR 4 ) AS INTEGER )
@@ -592,7 +592,7 @@ class Contact extends LibertyContent {
 	 * getXrefList( &$pParamHash );
 	 * Get list of xref records for this contact record
 	 */
-	function getContactTypes() {
+	public function getContactTypes() {
 		return $this->mTypes->mContactType;
 	}
 
@@ -600,7 +600,7 @@ class Contact extends LibertyContent {
 	 * getXrefList( &$pParamHash );
 	 * Get list of xref records for this contact record
 	 */
-	function loadContentTypeList() {
+	public function loadContentTypeList() {
 		if( $this->isValid() && empty( $this->mInfo['contact_types'] ) ) {
 			global $gBitUser;
 
@@ -628,7 +628,7 @@ class Contact extends LibertyContent {
 	 * getXrefList( &$pParamHash );
 	 * Get list of xref records for this contact record
 	 */
-	function loadXrefList() {
+	public function loadXrefList() {
 		if( $this->isValid() && empty( $this->mInfo['xref'] ) ) {
 			global $gBitUser;
 
@@ -647,9 +647,11 @@ class Contact extends LibertyContent {
 					ELSE s.`cross_ref_title` || '-' || x.`xorder` END
 					AS source_title,
 					x.`xref`, x.`xkey`, x.`xkey_ext`, x.`data`,
-					x.`start_date`, x.`end_date`
+					x.`start_date`, x.`end_date`, s.`template`,
+					pc.`add1` || ',' || pc.`add2` || ',' || pc.`add4` || ',' || pc.`town` as address
 					FROM `".BIT_DB_PREFIX."contact_xref` x
 					JOIN `".BIT_DB_PREFIX."contact_xref_source` s ON s.`source` = x.`source`
+					LEFT JOIN `".BIT_DB_PREFIX."address_postcode` pc ON pc.`postcode` = x.`xkey`
 					JOIN `".BIT_DB_PREFIX."contact_xref_type` t ON t.`xref_type` = s.`xref_type`
 					LEFT OUTER JOIN `".BIT_DB_PREFIX."users_roles_map` purm ON ( purm.`user_id`=".$gBitUser->mUserId." ) AND ( purm.`role_id`=s.`role_id` )
 					WHERE x.content_id = ? AND (s.`role_id` IN(". implode(',', array_fill(0, count($roles), '?')) ." ) OR purm.`user_id`=?)
@@ -669,8 +671,8 @@ class Contact extends LibertyContent {
 	 * loadXref( &$pParamHash );
 	 * find contact record that matches the supplied xref record
 	 */
-	function loadXref( $pXrefId = NULL ) {
-		if( @BitBase::verifyId( $pXrefId ) ) {
+	public function loadXref( $pXrefId = NULL ) {
+		if( BitBase::verifyId( $pXrefId ) ) {
 			$xref = new ContactXref( $pXrefId );
 			if( $xref->mContentId ) {
 				$this->load( $xref->mContentId );
@@ -685,7 +687,7 @@ class Contact extends LibertyContent {
 	 * storeXref( &$pParamHash );
 	 * store or update xref records for this contact record
 	 */
-	function storeXref( &$pParamHash ) {
+	public function storeXref( &$pParamHash ) {
 		$xref = new ContactXref( isset($pParamHash['xref_id']) ? $pParamHash['xref_id'] : NULL );
 		if ( $xref->store( $pParamHash ) ) {
 				$this->mInfo['xref_title'] = $xref->mContentId;
@@ -701,7 +703,7 @@ class Contact extends LibertyContent {
 	 * stepXref( &$pParamHash );
 	 * find contact record that matches the supplied xref record
 	 */
-	function stepXref( &$pParamHash ) {
+	public function stepXref( &$pParamHash ) {
 		$xref = new ContactXref( $pParamHash['xref_id'] );
 		if ( $xref->stepXref( $pParamHash ) ) {
 			$this->mInfo['xref_title'] = $xref->mContentId;
@@ -717,7 +719,7 @@ class Contact extends LibertyContent {
 	 * Get list of client records for this contact record
 	 * This is used to list related contact records such as contacts handled by a call center or alarm maintainer
 	 */
-	function loadClientList() {
+	public function loadClientList() {
 		if( $this->isValid() ) {
 			global $gBitUser;
 
@@ -752,7 +754,7 @@ class Contact extends LibertyContent {
 	 * getAddressList( &$pParamHash );
 	 * Get list of address records for this contact record
 	 */
-	function loadAddressList() {
+	public function loadAddressList() {
 		if( $this->isValid() && empty( $this->mInfo['xref'] ) ) {
 			global $gBitUser;
 
@@ -784,7 +786,7 @@ class Contact extends LibertyContent {
 
 			while( $res = $result->fetchRow() ) {
 				if ( $res['grideast'] and $res['grideast'] <> '00000' ) {
-					$os1 = new OSRef( $res['grideast']*10, $res['gridnorth']*10 );
+					$os1 = new \OSRef( $res['grideast']*10, $res['gridnorth']*10 );
 					$ll1 = $os1->toLatLng();
 					$res['x_coordinate'] = $ll1->lng;
 					$res['y_coordinate'] = $ll1->lat;
@@ -796,34 +798,4 @@ class Contact extends LibertyContent {
 			}
 		}
 	}
-
-	/**
-	 * ContactRecordLoad( $data );
-	 * simple csv contact list import
-	 * Uncomment to enable
-	 */
-//   require( CONTENT_PKG_PATH.'import/ImportContact.php');
-
-	/**
-	 * SageRecordLoad( $data );
-	 * sage csv data import
-	 * Uncomment to enable
-	 */
-//   require( CONTENT_PKG_PATH.'import/ImportSage.php');
-
-	/**
-	 * PhxRecordLoad( $data );
-	 * phoenix security csv data import
-	 * Uncomment to enable
-	 */
-//	include( CONTENT_PKG_PATH.'import/ImportPhx2.php');
-
-	/**
-	 * wandeRecordLoad( $data );
-	 * wande data file import
-	 * Uncomment to enable
-	 */
-//	include( CONTENT_PKG_PATH.'import/ImportWande.php');
-
 }
-?>

@@ -15,7 +15,7 @@ if (PEAR::isError($opts)) {
 }
 
 PEAR::setErrorHandling(PEAR_ERROR_DIE);
-$mime = &new Mail_Mime;
+$mime = new Mail_Mime;
 foreach ($opts[0] as $opt) {
     $param = $opt[1];
     switch ($opt[0]) {

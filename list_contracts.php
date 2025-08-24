@@ -13,8 +13,8 @@
 /**
  * required setup
  */
-require_once( '../kernel/setup_inc.php' );
-require_once( CONTACT_PKG_PATH.'Contact.php' );
+require_once '../kernel/includes/setup_inc.php';
+use Bitweaver\Contact\Contact;
 
 $gBitSystem->isPackageActive('contact', TRUE);
 
@@ -29,9 +29,8 @@ if ( !isset($_REQUEST['contract'])) {
 // Get a list of Contracts 
 $contracts = $contacts->getContractList( $_REQUEST['contract'] );
 
-$gBitSmarty->assignByRef('listInfo', $_REQUEST['listInfo']);
-$gBitSmarty->assignByRef('list', $contracts);
+$gBitSmarty->assign('listInfo', $_REQUEST['listInfo']);
+$gBitSmarty->assign('list', $contracts);
 
 // Display the template
 $gBitSystem->display( 'bitpackage:contact/list_contracts.tpl', NULL, array( 'display_mode' => 'list' ));
-?>

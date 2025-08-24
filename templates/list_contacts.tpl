@@ -83,7 +83,7 @@
 
 {if $checkboxes_on eq 'y'}
 <tr><td colspan="16">
-  <script language="Javascript" type="text/javascript">
+  <script>
   <!--
   // check / uncheck all.
   // in the future, we could extend this to happen serverside as well for the convenience of people w/o javascript.
@@ -103,7 +103,7 @@
     {/if}
     {* add here e.g. <option value="categorize">{tr}categorize{/tr}</option> *}
   </select>
-  <script language="Javascript" type="text/javascript">
+  <script>
   <!--
   // Fake js to allow the use of the <noscript> tag (so non-js-users kenn still submit)
   //-->

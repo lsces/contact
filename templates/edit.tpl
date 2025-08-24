@@ -7,9 +7,9 @@
 	<div class="header">
 		<h1>
 		{* this weird dual assign thing is cause smarty wont interpret backticks to object in assign tag - spiderr *}
-		{if $pageInfo.content_id}
+		{if $gContent->mInfo.content_id}
 			{assign var=editLabel value="{tr}Edit{/tr} $conDescr"}
-			{tr}{tr}Edit{/tr} {$pageInfo.title}{/tr}
+			{tr}{tr}Edit{/tr} {$gContent->mInfo.title}{/tr}
 		{else}
 			{assign var=editLabel value="{tr}Create{/tr} $conDescr"}
 			{tr}{$editLabel}{/tr}
@@ -19,7 +19,7 @@
 
 	{* Check to see if there is an editing conflict *}
 	{if $errors.edit_conflict}
-		<script language="javascript" type="text/javascript">
+		<script>
 			<!--
 				alert( "{$errors.edit_conflict|strip_tags}" );
 			-->
@@ -32,20 +32,20 @@
 			{jstabs}
 				{jstab title="$editLabel Body"}
 					{legend legend="$editLabel Details"}
-						<input type="hidden" name="content_id" value="{$pageInfo.content_id}" />
+						<input type="hidden" name="content_id" value="{$gContent->mInfo.content_id}" />
 						
 						<div class="form-group">
 							{formfeedback warning=$errors.names}
 							{formfeedback warning=$errors.store}
 
 							{formlabel label="$conDescr Contact" for="contentno"}
-							{if !$pageInfo.content_id}
+							{if !$gContent->mInfo.content_id}
 								{forminput}
 									New Contact Entry
 								{/forminput}
 							{else}
 								{forminput}
-									Edit Contact Entry No : {$pageInfo.content_id}
+									Edit Contact Entry No : {$gContent->mInfo.content_id}
 								{/forminput}
 							{/if}
 							<div class="clear"></div>
@@ -53,41 +53,41 @@
 
 						{include file="bitpackage:contact/edit_type_header.tpl"}
 							
-						{if $pageInfo.name or $pageInfo.contact_types.0.content_id or !isset( $pageInfo.contact_types ) }
+						{if $gContent->mInfo.name or $gContent->mInfo.contact_types.0.content_id or !isset( $gContent->mInfo.contact_types ) }
 							<div class="form-group">
 								{formlabel label="Title" for="prefix"}
 								{forminput}
-									<input size="60" type="text" name="prefix" id="prefix" value="{$pageInfo.prefix|escape}" />
+									<input size="60" type="text" name="prefix" id="prefix" value="{$gContent->mInfo.prefix|escape}" />
 								{/forminput}
 								<div class="clear"></div>
 							</div>
 							<div class="form-group">
 								{formlabel label="Forename" for="forename"}
 								{forminput}
-									<input size="60" type="text" name="forename" id="forename" value="{$pageInfo.forename|escape}" />
+									<input size="60" type="text" name="forename" id="forename" value="{$gContent->mInfo.forename|escape}" />
 								{/forminput}
 								<div class="clear"></div>
 							</div>
 							<div class="form-group">
 								{formlabel label="Surname" for="surname"}
 								{forminput}
-									<input size="60" type="text" name="surname" id="surname" value="{$pageInfo.surname|escape}" />
+									<input size="60" type="text" name="surname" id="surname" value="{$gContent->mInfo.surname|escape}" />
 								{/forminput}
 								<div class="clear"></div>
 							</div>
 							<div class="form-group">
 								{formlabel label="Suffix" for="suffix"}
 								{forminput}
-									<input size="60" type="text" name="suffix" id="suffix" value="{$pageInfo.suffix|escape}" />
+									<input size="60" type="text" name="suffix" id="suffix" value="{$gContent->mInfo.suffix|escape}" />
 								{/forminput}
 								<div class="clear"></div>
 							</div>
 						{/if}
-						{if $pageInfo.organisation or $pageInfo.contact_types.1.content_id or !isset( $pageInfo.contact_types ) }
+						{if $gContent->mInfo.organisation or $gContent->mInfo.contact_types.1.content_id or !isset( $gContent->mInfo.contact_types ) }
 							<div class="form-group">
 								{formlabel label="Organisation" for="organisation"}
 								{forminput}
-									<input size="60" type="text" name="organisation" id="organisation" value="{$pageInfo.organisation|escape}" />
+									<input size="60" type="text" name="organisation" id="organisation" value="{$gContent->mInfo.organisation|escape}" />
 								{/forminput}
 								<div class="clear"></div>
 							</div>
@@ -97,7 +97,7 @@
 						<div class="form-group">
 							{formlabel label="Key Number" for="xkey"}
 							{forminput}
-								<input size="10" type="text" name="xkey" id="xkey" value="{$pageInfo.xkey|escape}" />
+								<input size="10" type="text" name="xkey" id="xkey" value="{$gContent->mInfo.xkey|escape}" />
 							{/forminput}
 							<div class="clear"></div>
 						</div>
@@ -105,7 +105,7 @@
 						<div class="form-group">
 							{formlabel label="Note" for="description"}
 							{forminput}
-								<input size="60" type="text" name="description" id="description" value="{$pageInfo.description|escape}" />
+								<input size="60" type="text" name="description" id="description" value="{$gContent->mInfo.description|escape}" />
 							{/forminput}
 							<div class="clear"></div>
 						</div>
@@ -115,14 +115,14 @@
 				{jstab title="Contact Notes"}
 					{legend legend="Notes Body"}
 						<div class="form-group">
-							{textarea rows=30 noformat=1 edit=$pageInfo.edit}
+							{textarea rows=30 noformat=1 edit=$gContent->mInfo.edit}
 						</div>
 
 						{if $page ne 'SandBox'}
 							<div class="form-group">
 								{formlabel label="Comment" for="comment"}
 								{forminput}
-									<input size="50" type="text" name="comment" id="comment" value="{$pageInfo.comment}" />
+									<input size="50" type="text" name="comment" id="comment" value="{$gContent->mInfo.comment}" />
 									{formhelp note="Add a comment to illustrate your most recent changes."}
 								{/forminput}
 							</div>

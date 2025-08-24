@@ -13,12 +13,12 @@
 /**
  * required setup
  */
-require_once( '../kernel/setup_inc.php' );
+require_once '../kernel/includes/setup_inc.php';
 
 $gBitSystem->verifyPackage( 'contact' );
 $gBitSystem->verifyPermission( 'p_contact_update' );
 
-include_once( CONTACT_PKG_PATH.'lookup_contact_inc.php' );
+include_once CONTACT_PKG_INCLUDE_PATH . 'lookup_contact_inc.php';
 if( empty( $gContent ) || !is_object( $gContent ) ) {
 	$gContent = new Contact();
 }
@@ -55,14 +55,13 @@ if (isset($_REQUEST["fCancel"])) {
 if( empty( $xrefInfo ) ) {
 	$xrefInfo = &$gContent->mInfo['xref_store']['data'];
 }
-$gBitSmarty->assignByRef( 'xrefInfo', $xrefInfo );
-$gBitSmarty->assignByRef( 'title', $gContent->mInfo['title'] );
-$gBitSmarty->assignByRef( 'xref_title', $gContent->mInfo['xref_title'] );
+$gBitSmarty->assign( 'xrefInfo', $xrefInfo );
+$gBitSmarty->assign( 'title', $gContent->mInfo['title'] );
+$gBitSmarty->assign( 'xref_title', $gContent->mInfo['xref_title'] );
 
-$gBitSmarty->assignByRef( 'errors', $gContent->mErrors );
+$gBitSmarty->assign( 'errors', $gContent->mErrors );
 if( isset($xrefInfo['template']) ) {
 	$gBitSystem->display( 'bitpackage:contact/edit_xref_'.$xrefInfo['template'].'.tpl', 'Edit: ' , array( 'display_mode' => 'edit' ));
 } else {
 	$gBitSystem->display( 'bitpackage:contact/edit_xref.tpl', 'Edit: ' , array( 'display_mode' => 'edit' ));
 }
-?>
