@@ -7,9 +7,9 @@
 	{if $gBitUser->isAdmin() or $gBitUser->hasPermission( 'p_contact_edit' ) }
 		<li><a class="item" href="{$smarty.const.CONTACT_PKG_URL}edit.php">{booticon ipackage="icons" iname="icon-telephone-edit" iexplain="Create/Edit a Contact" ilocation=menu}</a></li>
 	{/if}
-	{if $gContent->mInfo.content_id and ( $gBitUser->isAdmin() or $gBitUser->hasPermission( 'p_task_edit' ) ) }
-		<li><a class="item" href="{$smarty.const.TASKS_PKG_URL}edit.php?content_id={$gContent->mInfo.content_id}">{booticon ipackage="icons" iname="icon-build_add" iexplain="Create/Edit a Job" ilocation=menu}</a></li>
-		<li><a class="item" href="{$smarty.const.TASKS_PKG_URL}add_callout.php?content_id={$gContent->mInfo.content_id}&property={$gContent->mInfo.content_id}">{booticon ipackage="icons" iname="icon-telephone-error" iexplain="Log a callout" ilocation=menu}</a></li>
+	{if !empty($gContent->mContentId) and ( $gBitUser->isAdmin() or $gBitUser->hasPermission( 'p_task_edit' ) ) }
+		<li><a class="item" href="{$smarty.const.TASKS_PKG_URL}edit.php?content_id={$gContent->mContentId}">{booticon ipackage="icons" iname="icon-build_add" iexplain="Create/Edit a Job" ilocation=menu}</a></li>
+		<li><a class="item" href="{$smarty.const.TASKS_PKG_URL}add_callout.php?content_id={$gContent->mContentId}&property={$gContent->mContentId}">{booticon ipackage="icons" iname="icon-telephone-error" iexplain="Log a callout" ilocation=menu}</a></li>
 	{/if}
 	{if $gBitUser->hasPermission('p_contact_admin')}
 		<li><a class="item" href="{$smarty.const.KERNEL_PKG_URL}admin/index.php?page=contact">{booticon ipackage="icons" iname="icon-telephone-go" iexplain="Admin contacts" ilocation=menu}</a></li>
