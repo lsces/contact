@@ -30,17 +30,17 @@
 							{$listcontacts[content].title}
 						</a>
 					</td>
-					<td>{if isset($listcontacts[content].house) && ($listcontacts[content].house <> '') }
+					<td>{if isset($listcontacts[content].house) and ($listcontacts[content].house <> '') }
 						{$listcontacts[content].house},&nbsp;{/if}
-						{if isset($listcontacts[content].add1) && ($listcontacts[content].add1 <> '') }
+						{if isset($listcontacts[content].add1) and ($listcontacts[content].add1 <> '') }
 							{$listcontacts[content].add1},&nbsp;{/if}
-						{if isset($listcontacts[content].add2) && ($listcontacts[content].add2 <> '') }
+						{if isset($listcontacts[content].add2) and ($listcontacts[content].add2 <> '') }
 							{$listcontacts[content].add2},&nbsp;{/if}
-						{if isset($listcontacts[content].add3) && ($listcontacts[content].add3 <> '') }
+						{if isset($listcontacts[content].add3) and ($listcontacts[content].add3 <> '') }
 							{$listcontacts[content].add3},&nbsp;{/if}
-						{if isset($listcontacts[content].add4) && ($listcontacts[content].add4 <> '') }
+						{if isset($listcontacts[content].add4) and ($listcontacts[content].add4 <> '') }
 							{$listcontacts[content].add4},&nbsp;{/if}
-						{if isset($listcontacts[content].town) && ($listcontacts[content].town <> '') }
+						{if isset($listcontacts[content].town) and ($listcontacts[content].town <> '') }
 							{$listcontacts[content].town},&nbsp;{/if}
 						{$listcontacts[content].postcode}</td>
 				</tr>
@@ -53,8 +53,8 @@
 						{tr}Addresses{/tr}: {$listcontacts[content].addresses|default:0}
 					</td>
 					{if $gBitUser->hasPermission( 'p_liberty_view_all_status' )}
-						<td>{if isset($listcontacts[content].dob) && ($listcontacts[content].dob <> '')  }DOB: {$listcontacts[content].dob}{/if}</td>
-						<td>{if isset($listcontacts[content].nino) && ($listcontacts[content].nino <> '') }NI: {$listcontacts[content].nino}{/if}</td>
+						<td>{if isset($listcontacts[content].dob) and ($listcontacts[content].dob <> '')  }DOB: {$listcontacts[content].dob}{/if}</td>
+						<td>{if isset($listcontacts[content].nino) and ($listcontacts[content].nino <> '') }NI: {$listcontacts[content].nino}{/if}</td>
 					{/if}
 				</tr>
 			{sectionelse}

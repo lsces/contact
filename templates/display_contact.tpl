@@ -1,6 +1,6 @@
 		{include file="bitpackage:contact/display_type_header.tpl"}
 
-		{if isset($gContent->mInfo.usn) && ($gContent->mInfo.usn <> '') }
+		{if isset($gContent->mInfo.usn) and ($gContent->mInfo.usn <> '') }
 		<div class="form-group">
 			{formlabel label="USN" for="usn"}
 			{forminput}
@@ -9,7 +9,7 @@
 			<div class="clear"></div>
 		</div>
 		{/if}
-		{if isset($gContent->mInfo.name) && ($gContent->mInfo.name <> '') }
+		{if isset($gContent->mInfo.name) and ($gContent->mInfo.name <> '') }
 		<div class="form-group">
 			{formlabel label="Name" for="name"}
 			{forminput}
@@ -18,7 +18,7 @@
 			<div class="clear"></div>
 		</div>
 		{/if}
-		{if isset($gContent->mInfo.organisation) && ($gContent->mInfo.organisation <> '') }
+		{if isset($gContent->mInfo.organisation) and ($gContent->mInfo.organisation <> '') }
 		<div class="form-group">
 			{formlabel label="Organisation" for="organisation"}
 			{forminput}
@@ -27,7 +27,7 @@
 			<div class="clear"></div>
 		</div>
 		{/if}
-		{if isset($gContent->mInfo.dob) && ($gContent->mInfo.dob <> '') }
+		{if isset($gContent->mInfo.dob) and ($gContent->mInfo.dob <> '') }
 		<div class="form-group">
 			{formlabel label="Date of Birth" for="dob"}
 			{forminput}
@@ -36,7 +36,7 @@
 			<div class="clear"></div>
 		</div>
 		{/if}
-		{if isset($gContent->mInfo.nino) && ($gContent->mInfo.nino <> '') }
+		{if isset($gContent->mInfo.nino) and ($gContent->mInfo.nino <> '') }
 		<div class="form-group">
 			{formlabel label="National Insurance Number" for="nino"}
 			{forminput}

@@ -7,7 +7,7 @@
 		<h1>Contact-{$contentInfo.content_id}</h1>
 	</div>
 	<div class="date">
-		{tr}Created by {displayname user=$contentInfo.creator_user user_id=$contentInfo.creator_user_id real_name=$contentInfo.creator_real_name}, Last modification by {displayname user=$contentInfo.modifier_user user_id=$contentInfo.modifier_user_id real_name=$contentInfo.modifier_real_name} on {$contentInfo.last_modified|bit_short_datetime}{/tr}
+		{tr}Created by {displayname user=$contentInfo.creator_user user_id=$contentInfo.creator_user_id|default:0 real_name=$contentInfo.creator_real_name}, Last modification by {displayname user=$contentInfo.modifier_user user_id=$contentInfo.modifier_user_id real_name=$contentInfo.modifier_real_name} on {$contentInfo.last_modified|bit_short_datetime}{/tr}
 	</div>
 
 	{if $comments_at_top_of_page eq 'y' and $print_page ne 'y'}

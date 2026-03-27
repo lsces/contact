@@ -6,7 +6,7 @@
 		&nbsp;
 	{/if}</td>
 <td>
-	{if isset($gContent->mInfo.$source[xref].xref) && $gContent->mInfo.$source[xref].xref <> '' && $gContent->mInfo.$source[xref].xref > 100 }
+	{if isset($gContent->mInfo.$source[xref].xref) and $gContent->mInfo.$source[xref].xref <> '' and $gContent->mInfo.$source[xref].xref > 100 }
 		{$gContent->mInfo.$source[xref].xref|escape}
 		{smartlink ititle="Link to" ifile="view_form.php" booticon="icon-note-edit" content_id=$gContent->mInfo.$source[xref].xref}
 	{else}
