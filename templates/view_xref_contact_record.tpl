@@ -3,7 +3,7 @@
 	{$gContent->mInfo.$source[xref].source_title|escape}
 </td>
 <td>
-	{if isset($gContent->mInfo.$source[xref].xref) and $gContent->mInfo.$source[xref].xref <> '' and $gContent->mInfo.$source[xref].xref > 100 }
+	{if isset($gContent->mInfo.$source[xref].xref) && $gContent->mInfo.$source[xref].xref <> '' && $gContent->mInfo.$source[xref].xref > 100 }
 		{$gContent->mInfo.$source[xref].xref|escape}
 		{smartlink ititle="Link to" ifile="display_contact.php" booticon="icon-note-edit" content_id=$gContent->mInfo.$source[xref].xref}
 	{else}
@@ -30,7 +30,7 @@
 {/if}
 <td>
 	<span class="actionicon">
-		{if $gBitUser->hasPermission( 'p_contact_update' ) and $source ne 'history' }
+		{if $gBitUser->hasPermission( 'p_contact_update' ) && $source ne 'history' }
 			{if $gContent->mInfo.$source[xref].source eq 'KEY_B' }
 				{smartlink ititle="Callout" ifile="edit_key_break.php" booticon="icon-redo" expunge=0 content_id=$gContent->mInfo.content_id xref_id=$gContent->mInfo.$source[xref].xref_id}
 				{smartlink ititle="Reseal" ifile="edit_key_break.php" booticon="icon-undo" expunge=2 content_id=$gContent->mInfo.content_id xref_id=$gContent->mInfo.$source[xref].xref_id}
@@ -38,7 +38,7 @@
 				{smartlink ititle="Edit" ifile="edit_xref.php" booticon="icon-note-edit" content_id=$gContent->mInfo.content_id xref_id=$gContent->mInfo.$source[xref].xref_id}
 			{/if}
 		{/if}	
-		{if $gBitUser->hasPermission( 'p_contact_expunge' ) and $gContent->mInfo.$source[xref].source ne 'KEY_B' }
+		{if $gBitUser->hasPermission( 'p_contact_expunge' ) && $gContent->mInfo.$source[xref].source ne 'KEY_B' }
 			{if $source eq 'history' }
 				{smartlink ititle="Restore" ifile="edit_xref.php" booticon="icon-note-edit" content_id=$gContent->mInfo.content_id xref_id=$gContent->mInfo.$source[xref].xref_id expunge=-1}
 			{else}

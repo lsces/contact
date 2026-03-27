@@ -25,7 +25,7 @@
 			{/forminput}
 			<div class="clear"></div>
 		</div>
-		{if $locate == 1 and !empty($address.x_coordinate)}
+		{if $locate == 1 && !empty($address.x_coordinate)}
 		<div class="form-group">
 			{formlabel label="Visual Centre Coordinates" for="street_start_x"}
 			{forminput}

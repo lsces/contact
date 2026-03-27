@@ -49,15 +49,15 @@
 	{/if}
 </td>
 <td style="text-align:center;">{$list[changes].title}<br />
-				{if isset($list[changes].house) and ($list[changes].house <> '') }
+				{if isset($list[changes].house) && ($list[changes].house <> '') }
 					{$list[changes].house},&nbsp;{/if}
-				{if isset($list[changes].add1) and ($list[changes].add1 <> '') }
+				{if isset($list[changes].add1) && ($list[changes].add1 <> '') }
 					{$list[changes].add1},&nbsp;{/if}
-				{if isset($list[changes].add2) and ($list[changes].add2 <> '') }
+				{if isset($list[changes].add2) && ($list[changes].add2 <> '') }
 					{$list[changes].add2},&nbsp;{/if}
-				{if isset($list[changes].add3) and ($list[changes].add3 <> '') }
+				{if isset($list[changes].add3) && ($list[changes].add3 <> '') }
 					{$list[changes].add3},&nbsp;{/if}
-				{if isset($list[changes].add4) and ($list[changes].add4 <> '') }
+				{if isset($list[changes].add4) && ($list[changes].add4 <> '') }
 					{$list[changes].add4},&nbsp;{/if}
 <td style="text-align:center;">{$list[changes].town}<br />
 	{$list[changes].county}</td>

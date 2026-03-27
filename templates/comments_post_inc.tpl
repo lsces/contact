@@ -1,7 +1,7 @@
-{if !$hide or $post_comment_request or $smarty.request.post_comment_preview}
+{if !$hide || $post_comment_request || $smarty.request.post_comment_preview}
 	<a name="editcomments"></a>
 
-	{if $post_comment_preview and !$preview_override}
+	{if $post_comment_preview && !$preview_override}
 		<h2>{tr}{$post_title} Preview{/tr}</h2>
 		<div class="preview">
 			{include file='bitpackage:liberty/display_comment.tpl' comment=$postComment}
@@ -12,7 +12,7 @@
 		{formfeedback hash=$formfeedback}
 
 
-		{if $post_comment_request or $smarty.request.post_comment_preview or $comments_ajax}
+		{if $post_comment_request || $smarty.request.post_comment_preview || $comments_ajax}
 			{legend legend=$post_title}
 				<input type="hidden" name="post_comment_reply_id" value="{$post_comment_reply_id}" />
 				<input type="hidden" name="post_comment_id" value="{$post_comment_id}" />
@@ -20,7 +20,7 @@
 
 				{* This is a little extra value for the funky case when bw learns browser has js at the same time a preview is asked for
 				   This will keep comment in non-js mode until previewing is done. Things get messy without this *}
-				{if !$gBitThemes->isJavascriptEnabled() or $no_js_preview == "y"}
+				{if !$gBitThemes->isJavascriptEnabled() || $no_js_preview == "y"}
 					<input type="hidden" name="no_js_preview" value="y" />
 				{/if}
 
@@ -66,7 +66,7 @@
 				{textarea id="commentpost" name="comment_data" rows=$gBitSystem->getConfig('comments_default_post_lines', 6)}{$postComment.data}{/textarea}
 
 				{* @TODO perm check more accurately should be on root content object *}
-				{if $gBitSystem->isFeatureActive( 'comments_allow_attachments' ) and $gBitUser->hasPermission('p_liberty_attach_attachments') }
+				{if $gBitSystem->isFeatureActive( 'comments_allow_attachments' ) && $gBitUser->hasPermission('p_liberty_attach_attachments') }
 					{* @TODO make edit_storage_list.tpl work with comments attachments - it is nested in edit_storage.tpl - for now bypass it, remove mime code when edit_storage.tpl can be used directly*}
 					{* include file="bitpackage:liberty/edit_storage.tpl" *}
 					{if $gLibertySystem->isPluginActive( $smarty.const.LIBERTY_DEFAULT_MIME_HANDLER )}

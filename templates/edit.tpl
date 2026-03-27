@@ -53,7 +53,7 @@
 
 						{include file="bitpackage:contact/edit_type_header.tpl"}
 							
-						{if $gContent->mInfo.name or $gContent->mInfo.contact_types.0.content_id or !isset( $gContent->mInfo.contact_types ) }
+						{if $gContent->mInfo.name || $gContent->mInfo.contact_types.0.content_id || !isset( $gContent->mInfo.contact_types ) }
 							<div class="form-group">
 								{formlabel label="Title" for="prefix"}
 								{forminput}
@@ -83,7 +83,7 @@
 								<div class="clear"></div>
 							</div>
 						{/if}
-						{if $gContent->mInfo.organisation or $gContent->mInfo.contact_types.1.content_id or !isset( $gContent->mInfo.contact_types ) }
+						{if $gContent->mInfo.organisation || $gContent->mInfo.contact_types.1.content_id || !isset( $gContent->mInfo.contact_types ) }
 							<div class="form-group">
 								{formlabel label="Organisation" for="organisation"}
 								{forminput}

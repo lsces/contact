@@ -25,7 +25,7 @@
 {/if}
 <td>
 	<span class="actionicon">
-		{if $gBitUser->hasPermission( 'p_contact_update' ) and $source ne 'history' }
+		{if $gBitUser->hasPermission( 'p_contact_update' ) && $source ne 'history' }
 				{smartlink ititle="Edit" ifile="edit_xref.php" booticon="icon-note-edit" content_id=$gContent->mInfo.content_id xref_id=$gContent->mInfo.$source[xref].xref_id}
 		{/if}	
 		{if $gBitUser->hasPermission( 'p_contact_expunge' ) }

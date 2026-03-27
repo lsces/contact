@@ -1,7 +1,7 @@
 <div class="navbar">
 	{if $show_page eq 'y'}
 		{if $gBitSystem->isFeatureActive('contact_attachments')}
-			{if $gBitUser->hasPermission('p_contact_view_attachments') or $gBitUser->hasPermission('p_contact_admin_attachments') or $gBitUser->hasPermission('p_contact_attach_files')}
+			{if $gBitUser->hasPermission('p_contact_view_attachments') || $gBitUser->hasPermission('p_contact_admin_attachments') || $gBitUser->hasPermission('p_contact_attach_files')}
 				<a href="javascript:document.location='#attachments';flip('attzone{if $atts_show eq 'y'}open{/if}');">{if $atts_count eq 0}{tr}attach file{/tr}{elseif $atts_count eq 1}{tr}1 attachment{/tr}{else}{$atts_count} {tr}attachments{/tr}{/if}</a>
 			{else}
 				{if $atts_count eq 1}{tr}1&nbsp;attachment{/tr}{else}{$atts_count}&nbsp;{tr}attachments{/tr}{/if}

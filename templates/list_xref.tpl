@@ -28,7 +28,7 @@
 								{$gContent->mInfo.xref[xref].data|escape}
 							</td>
 							<td>
-								{if isset($gContent->mInfo.xref[xref].usn) and ($gContent->mInfo.xref[xref].usn <> '') }
+								{if isset($gContent->mInfo.xref[xref].usn) && ($gContent->mInfo.xref[xref].usn <> '') }
 									{$gContent->mInfo.xref[xref].usn|escape}
 									{smartlink ititle="Link to" ifile="../property/display_property.php" booticon="icon-note-edit" property_id=$gContent->mInfo.xref[xref].usn}
 								{/if}
