@@ -13,6 +13,7 @@
  * required setup
  */
 namespace Bitweaver\Contact;
+
 use Bitweaver\BitBase;
 use Bitweaver\BitDate;
 use Bitweaver\Liberty\LibertyContent;		// Contact base class
@@ -37,14 +38,14 @@ class Contact extends LibertyContent {
 	 */
 	public function __construct( $pContactId = NULL, $pContentId = NULL ) {
 		parent::__construct();
-		$this->registerContentType( CONTACT_CONTENT_TYPE_GUID, array(
+		$this->registerContentType( CONTACT_CONTENT_TYPE_GUID, [
 				'content_type_guid' => CONTACT_CONTENT_TYPE_GUID,
 				'content_name' => 'Contact Entry',
 				'handler_class' => 'Contact',
 				'handler_package' => 'contact',
 				'handler_file' => 'Contact.php',
-				'maintainer_url' => 'http://lsces.co.uk'
-			) );
+				'maintainer_url' => 'http://lsces.co.uk',
+			] );
 		$this->mContentId = (int)$pContentId;
 		$this->mContentTypeGuid = CONTACT_CONTENT_TYPE_GUID;
 
@@ -71,7 +72,7 @@ class Contact extends LibertyContent {
 	public function load( $pContentId = NULL, $pPluginParams = NULL ) {
 		if ( $pContentId ) $this->mContentId = (int)$pContentId;
 		if( $this->verifyId( $this->mContentId ) ) {
- 			$query = "select con.*, lc.*,
+			$query = "select con.*, lc.*,
  				ap.*, xhA.`xkey_ext` AS house,
  				img.`xkey` AS client_gallery,
  				x00.`xkey_ext` as name, lc.`title` as organisation,
@@ -88,7 +89,7 @@ class Contact extends LibertyContent {
 				LEFT JOIN `".BIT_DB_PREFIX."contact_xref` xhL ON xhL.`content_id` = con.`content_id` AND xhL.`source` = '#L' AND ( xhL.`end_date` IS NULL OR xhL.`end_date` > CURRENT_TIMESTAMP )
 				LEFT JOIN `".BIT_DB_PREFIX."address_postcode` ap ON ap.`postcode` = xhA.`xkey`
 				WHERE con.`content_id`=?";
- 			$result = $this->mDb->query( $query, array( $this->mContentId ) );
+			$result = $this->mDb->query( $query, [ $this->mContentId ] );
 //				LEFT JOIN `".BIT_DB_PREFIX."contact` ci ON ci.contact_id = pro.owner_id
 //				LEFT JOIN `".BIT_DB_PREFIX."contact_address` a ON a.contact_id = pro.address_id
 //				LEFT JOIN `".BIT_DB_PREFIX."postcode` p ON p.`postcode` = a.`postcode`
@@ -129,7 +130,7 @@ class Contact extends LibertyContent {
 			}
 		}
 		LibertyContent::load();
-		return;
+
 	}
 
 	/**
@@ -190,7 +191,7 @@ class Contact extends LibertyContent {
 
 				// mContentId will not be set until the secondary data has commited
 				if( !empty( $pParamHash['contact_store']['content_id'] ) ) {
-					$result = $this->mDb->associateUpdate( $table, $pParamHash['contact_store'], array( "content_id" => $this->mContentId ) );
+					$result = $this->mDb->associateUpdate( $table, $pParamHash['contact_store'], [ "content_id" => $this->mContentId ] );
 				} else {
 					$pParamHash['contact_store']['content_id'] = $pParamHash['content_id'];
 					$pParamHash['contact_store']['parent_id'] = $pParamHash['content_id'];
@@ -206,17 +207,17 @@ class Contact extends LibertyContent {
 				}
 				if( !empty( $pParamHash['contact_types'] ) ) {
 					$query = "DELETE FROM `".BIT_DB_PREFIX."contact_xref` WHERE `content_id` = ? AND `source` LIKE '$%'";
-					$result = $this->mDb->query($query, array($this->mContentId ) );
+					$result = $this->mDb->query($query, [$this->mContentId ] );
 					 foreach ( $pParamHash['contact_types'] as $key => $source ) {
 						if ( $source == '$00' ) {
 							$query = "INSERT INTO `".BIT_DB_PREFIX."contact_xref` (`content_id`, `source`, `xkey_ext`, `last_update_date`) VALUES ( ?, ?, ?, NULL )";
-							$result = $this->mDb->query($query, array( $this->mContentId, $source, $pParamHash['name'] ) );
+							$result = $this->mDb->query($query, [ $this->mContentId, $source, $pParamHash['name'] ] );
 						} else if ( $source == '$01' ) {
 							$query = "INSERT INTO `".BIT_DB_PREFIX."contact_xref` (`content_id`, `source`, `xkey_ext`, `last_update_date`) VALUES ( ?, ?, ?, NULL )";
-							$result = $this->mDb->query($query, array( $this->mContentId, $source, $pParamHash['organisation'] ) );
+							$result = $this->mDb->query($query, [ $this->mContentId, $source, $pParamHash['organisation'] ] );
 						} else {
 						$query = "INSERT INTO `".BIT_DB_PREFIX."contact_xref` (`content_id`, `source`, `last_update_date`) VALUES ( ?, ?, NULL )";
-						$result = $this->mDb->query($query, array( $this->mContentId, $source ) );
+						$result = $this->mDb->query($query, [ $this->mContentId, $source ] );
 						}
 					 }
 				}
@@ -240,7 +241,7 @@ class Contact extends LibertyContent {
 		if ($this->isValid() ) {
 			$this->mDb->StartTrans();
 			$query = "DELETE FROM `".BIT_DB_PREFIX."contact_xref` WHERE `content_id` = ?";
-			$result = $this->mDb->query($query, array($this->mContentId ) );
+			$result = $this->mDb->query($query, [$this->mContentId ] );
 			if (LibertyContent::expunge() ) {
 			$ret = TRUE;
 				$this->mDb->CompleteTrans();
@@ -285,8 +286,8 @@ class Contact extends LibertyContent {
 	public function getDisplayLink( $pLinkText=NULL, $pMixed=NULL, $pAnchor=NULL ) {
 		if ( $this->mContentId != $pMixed['content_id'] ) $this->load($pMixed['content_id']);
 
-		$ret = ( empty( $this->mInfo['content_id'] ) ) 
-			? '<a href="' . $this->getDisplayUrl( $pMixed['content_id'] ) . '">' . $pMixed['title'] . '</a>' 
+		$ret = ( empty( $this->mInfo['content_id'] ) )
+			? '<a href="' . $this->getDisplayUrl( $pMixed['content_id'] ) . '">' . $pMixed['title'] . '</a>'
 			: '<a href="' . $this->getDisplayUrl( $pMixed['content_id'] ) . '">' . "Contact - " . $this->mInfo['title'] . '</a>';
 		return $ret;
 	}
@@ -331,10 +332,10 @@ class Contact extends LibertyContent {
 		$selectSql = '';
 		$joinSql = '';
 		$whereSql = '';
-		$bindVars = array();
+		$bindVars = [];
 
 		if ( isset( $pParamHash['role_id'] ) ) {
-	 		array_push( $bindVars, $this->mContentTypeGuid );
+			array_push( $bindVars, $this->mContentTypeGuid );
 			if ( $pParamHash['role_id'] > 0 ) {
 				$whereSql .= " AND con.`role_id` = ? ";
 				$bindVars[] = $pParamHash['role_id'];
@@ -355,10 +356,10 @@ class Contact extends LibertyContent {
 		}
 
 		if ( !isset( $pParamHash['role_id'] ) ) {
-	 		array_push( $bindVars, $this->mContentTypeGuid );
+			array_push( $bindVars, $this->mContentTypeGuid );
 		}
 
-	 	$this->getServicesSql( 'content_list_sql_function', $selectSql, $joinSql, $whereSql, $bindVars, NULL, $pParamHash );
+		$this->getServicesSql( 'content_list_sql_function', $selectSql, $joinSql, $whereSql, $bindVars, NULL, $pParamHash );
 
 //		$pParamHash["listInfo"]["ihash"]['contact_type_guid'] = $contact_type_guid;
 
@@ -391,10 +392,10 @@ class Contact extends LibertyContent {
 		}
 
 /*		if( isset( $find_name ) and is_string( $find_name ) and $find_name <> '' ) {
-		    $split = preg_split('|[,. ]|', $find_name, 2);
+			$split = preg_split('|[,. ]|', $find_name, 2);
 			$whereSql .= " AND UPPER( ci.`surname` ) STARTING ? ";
 			$bindVars[] = strtoupper( $split[0] );
-		    if ( array_key_exists( 1, $split ) ) {
+			if ( array_key_exists( 1, $split ) ) {
 				$split[1] = trim( $split[1] );
 				$whereSql .= " AND UPPER( ci.`forename` ) STARTING ? ";
 				$bindVars[] = strtoupper( $split[1] );
@@ -441,7 +442,7 @@ class Contact extends LibertyContent {
 			$joinSql WHERE lc.`content_type_guid` = ? $whereSql ";
 		$result = $this->mDb->query( $query, $bindVars, $max_records, $offset );
 
-		$ret = array();
+		$ret = [];
 		while( $res = $result->fetchRow() ) {
 			if (!empty($parse_split)) {
 				$res = array_merge($this->parseSplit($res), $res);
@@ -464,15 +465,15 @@ class Contact extends LibertyContent {
 		global $gBitUser, $gBitSmarty;
 
 		$roles = array_keys($gBitUser->mRoles);
-		$bindVars = array();
-		$bindVars = array_merge( $bindVars, $roles, array( $gBitUser->mUserId ) );
+		$bindVars = [];
+		$bindVars = array_merge( $bindVars, $roles, [ $gBitUser->mUserId ] );
 
 		$query = "SELECT g.* FROM `".BIT_DB_PREFIX."contact_xref_type` g
 				  LEFT OUTER JOIN `".BIT_DB_PREFIX."users_roles_map` purm ON ( purm.`user_id`=".$gBitUser->mUserId." ) AND ( purm.`role_id`=g.`role_id` )
 				  WHERE g.`xref_type` > 0 AND (g.`role_id` IN(". implode(',', array_fill(0, count($roles), '?')) ." ) OR purm.`user_id`=?)
 				  ORDER BY g.`xref_type`";
 		$result = $this->mDb->query( $query, $bindVars );
-		$ret = array();
+		$ret = [];
 		while ($res = $result->fetchRow()) {
 			$ret[] = $res;
 		}
@@ -489,7 +490,7 @@ class Contact extends LibertyContent {
 
 		$roles = array_keys($gBitUser->mRoles);
 		$bindVars = [];
-		$bindVars = array_merge( $bindVars, $roles, array( $gBitUser->mUserId ) );
+		$bindVars = array_merge( $bindVars, $roles, [ $gBitUser->mUserId ] );
 
 		$query = "SELECT g.`cross_ref_title` AS `type_name`, g.`source` FROM `".BIT_DB_PREFIX."contact_xref_source` g
 				  LEFT OUTER JOIN `".BIT_DB_PREFIX."users_roles_map` purm ON ( purm.`user_id`=".$gBitUser->mUserId." ) AND ( purm.`role_id`=g.`role_id` )
@@ -515,21 +516,21 @@ class Contact extends LibertyContent {
 			$query = "SELECT s.`cross_ref_title` AS `type_name`, s.`source`, s.`template`  FROM `".BIT_DB_PREFIX."contact_xref_source` s
 					  WHERE s.`template` = '$xrefTemplate'
 					  ORDER BY s.`cross_ref_title`";
-			$result = $this->mDb->query($query, array( $this->mContentId, $xrefGroup ) );
+			$result = $this->mDb->query($query, [ $this->mContentId, $xrefGroup ] );
 		} elseif ( $xrefGroup > -1 ) {
 			$query = "SELECT s.`cross_ref_title` AS `type_name`, s.`source`, s.`template`  FROM `".BIT_DB_PREFIX."contact_xref_source` s
 					  LEFT JOIN `".BIT_DB_PREFIX."contact_xref` x ON x.`source` = s.`source` AND x.`content_id` = ? AND ( x.`end_date` IS NULL OR x.`end_date` > CURRENT_TIMESTAMP )
 					  WHERE s.`xref_type` = ? AND ( x.`xref_id` IS NULL OR x.`xorder` > 0 )
 					  ORDER BY s.`cross_ref_title`";
-			$result = $this->mDb->query($query, array( $this->mContentId, $xrefGroup ) );
+			$result = $this->mDb->query($query, [ $this->mContentId, $xrefGroup ] );
 		} else {
 			$query = "SELECT s.`cross_ref_title` AS `type_name`, s.`source`, s.`template`  FROM `".BIT_DB_PREFIX."contact_xref_source` s
 					  LEFT JOIN `".BIT_DB_PREFIX."contact_xref` x ON x.`source` = s.`source` AND x.`content_id` = ? AND ( x.`end_date` IS NULL OR x.`end_date` > CURRENT_TIMESTAMP )
 					  WHERE s.`xref_type` > 0 AND ( x.`xref_id` IS NULL OR x.`xorder` > 0 )
 					  ORDER BY s.`cross_ref_title`";
-			$result = $this->mDb->query($query, array( $this->mContentId ) );
+			$result = $this->mDb->query($query, [ $this->mContentId ] );
 		}
-		$ret = array();
+		$ret = [];
 
 		while ($res = $result->fetchRow()) {
 			$ret['list'][$res["source"]] = trim($res["type_name"]);
@@ -547,15 +548,15 @@ class Contact extends LibertyContent {
 		global $gBitUser, $gBitSmarty;
 
 		$roles = array_keys($gBitUser->mRoles);
-		$bindVars = array();
-		$bindVars = array_merge( $bindVars, $roles, array( $gBitUser->mUserId ) );
+		$bindVars = [];
+		$bindVars = array_merge( $bindVars, $roles, [ $gBitUser->mUserId ] );
 
 		$query = "SELECT DISTINCT g.`template` FROM `".BIT_DB_PREFIX."contact_xref_source` g
 				  LEFT OUTER JOIN `".BIT_DB_PREFIX."users_roles_map` purm ON ( purm.`user_id`=".$gBitUser->mUserId." ) AND ( purm.`role_id`=g.`role_id` )
 				  WHERE (g.`role_id` IN(". implode(',', array_fill(0, count($roles), '?')) ." ) OR purm.`user_id`=?)
 				  ORDER BY g.`template`";
 		$result = $this->mDb->query( $query, $bindVars );
-		$ret = array();
+		$ret = [];
 		$cnt = 0;
 		while ($res = $result->fetchRow()) {
 			$ret[] = trim($res["template"]) <> '' ? trim($res["template"]) : 'generic';
@@ -579,9 +580,9 @@ class Contact extends LibertyContent {
 				LEFT JOIN `".BIT_DB_PREFIX."address_postcode` ap ON ap.`postcode` = xhA.`xkey`
 				WHERE r.`source` = 'KEY_S' AND r.`xref` = ? AND ( r.`end_date` IS NULL OR r.`end_date` > CURRENT_TIMESTAMP )
 				ORDER BY r.`xref`, XORDERBY";
-		$result = $this->mDb->query($query, array( $contract ) );
+		$result = $this->mDb->query($query, [ $contract ] );
 
-		$ret = array();
+		$ret = [];
 		while ($res = $result->fetchRow()) {
 			$ret[] = $res;
 		}
@@ -605,9 +606,9 @@ class Contact extends LibertyContent {
 			global $gBitUser;
 
 			$roles = array_keys($gBitUser->mRoles);
-			$bindVars = array();
+			$bindVars = [];
 			array_push( $bindVars, $this->mContentId );
-			$bindVars = array_merge( $bindVars, $roles, array( $gBitUser->mUserId ) );
+			$bindVars = array_merge( $bindVars, $roles, [ $gBitUser->mUserId ] );
 
 			$sql = "SELECT r.`source`, r.`cross_ref_title`, d.`content_id`
 					FROM `".BIT_DB_PREFIX."contact_xref_source` r
@@ -633,10 +634,10 @@ class Contact extends LibertyContent {
 			global $gBitUser;
 
 			$roles = array_keys($gBitUser->mRoles);
-			$bindVars = array();
+			$bindVars = [];
 			array_push( $bindVars, $this->mDb->NOW() );
 			array_push( $bindVars, $this->mContentId );
-			$bindVars = array_merge( $bindVars, $roles, array( $gBitUser->mUserId ) );
+			$bindVars = array_merge( $bindVars, $roles, [ $gBitUser->mUserId ] );
 
 			$sql = "SELECT s.xref_type, x.`xref_id`, x.`last_update_date`, x.`source`, t.`title` AS type_title,
 					CASE
@@ -688,7 +689,7 @@ class Contact extends LibertyContent {
 	 * store or update xref records for this contact record
 	 */
 	public function storeXref( &$pParamHash ) {
-		$xref = new ContactXref( isset($pParamHash['xref_id']) ? $pParamHash['xref_id'] : NULL );
+		$xref = new ContactXref( $pParamHash['xref_id'] ?? NULL );
 		if ( $xref->store( $pParamHash ) ) {
 				$this->mInfo['xref_title'] = $xref->mContentId;
 				$this->mInfo['xref_store'] = $xref->mInfo;
@@ -696,7 +697,7 @@ class Contact extends LibertyContent {
 				$this->load();
 
 				return true;
-		} else return false;
+		}  return false;
 	}
 
 	/**
@@ -711,7 +712,7 @@ class Contact extends LibertyContent {
 			$this->load();
 
 			return true;
-		} else return false;
+		}  return false;
 	}
 
 	/**
@@ -724,7 +725,7 @@ class Contact extends LibertyContent {
 			global $gBitUser;
 
 			$roles = array_keys($gBitUser->mRoles);
-			$bindVars = array();
+			$bindVars = [];
 			array_push( $bindVars, $this->mDb->NOW() );
 			array_push( $bindVars, $this->mContentId );
 //			$bindVars = array_merge( $bindVars, $roles, array( $gBitUser->mUserId ) );
@@ -759,10 +760,10 @@ class Contact extends LibertyContent {
 			global $gBitUser;
 
 			$roles = array_keys($gBitUser->mRoles);
-			$bindVars = array();
+			$bindVars = [];
 			array_push( $bindVars, $this->mDb->NOW() );
 			array_push( $bindVars, $this->mContentId );
-			$bindVars = array_merge( $bindVars, $roles, array( $gBitUser->mUserId ) );
+			$bindVars = array_merge( $bindVars, $roles, [ $gBitUser->mUserId ] );
 
 			$sql = "SELECT s.xref_type, x.`xref_id`, x.`last_update_date`, x.`source`, t.`title` AS type_title,
 					CASE

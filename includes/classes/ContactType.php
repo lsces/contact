@@ -12,6 +12,7 @@
  * Required setup
  */
 namespace Bitweaver\Contact;
+
 use Bitweaver\BitBase;
 
 /**
@@ -33,7 +34,7 @@ class ContactType extends BitBase {
 
 			$roles = array_keys($gBitUser->mRoles);
 			$bindVars = [];
-			$bindVars = array_merge( $bindVars, $roles, array( $gBitUser->mUserId ) );
+			$bindVars = array_merge( $bindVars, $roles, [ $gBitUser->mUserId ] );
 
 			$sql = "SELECT r.`source`, r.`cross_ref_title`
 					FROM `".BIT_DB_PREFIX."contact_xref_source` r
@@ -91,14 +92,14 @@ class ContactType extends BitBase {
 
 		$result = $gBitSystem->mDb->query( $query, $bindVars );
 
-        $ret = [];
+		$ret = [];
 
-        while( $res = $result->fetchRow() ) {
-			$res["num_types"] = $gBitSystem->mDb->getOne( "SELECT COUNT(*) FROM `".BIT_DB_PREFIX."contact_xref_source` WHERE `xref_type`= ?", array( $res["xref_type"] ) );
+		while( $res = $result->fetchRow() ) {
+			$res["num_types"] = $gBitSystem->mDb->getOne( "SELECT COUNT(*) FROM `".BIT_DB_PREFIX."contact_xref_source` WHERE `xref_type`= ?", [ $res["xref_type"] ] );
 
-            $ret[] = $res;
-        }
+			$ret[] = $res;
+		}
 
-        return $ret;
-    }
+		return $ret;
+	}
 }

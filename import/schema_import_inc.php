@@ -1,5 +1,5 @@
 <?php
-$tables = array(
+$tables = [
 
 'contact_phx' => "
   content_id I8 PRIMARY,
@@ -101,7 +101,7 @@ $tables = array(
   last_change T DEFAULT CURRENT_TIMESTAMP
 ",
 
-);
+];
 
 global $gBitInstaller;
 

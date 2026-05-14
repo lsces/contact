@@ -42,17 +42,17 @@ for ( $n = 0; $n < $mbox->size(); $n++ ) {
 	$message = $mbox->get( $n );
 
 	preg_match( '/Subject: (.*)$/m', $message, $matches );
-	$subject = isset( $matches[1] ) ? $matches[1] : 'Not Set';$subject = 'Not Set';
+	$subject = $matches[1] ?? 'Not Set';$subject = 'Not Set';
 	//    echo 'Mail #' . $n . ': ' . $subject . "<br>";
 	$Decoder = new Mail_mimeDecode( $message );
-	$params = array(
+	$params = [
 		'include_bodies' => true,
 		'decode_bodies'  => true,
 		'decode_headers' => true,
-	);
+	];
 	$Decoded = $Decoder->decode( $params );
 	if (strtolower( $Decoded->ctype_primary ) == "multipart") {
-		//		\Bitweaver\vd($Decoded->parts[0]->ctype_primary);	
+		//		\Bitweaver\vd($Decoded->parts[0]->ctype_primary);
 		$ctype_secondary = $Decoded->parts[0]->ctype_secondary;
 		if (strtolower( $Decoded->parts[0]->ctype_primary ) == "multipart") {
 			if (!empty( $Decoded->parts[0]->parts[0]->body )) {
@@ -65,7 +65,7 @@ for ( $n = 0; $n < $mbox->size(); $n++ ) {
 		}
 	}
 	else if (strtolower( $Decoded->ctype_primary ) == "text") {
-		//		\Bitweaver\vd($Decoded->ctype_primary);	
+		//		\Bitweaver\vd($Decoded->ctype_primary);
 		$ctype_secondary = $Decoded->ctype_secondary;
 		if (!empty( $Decoded->body )) {
 			$body = $Decoded->body;
@@ -135,7 +135,7 @@ for ( $n = 0; $n < $mbox->size(); $n++ ) {
 	$pattern = '/([a-z0-9_\.\-])+\@(([a-z0-9\-])+\.)+([a-z0-9]{2,4})+/i';
 	// preg match all in the string
 	preg_match_all( $pattern, $Decoded->headers['from'], $emails );
- 	if ( !empty($emails[0]) ) {
+	if ( !empty($emails[0]) ) {
 		if ( $emails[0][0] == 'lester@lsces.co.uk' ) {
 			preg_match_all( $pattern, $Decoded->headers['to'], $to_emails );
 		}
@@ -155,8 +155,8 @@ for ( $n = 0; $n < $mbox->size(); $n++ ) {
 				$table = BIT_DB_PREFIX . "contact_email";
 				$email['email_store']['end_date'] = strtotime( $dateTime->format( DATE_ATOM ) );
 
-				$result = $storeComment->mDb->associateUpdate( $table, $email['email_store'], array( "email" => $from_emails[0] ) );
-			} else {	
+				$result = $storeComment->mDb->associateUpdate( $table, $email['email_store'], [ "email" => $from_emails[0] ] );
+			} else {
 				$table = BIT_DB_PREFIX . "contact_email";
 				$email['email_store']['email'] = $from_emails[0];
 				$email['email_store']['start_date'] = strtotime( $dateTime->format( DATE_ATOM ) );
@@ -179,7 +179,7 @@ $mbox->close();
 
 if ($gContent->isCommentable()) {
 	$commentsParentId = $gContent->mContentId;
-	$comments_vars = array( 'contact' );
+	$comments_vars = [ 'contact' ];
 	$comments_prefix_var = 'contact:';
 	$comments_object_var = 'contact';
 	$comments_return_url = $_SERVER['PHP_SELF'] . "?content_id=" . $gContent->mContentId;

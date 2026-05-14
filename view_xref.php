@@ -35,11 +35,11 @@ if (isset($_REQUEST["fCancel"])) {
 	if( $gContent->storeXref( $_REQUEST ) ) {
 		header("Location: ".$gContent->getDisplayUrl() );
 		die;
-	} else {
+	}
 		$xrefInfo = $_REQUEST;
 		$xrefInfo['data'] = &$_REQUEST['edit'];
-	}
-} 
+
+}
 
 // formInfo might be set due to a error on submit
 if( empty( $xrefInfo ) ) {
@@ -52,7 +52,7 @@ $gBitSmarty->assign( 'xref_title', $gContent->mInfo['xref_title'] );
 
 $gBitSmarty->assign( 'errors', $gContent->mErrors );
 if( isset($xrefInfo['template']) ) {
-	$gBitSystem->display( 'bitpackage:contact/view_xref_'.$xrefInfo['template'].'.tpl', 'View: ' , array( 'display_mode' => 'view' ));
+	$gBitSystem->display( 'bitpackage:contact/view_xref_'.$xrefInfo['template'].'.tpl', 'View: ' , [ 'display_mode' => 'view' ]);
 } else {
-	$gBitSystem->display( 'bitpackage:contact/view_xref.tpl', 'View: ' , array( 'display_mode' => 'view' ));
+	$gBitSystem->display( 'bitpackage:contact/view_xref.tpl', 'View: ' , [ 'display_mode' => 'view' ]);
 }

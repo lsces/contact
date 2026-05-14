@@ -34,7 +34,7 @@ if (isset($_REQUEST["fCancel"])) {
 		$xrefInfo = $_REQUEST;
 		$xrefInfo['data'] = &$_REQUEST['edit'];
 	}
-} 
+}
 
 $_REQUEST['xref_type'] = 10;
 
@@ -56,4 +56,4 @@ $gBitSmarty->assign( 'xrefInfo', $xrefInfo );
 $gBitSmarty->assign( 'title', $gContent->mInfo['title'] );
 
 $gBitSmarty->assign( 'errors', $gContent->mErrors );
-$gBitSystem->display( 'bitpackage:contact/add_xref_address.tpl', 'Edit: ' , array( 'display_mode' => 'edit' ));
+$gBitSystem->display( 'bitpackage:contact/add_xref_address.tpl', 'Edit: ' , [ 'display_mode' => 'edit' ]);

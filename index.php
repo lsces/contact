@@ -36,4 +36,4 @@ if ($gContent->isCommentable()) {
 
 $gContent->mInfo['type'] = $gContent->getContactGroupList();
 	$gBitSystem->setBrowserTitle("Contact List Item");
-	$gBitSystem->display( 'bitpackage:contact/show_contact.tpl', NULL, array( 'display_mode' => 'display' ));
+	$gBitSystem->display( 'bitpackage:contact/show_contact.tpl', NULL, [ 'display_mode' => 'display' ]);

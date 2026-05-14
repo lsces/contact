@@ -12,6 +12,7 @@
  * Required setup
  */
 namespace Bitweaver\Contact;
+
 use Bitweaver\BitBase;
 use Bitweaver\BitDate;
 
@@ -55,7 +56,7 @@ class ContactXref extends BitBase {
 					JOIN `".BIT_DB_PREFIX."contact_xref_source` s ON s.`source` = x.`source`
 					WHERE x.`xref_id` = ?
 					ORDER BY x.`xorder`";
-			$result = $this->mDb->getRow( $sql, array(  $pXref_id ) );
+			$result = $this->mDb->getRow( $sql, [  $pXref_id ] );
 			if( $result['content_id'] ) {
 				$this->mXrefId = $pXref_id;
 				$this->mContentId = $result['content_id'];
@@ -76,26 +77,26 @@ class ContactXref extends BitBase {
 
 			if ( isset( $pParamHash['content_id'] )) {
 				$pParamHash['xref_store']['content_id'] = $pParamHash['content_id'];
-			} 
+			}
 
 			if ( isset( $pParamHash['source'] )) {
 				$pParamHash['xref_store']['source'] = $pParamHash['source'];
-			} 
-			
+			}
+
 			$pParamHash['xref_store']['xorder'] = 0;
 
 			if ( isset ( $pParamHash['fAddXref'] ) ) {
 				$pParamHash['xref_store']['source'] = isset( $pParamHash['Array_xref_type_list'] ) ? $pParamHash['Array_xref_type_list']['Array.source'] : $pParamHash['source'];
 				$pParamHash['xref_store']['content_id'] = $pParamHash['content_id'];
-				$sql = "SELECT x.`multi` FROM `".BIT_DB_PREFIX."contact_xref_source` x WHERE x.`source` = ?";				
-				$next = $this->mDb->getOne( $sql, array(  $pParamHash['xref_store']['source'] ) );
+				$sql = "SELECT x.`multi` FROM `".BIT_DB_PREFIX."contact_xref_source` x WHERE x.`source` = ?";
+				$next = $this->mDb->getOne( $sql, [  $pParamHash['xref_store']['source'] ] );
 				if ( $next > 0 ) {
 					$sql = "SELECT COALESCE( MAX(x.`xorder`) + 1, 1 ) FROM `".BIT_DB_PREFIX."contact_xref` x
 							WHERE x.`content_id` = ? AND x.`source` = ?";
-					$next = $this->mDb->getOne( $sql, array(  $pParamHash['xref_store']['content_id'], $pParamHash['xref_store']['source'] ) );
+					$next = $this->mDb->getOne( $sql, [  $pParamHash['xref_store']['content_id'], $pParamHash['xref_store']['source'] ] );
 				}
 				$pParamHash['xref_store']['xorder'] = $next;
-			} 
+			}
 
 			if ( isset ( $pParamHash['fStepXref']  ) ) {
 				$pParamHash['xref_store']['source'] = $this->mSource;
@@ -108,19 +109,19 @@ class ContactXref extends BitBase {
 				$pParamHash['xref_store']['xkey_ext'] = '';
 				$pParamHash['xref_store']['data'] = '';
 			}
-			
+
 			if ( isset( $pParamHash['xref'] )) {
 				$pParamHash['xref_store']['xref'] = $pParamHash['xref'];
-			} 
+			}
 			if ( isset( $pParamHash['xkey'] )) {
 				$pParamHash['xref_store']['xkey'] = $pParamHash['xkey'];
-			} 
+			}
 			if ( isset( $pParamHash['xkey_ext'] )) {
 				$pParamHash['xref_store']['xkey_ext'] = $pParamHash['xkey_ext'];
-			} 
+			}
 			if ( isset( $pParamHash['edit'] )) {
 				$pParamHash['xref_store']['data'] = $pParamHash['edit'];
-			} 
+			}
 			$pParamHash['xref_store']['last_update_date'] = $this->mDb->NOW();
 
 			// If start and/or end dates are supplied these are updated as well
@@ -128,12 +129,12 @@ class ContactXref extends BitBase {
 				$dateString = $this->mDate->gmmktime(
 					$pParamHash['start_Hour'],
 					$pParamHash['start_Minute'],
-					isset($pParamHash['start_Second']) ? $pParamHash['start_Second'] : 0,
+					$pParamHash['start_Second'] ?? 0,
 					$pParamHash['start_Month'],
 					$pParamHash['start_Day'],
-					$pParamHash['start_Year']
+					$pParamHash['start_Year'],
 				);
-	
+
 				$timestamp = $this->mDate->getUTCFromDisplayDate( $dateString );
 				if( $timestamp !== -1 ) {
 					$pParamHash['start_date'] = $timestamp;
@@ -145,17 +146,17 @@ class ContactXref extends BitBase {
 			if( isset ($pParamHash['ignore_start_date']) && $pParamHash['ignore_start_date'] == 'on' ) {
 				$pParamHash['xref_store']['start_date'] = '';
 			}
-	
+
 			if( !empty( $pParamHash['end_Month'] ) ) {
 				$dateString = $this->mDate->gmmktime(
 					$pParamHash['end_Hour'],
 					$pParamHash['end_Minute'],
-					isset($pParamHash['end_Second']) ? $pParamHash['end_Second'] : 0,
+					$pParamHash['end_Second'] ?? 0,
 					$pParamHash['end_Month'],
 					$pParamHash['end_Day'],
-					$pParamHash['end_Year']
+					$pParamHash['end_Year'],
 				);
-	
+
 				$timestamp = $this->mDate->getUTCFromDisplayDate( $dateString );
 				if( $timestamp !== -1 ) {
 					$pParamHash['end_date'] = $timestamp;
@@ -177,7 +178,7 @@ class ContactXref extends BitBase {
 
 			$this->mDb->StartTrans();
 			if( isset( $pParamHash['xref_id'] ) ) {
-				$result = $this->mDb->associateUpdate( $table, $pParamHash['xref_store'], array( "xref_id" => $pParamHash['xref_id'] ) );
+				$result = $this->mDb->associateUpdate( $table, $pParamHash['xref_store'], [ "xref_id" => $pParamHash['xref_id'] ] );
 			} else {
 				$this->mXrefId = $this->mDb->GenID( 'contact_xref_seq' );
 				$pParamHash['xref_id'] = $this->mXrefId;
@@ -188,9 +189,9 @@ class ContactXref extends BitBase {
 			$this->load( $this->mXrefId );
 			$this->mDb->CompleteTrans();
 			return true;
-		} else {
-			return false;
 		}
+			return false;
+
 	}
 
 	public function stepXref( &$pParamHash = NULL ) {
@@ -213,5 +214,5 @@ class ContactXref extends BitBase {
 		$this->store( $pParamHash );
 		return true;
 	}
-	
+
 }

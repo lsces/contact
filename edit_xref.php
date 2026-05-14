@@ -38,10 +38,10 @@ if (isset($_REQUEST["fCancel"])) {
 	if( $gContent->storeXref( $_REQUEST ) ) {
 		header("Location: ".$gContent->getDisplayUrl() );
 		die;
-	} else {
+	}
 		$xrefInfo = $_REQUEST;
 		$xrefInfo['data'] = &$_REQUEST['edit'];
-	}
+
 } else if(isset( $_REQUEST["expunge"] ) ) {
 	if( $gContent->stepXref( $_REQUEST ) ) {
 //		if ( $_REQUEST['expunge'] > 2) {
@@ -61,7 +61,7 @@ $gBitSmarty->assign( 'xref_title', $gContent->mInfo['xref_title'] );
 
 $gBitSmarty->assign( 'errors', $gContent->mErrors );
 if( isset($xrefInfo['template']) ) {
-	$gBitSystem->display( 'bitpackage:contact/edit_xref_'.$xrefInfo['template'].'.tpl', 'Edit: ' , array( 'display_mode' => 'edit' ));
+	$gBitSystem->display( 'bitpackage:contact/edit_xref_'.$xrefInfo['template'].'.tpl', 'Edit: ' , [ 'display_mode' => 'edit' ]);
 } else {
-	$gBitSystem->display( 'bitpackage:contact/edit_xref.tpl', 'Edit: ' , array( 'display_mode' => 'edit' ));
+	$gBitSystem->display( 'bitpackage:contact/edit_xref.tpl', 'Edit: ' , [ 'display_mode' => 'edit' ]);
 }

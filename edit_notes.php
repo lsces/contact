@@ -42,11 +42,11 @@ for ( $n = 0; $n < $mbox->size(); $n++ ) {
 	$subject = $matches[1];
 	echo 'Mail #' . $n . ': ' . $subject . "<br>";
 	$Decoder = new Mail_mimeDecode( $message );
-	$params = array(
+	$params = [
 		'include_bodies' => true,
 		'decode_bodies'  => true,
 		'decode_headers' => true,
-	);
+	];
 	$Decoded = $Decoder->decode( $params );
 	if ($Decoded->ctype_primary == "multipart") {
 		\Bitweaver\vd( $Decoded->parts[0]->ctype_primary );
@@ -76,4 +76,4 @@ $gBitSmarty->assign( 'errors', $gContent->mErrors );
 $gBitSmarty->assign( (!empty( $_REQUEST['tab'] ) ? $_REQUEST['tab'] : 'body').'TabSelect', 'tdefault' );
 $gBitSmarty->assign('show_page_bar', 'y');
 
-$gBitSystem->display( 'bitpackage:contact/edit.tpl', 'Edit: ' , array( 'display_mode' => 'edit' ));
+$gBitSystem->display( 'bitpackage:contact/edit.tpl', 'Edit: ' , [ 'display_mode' => 'edit' ]);

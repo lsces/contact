@@ -2,7 +2,6 @@
 // $Header$
 require_once '../../kernel/includes/setup_inc.php';
 
-use Bitweaver\Contact\Contact;
 use Bitweaver\Contact\ContactType;
 use Bitweaver\KernelTools;
 
@@ -28,4 +27,4 @@ if( isset( $_REQUEST["fSubmitAddContactType"] ) ) {
 $contacttype = ContactType::getContactTypeList();
 $gBitSmarty->assign( 'contacttype', $contacttype );
 
-$gBitSystem->display( 'bitpackage:contact/admin_contact_type.tpl', KernelTools::tra( 'Edit Contact Types' ) , array( 'display_mode' => 'admin' ));
+$gBitSystem->display( 'bitpackage:contact/admin_contact_type.tpl', KernelTools::tra( 'Edit Contact Types' ) , [ 'display_mode' => 'admin' ]);

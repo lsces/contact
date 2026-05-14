@@ -26,14 +26,12 @@
   //  - Initial version
   //--------------------------------------------------------------------------
 
-
   // ================================================================== LatLng
 
 class LatLng {
 
 	public $lat;
 	public $lng;
-
 
 	/**
 		* Create a new LatLng object from the given latitude and longitude
@@ -46,7 +44,6 @@ class LatLng {
 		$this->lng = $lng;
 	}
 
-
 	/**
 		* Return a string representation of this LatLng object
 		*
@@ -55,7 +52,6 @@ class LatLng {
 	public function toString() {
 		return "({$this->lat}, {$this->lng})";
 	}
-
 
 	/**
 		* Calculate the surface distance between this LatLng object and the one
@@ -81,10 +77,9 @@ class LatLng {
 		$z2 = $er * cos($latTo);
 
 		$d = acos(sin($latFrom)*sin($latTo) + cos($latFrom)*cos($latTo)*cos($lngTo-$lngFrom)) * $er;
-		
+
 		return $d;
 	}
-
 
 	/**
 		* Convert this LatLng object from OSGB36 datum to WGS84 datum.
@@ -129,11 +124,10 @@ class LatLng {
 		}
 
 		$phiB = rad2deg($phiN);
-		
+
 		$this->lat = $phiB;
 		$this->lng = $lambdaB;
 	}
-
 
 	/**
 		* Convert this LatLng object from WGS84 datum to OSGB36 datum.
@@ -178,7 +172,7 @@ class LatLng {
 		}
 
 		$phiB = rad2deg($phiN);
-		
+
 		$this->lat = $phiB;
 		$this->lng = $lambdaB;
 	}
@@ -260,7 +254,6 @@ class LatLng {
 		$osref = new OSRef($E, $N);
 		return $osref->toString();
 	}
-
 
 	/**
 		* Convert a latitude and longitude to an UTM reference
@@ -360,7 +353,6 @@ class LatLng {
 	}
 }
 
-
 // =================================================================== OSRef
 
 // References given with OSRef are accurate to 1m.
@@ -368,7 +360,6 @@ class OSRef {
 
 	public $easting;
 	public $northing;
-
 
 	/**
 	 * Create a new OSRef object representing an OSGB grid reference. Note
@@ -391,7 +382,6 @@ class OSRef {
 		$this->northing = $northing;
 	}
 
-
 	/**
 		* Convert this grid reference into a string showing the exact values
 		* of the easting and northing.
@@ -401,7 +391,6 @@ class OSRef {
 	public function toString() {
 		return "({$this->easting}, {$this->northing})";
 	}
-
 
 	/**
 		* Convert this grid reference into a string using a standard six-figure
@@ -414,8 +403,8 @@ class OSRef {
 		$hundredkmE = floor($this->easting / 100000);
 		$hundredkmN = floor($this->northing / 100000);
 		$firstLetter = "";
-		$firstLetter = $hundredkmN < 5 
-			? ( $hundredkmE < 5 ? "S" : "T" ) 
+		$firstLetter = $hundredkmN < 5
+			? ( $hundredkmE < 5 ? "S" : "T" )
 			: ( $hundredkmN < 10 ? ( $hundredkmE < 5 ? "N" : "O" ) : "H" );
 
 		$secondLetter = "";
@@ -429,7 +418,6 @@ class OSRef {
 
 		return sprintf("%s%s%03d%03d", $firstLetter, $secondLetter, $e, $n);
 	}
-
 
 	/**
 		* Convert this grid reference into a latitude and longitude
@@ -522,7 +510,6 @@ class OSRef {
 	}
 }
 
-
 // ================================================================== UTMRef
 
 class UTMRef {
@@ -531,7 +518,6 @@ class UTMRef {
 	public $northing;
 	public $latZone;
 	public $lngZone;
-
 
 	/**
 	 * Create a new object representing a UTM reference.
@@ -548,7 +534,6 @@ class UTMRef {
 		$this->lngZone  = $lngZone;
 	}
 
-
 	/**
 		* Return a string representation of this UTM reference
 		*
@@ -557,7 +542,6 @@ class UTMRef {
 	public function toString() {
 		return "{$this->lngZone}{$this->latZone} {$this->easting} {$this->northing}";
 	}
-
 
 	/**
 		* Convert this UTM reference to a latitude and longitude
@@ -611,7 +595,7 @@ class UTMRef {
 			* (1.0 - $eSquared)
 			/ pow(
 			1.0 - $eSquared * sin($phi1Rad) * sin($phi1Rad),
-			1.5);
+			1.5, );
 		$d = $x / ($n * $UTM_F0);
 
 		$latitude = (
@@ -649,9 +633,8 @@ class UTMRef {
 
 		$latlog = new LatLng($latitude, $longitude);
 		return $latlog->toString();
-	}   
+	}
 }
-
 
 // ================================================================== RefEll
 
@@ -660,7 +643,6 @@ class UTMRef {
 		public $maj;
 		public $min;
 		public $ecc;
-
 
 		/**
 			* Create a new RefEll object to represent a reference ellipsoid
@@ -674,7 +656,6 @@ class UTMRef {
 			$this->ecc = ( $maj * $maj - $min * $min ) / ($maj * $maj);
 		}
 	}
-
 
   // ================================================== Mathematical Functions
 
@@ -693,7 +674,6 @@ function tanSquared($x) {
 function sec($x) {
 	return 1.0 / cos($x);
 }
-
 
 /**
 * Take a string formatted as a six-figure OS grid reference (e.g.
@@ -733,7 +713,6 @@ function getOSRefFromSixFigureReference($ref) {
 	$osref = new OSRef($east + $nx, $north + $ny);
 	return $osref->toString();
 }
-
 
 /**
 *  Work out the UTM latitude zone from the latitude

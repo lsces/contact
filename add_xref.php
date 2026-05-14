@@ -30,18 +30,18 @@ if (isset($_REQUEST["fCancel"])) {
 } elseif (isset($_REQUEST["fAddXref"])) {
 	$source = $_REQUEST["source"];
 	$format = $_REQUEST["format-".$source];
-    if ( $format != 'generic' ) {
-    	if ( isset( $_REQUEST[$format."xref"] ) ) { $_REQUEST["xref"] = $_REQUEST[$format."xref"]; }
-    	if ( isset( $_REQUEST[$format."xkey"] ) ) { $_REQUEST["xkey"] = $_REQUEST[$format."xkey"]; }
-    	if ( isset( $_REQUEST[$format."xkey_ext"] ) ) { $_REQUEST["xkey_ext"] = $_REQUEST[$format."xkey_ext"]; }
-    }
+	if ( $format != 'generic' ) {
+		if ( isset( $_REQUEST[$format."xref"] ) ) { $_REQUEST["xref"] = $_REQUEST[$format."xref"]; }
+		if ( isset( $_REQUEST[$format."xkey"] ) ) { $_REQUEST["xkey"] = $_REQUEST[$format."xkey"]; }
+		if ( isset( $_REQUEST[$format."xkey_ext"] ) ) { $_REQUEST["xkey_ext"] = $_REQUEST[$format."xkey_ext"]; }
+	}
 	if( $gContent->storeXref( $_REQUEST ) ) {
 		header("Location: ".$gContent->getDisplayUrl() );
 		die;
-	} else {
+	}
 		$xrefInfo = $_REQUEST;
 		$xrefInfo['data'] = &$_REQUEST['edit'];
-	}
+
 }
 
 if( !isset( $_REQUEST['xref_type'] ) ) $_REQUEST['xref_type'] = 0;
@@ -68,4 +68,4 @@ $gBitSmarty->assign( 'xrefInfo', $xrefInfo );
 $gBitSmarty->assign( 'title', $gContent->mInfo['title'] );
 
 $gBitSmarty->assign( 'errors', $gContent->mErrors );
-$gBitSystem->display( 'bitpackage:contact/add_xref.tpl', 'Edit: ' , array( 'display_mode' => 'edit' ));
+$gBitSystem->display( 'bitpackage:contact/add_xref.tpl', 'Edit: ' , [ 'display_mode' => 'edit' ]);

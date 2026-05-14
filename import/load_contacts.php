@@ -28,8 +28,8 @@ if ( $handle == FALSE) {
 	$row = -999;
 } else {
 	while (($data = fgetcsv($handle, 800, ",")) !== FALSE) {
-    	if ( $row ) $contact->ContactRecordLoad( $data );
-    	$row++;
+		if ( $row ) $contact->ContactRecordLoad( $data );
+		$row++;
 	}
 	fclose($handle);
 }

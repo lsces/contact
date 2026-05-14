@@ -2,7 +2,6 @@
 // $Header$
 require_once '../../kernel/includes/setup_inc.php';
 
-use Bitweaver\Contact\Contact;
 use Bitweaver\Contact\ContactXrefType;
 use Bitweaver\KernelTools;
 include_once CONTACT_PKG_INCLUDE_PATH . 'lookup_contact_xref_type_inc.php';
@@ -29,4 +28,4 @@ if( isset( $_REQUEST["fSubmitAddXrefType"] ) ) {
 $xref_types = ContactXrefType::getContactXrefTypeList();
 $gBitSmarty->assign( 'xref_types', $xref_types );
 
-$gBitSystem->display( 'bitpackage:contact/admin_xref_types.tpl', KernelTools::tra( 'Edit XrefTypes' ) , array( 'display_mode' => 'admin' ));
+$gBitSystem->display( 'bitpackage:contact/admin_xref_types.tpl', KernelTools::tra( 'Edit XrefTypes' ) , [ 'display_mode' => 'admin' ]);

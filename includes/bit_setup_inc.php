@@ -14,7 +14,7 @@ $pRegisterHash = [
 define( 'CONTACT_PKG_NAME', $pRegisterHash['package_name'] );
 define( 'CONTACT_PKG_URL', BIT_ROOT_URL . basename( $pRegisterHash['package_path'] ) . '/' );
 define( 'CONTACT_PKG_PATH', BIT_ROOT_PATH . basename( $pRegisterHash['package_path'] ) . '/' );
-define( 'CONTACT_PKG_INCLUDE_PATH', BIT_ROOT_PATH . basename( $pRegisterHash['package_path'] ) . '/includes/'); 
+define( 'CONTACT_PKG_INCLUDE_PATH', BIT_ROOT_PATH . basename( $pRegisterHash['package_path'] ) . '/includes/');
 $gBitSystem->registerPackage( $pRegisterHash );
 
 if( $gBitSystem->isPackageActive( 'contact' ) ) {

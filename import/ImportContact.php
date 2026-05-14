@@ -40,17 +40,17 @@
 		if ( LibertyContent::store( $pDataHash ) ) {
 			$pDataHash['contact_store']['content_id'] = $pDataHash['content_id'];
 			$pDataHash['address_store']['content_id'] = $pDataHash['content_id'];
-			
+
 			$result = $this->mDb->associateInsert( $table, $pDataHash['contact_store'] );
 //			$result = $this->mDb->associateInsert( $atable, $pDataHash['address_store'] );
-			$this->mDb->CompleteTrans();				
+			$this->mDb->CompleteTrans();
 		} else {
 			$this->mDb->RollbackTrans();
 			$this->mErrors['store'] = 'Failed to store this contact.';
-		}				
-		return( count( $this->mErrors ) == 0 ); 
+		}
+		return( count( $this->mErrors ) == 0 );
 	}
-	
+
 	/**
 	 * Delete contact object and all related records
 	 */

@@ -40,7 +40,7 @@ if( empty( $xrefInfo ) ) {
 }
 if( empty( $xrefInfo['content_id'] ) ) {
 	$xrefInfo = $_REQUEST;
-	if ( isset($xrefInfo['edit']) ) { 
+	if ( isset($xrefInfo['edit']) ) {
 		$xrefInfo['data'] = $xrefInfo['edit'];
 	}
 }
@@ -52,4 +52,4 @@ $gBitSmarty->assign( 'title', $gContent->mInfo['title'] );
 $gBitSmarty->assign( 'xref_title', $gContent->mInfo['xref_title'] );
 
 $gBitSmarty->assign( 'errors', $gContent->mErrors );
-$gBitSystem->display( 'bitpackage:contact/edit_key_break.tpl', 'Edit: ' , array( 'display_mode' => 'edit' ));
+$gBitSystem->display( 'bitpackage:contact/edit_key_break.tpl', 'Edit: ' , [ 'display_mode' => 'edit' ]);

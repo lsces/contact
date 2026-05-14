@@ -28,8 +28,8 @@ if ( $handle == FALSE) {
 	$row = -999;
 } else {
 	while (($data = fgetcsv($handle, 800, ",")) !== FALSE) {
-    	if ( $row ) $contact->SageRecordLoad( $data, 1 );
-    	$row++;
+		if ( $row ) $contact->SageRecordLoad( $data, 1 );
+		$row++;
 	}
 	fclose($handle);
 }
@@ -42,8 +42,8 @@ if ( $handle == FALSE) {
 	$row = -999;
 } else {
 	while (($data = fgetcsv($handle, 800, ",")) !== FALSE) {
-    	if ( $row ) $contact->SageRecordLoad( $data, 2 );
-    	$row++;
+		if ( $row ) $contact->SageRecordLoad( $data, 2 );
+		$row++;
 	}
 	fclose($handle);
 }

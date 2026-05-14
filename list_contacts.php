@@ -27,12 +27,11 @@ if ( empty( $_REQUEST["sort_mode"] ) ) {
 	$sort_mode = 'organisation_asc';
 }
 
-// Get a list of Contacts 
+// Get a list of Contacts
 $contacts->getList( $_REQUEST );
 
 $smarty->assign('listInfo', $_REQUEST['listInfo']);
 $smarty->assign('list', $contacts);
 
-
 // Display the template
-$gBitSystem->display( 'bitpackage:contact/list_contacts.tpl', NULL, array( 'display_mode' => 'list' ));
+$gBitSystem->display( 'bitpackage:contact/list_contacts.tpl', NULL, [ 'display_mode' => 'list' ]);

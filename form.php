@@ -22,8 +22,6 @@ $gBitSystem->verifyPackage( 'contact' );
 $cat_type = BITPAGE_CONTENT_TYPE_GUID;
 if(isset($_REQUEST["fSaveForm"])) {
 	\Bitweaver\vd($_REQUEST);
-} else {
-
 }
 
 // Pro
@@ -40,6 +38,6 @@ if (isset($_REQUEST["fCancel"])) {
 		$formInfo = $_REQUEST;
 		$formInfo['data'] = &$_REQUEST['edit'];
 	}
-} 
+}
 
-$gBitSystem->display( 'bitpackage:contact/form_DSInspection.tpl', 'Form: OD01 ' , array( 'display_mode' => 'form' ));
+$gBitSystem->display( 'bitpackage:contact/form_DSInspection.tpl', 'Form: OD01 ' , [ 'display_mode' => 'form' ]);

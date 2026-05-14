@@ -47,11 +47,11 @@ if (isset($_REQUEST["fCancel"])) {
 		$formInfo = $_REQUEST;
 		$formInfo['data'] = &$_REQUEST['edit'];
 	}
-} 
+}
 
 // formInfo might be set due to a error on submit
 if( empty( $formInfo ) ) {
 //	$formInfo = &$gContent->mInfo;
 }
 
-$gBitSystem->display( 'bitpackage:contact/employment.tpl', 'Edit: ' , array( 'display_mode' => 'edit' ));
+$gBitSystem->display( 'bitpackage:contact/employment.tpl', 'Edit: ' , [ 'display_mode' => 'edit' ]);

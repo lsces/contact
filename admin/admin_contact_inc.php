@@ -50,14 +50,14 @@ asort($contactTypeDefaults);
 $gBitSmarty->assign('contactTypeDefaults', $contactTypeDefaults);
 
 if (isset($_REQUEST["contactlistfeatures"])) {
-	
+
 	foreach( $formContactListFeatures as $item => $data ) {
 		simple_set_toggle( $item, CONTACT_PKG_NAME );
 	}
 
 	foreach( $contactTypeDefaults as $key => $val ) {
 		simple_set_toggle_array( 'defaultTypes', $key, CONTACT_PKG_NAME);
-	}	
+	}
 }
 
 foreach( $contactTypeDefaults as $key => $val) {

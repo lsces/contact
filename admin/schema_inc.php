@@ -70,11 +70,11 @@ foreach( array_keys( $tables ) AS $tableName ) {
 	$gBitInstaller->registerSchemaTable( CONTACT_PKG_NAME, $tableName, $tables[$tableName] );
 }
 
-$gBitInstaller->registerPackageInfo( CONTACT_PKG_NAME, array(
+$gBitInstaller->registerPackageInfo( CONTACT_PKG_NAME, [
 	'description' => "Base Contact management package with contact xref and address books 
 	designed to be expanded with additional plugins.",
 	'license' => '<a href="http://www.gnu.org/licenses/licenses.html#LGPL">LGPL</a>',
-) );
+] );
 
 // ### Indexes
 $indices = [
@@ -84,31 +84,31 @@ $indices = [
 $gBitInstaller->registerSchemaIndexes( CONTACT_PKG_NAME, $indices );
 
 // ### Sequences
-$sequences = array (
+$sequences =  [
 	'contact_xref_seq' => [ 'start' => 1 ],
-);
+];
 $gBitInstaller->registerSchemaSequences( CONTACT_PKG_NAME, $sequences );
 
 // ### Defaults
 
 // ### Default User Permissions
-$gBitInstaller->registerUserPermissions( CONTACT_PKG_NAME, array(
+$gBitInstaller->registerUserPermissions( CONTACT_PKG_NAME, [
 	[ 'p_contact_view', 'Can browse the Contact List', 'basic', CONTACT_PKG_NAME ],
 	[ 'p_contact_update', 'Can update the Contact List content', 'registered', CONTACT_PKG_NAME ],
 	[ 'p_contact_create', 'Can create a new Contact List entry', 'registered', CONTACT_PKG_NAME ],
 	[ 'p_contact_admin', 'Can admin Contact List', 'admin', CONTACT_PKG_NAME ],
-	[ 'p_contact_expunge', 'Can remove a Contact entry', 'editors', CONTACT_PKG_NAME ]
-) );
+	[ 'p_contact_expunge', 'Can remove a Contact entry', 'editors', CONTACT_PKG_NAME ],
+] );
 
 // ### Default Preferences
-$gBitInstaller->registerPreferences( CONTACT_PKG_NAME, array(
+$gBitInstaller->registerPreferences( CONTACT_PKG_NAME, [
 	[ CONTACT_PKG_NAME, 'contact_default_ordering', 'title_desc' ],
 	[ CONTACT_PKG_NAME, 'contact_list_created', 'y' ],
 	[ CONTACT_PKG_NAME, 'contact_list_lastmodif', 'y' ],
 	[ CONTACT_PKG_NAME, 'contact_list_notes', 'y' ],
 	[ CONTACT_PKG_NAME, 'contact_list_title', 'y' ],
 	[ CONTACT_PKG_NAME, 'contact_list_user', 'y' ],
-) );
+] );
 
 $gBitInstaller->registerSchemaDefault( CONTACT_PKG_NAME, [
 	"INSERT INTO `" . BIT_DB_PREFIX . "contact_xref_type` VALUES ('0', 'type', 'Contact Type List', '3', '')",
@@ -153,6 +153,6 @@ $gBitInstaller->registerSchemaDefault( CONTACT_PKG_NAME, [
 ] );
 
 // Requirements
-$gBitInstaller->registerRequirements( CONTACT_PKG_NAME, [ 
+$gBitInstaller->registerRequirements( CONTACT_PKG_NAME, [
 	'liberty' => [ 'min' => '5.0.0' ],
 ] );

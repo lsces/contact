@@ -20,7 +20,7 @@ use Bitweaver\Contact\Contact;
 		} else {
 			$gContent = new Contact();
 		}
-	
+
 		$gBitSmarty->clearAssign( 'gContent' );
 		$gBitSmarty->assign( 'gContent', $gContent );
 	}

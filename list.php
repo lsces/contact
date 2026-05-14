@@ -52,4 +52,4 @@ $gBitSmarty->assign( 'listInfo', $listHash['listInfo'] );
 
 $gBitSystem->setBrowserTitle("View Contacts List");
 // Display the template
-$gBitSystem->display( 'bitpackage:contact/list.tpl', NULL, array( 'display_mode' => 'list' ));
+$gBitSystem->display( 'bitpackage:contact/list.tpl', NULL, [ 'display_mode' => 'list' ]);

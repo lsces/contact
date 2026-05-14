@@ -43,22 +43,22 @@ class Contact extends LibertyBase {
 	function load($pContactId = NULL) {
 		if ( $pContactId ) $this->mContactId = (int)$pContactId;
 		if( $this->verifyId( $this->mContactId ) ) {
- 			$query = "select ci.usn AS contact_id, ci.*
+			$query = "select ci.usn AS contact_id, ci.*
 				FROM `".BIT_DB_PREFIX."contact` ci
 				LEFT JOIN `".BIT_DB_PREFIX."contact_address` a ON a.contact_id = ci.usn
 				LEFT JOIN `".BIT_DB_PREFIX."postcode` p ON p.`postcode` = a.`postcode`
 				WHERE ci.`contact_id`=?";
 /*
 */
-			$result = $this->mDb->query( $query, array( $this->mContactId ) );
+			$result = $this->mDb->query( $query, [ $this->mContactId ] );
 
 			if ( $result && $result->numRows() ) {
 				$this->mInfo = $result->fields;
 				$this->mContactId = (int)$result->fields['contact_id'];
 				$this->mParentId = (int)$result->fields['usn'];
 				$this->mContactName = $result->fields['title'];
-				$this->mInfo['creator'] = (isset( $result->fields['creator_real_name'] ) ? $result->fields['creator_real_name'] : $result->fields['creator_user'] );
-				$this->mInfo['editor'] = (isset( $result->fields['modifier_real_name'] ) ? $result->fields['modifier_real_name'] : $result->fields['modifier_user'] );
+				$this->mInfo['creator'] = ($result->fields['creator_real_name'] ?? $result->fields['creator_user'] );
+				$this->mInfo['editor'] = ($result->fields['modifier_real_name'] ?? $result->fields['modifier_user'] );
 				$this->mInfo['display_url'] = $this->getDisplayUrl();
 				$os1 = new OSRef($this->mInfo['x_coordinate'], $this->mInfo['y_coordinate']);
 				$ll1 = $os1->toLatLng();
@@ -66,7 +66,7 @@ class Contact extends LibertyBase {
 				$this->mInfo['prop_lng'] = $ll1->lng;
 			}
 		}
-		return;
+
 	}
 
 	/**
@@ -94,7 +94,7 @@ class Contact extends LibertyBase {
 
 		if ( empty( $pParamHash['parent_id'] ) )
 			$pParamHash['parent_id'] = $this->mContactId;
-			
+
 		// content store
 		// check for name issues, first truncate length if too long
 		if( empty( $pParamHash['surname'] ) || empty( $pParamHash['forename'] ) )  {
@@ -102,7 +102,7 @@ class Contact extends LibertyBase {
 		} else {
 			$pParamHash['title'] = substr( $pParamHash['prefix'].' '.$pParamHash['forename'].' '.$pParamHash['surname'].' '.$pParamHash['suffix'], 0, 160 );
 			$pParamHash['content_store']['title'] = $pParamHash['title'];
-		}	
+		}
 
 		// Secondary store entries
 		$pParamHash['contact_store']['prefix'] = $pParamHash['prefix'];
@@ -128,14 +128,14 @@ class Contact extends LibertyBase {
 	**/
 	function store( &$pParamHash ) {
 		if( $this->verify( $pParamHash ) ) {
-			// Start a transaction wrapping the whole insert into liberty 
+			// Start a transaction wrapping the whole insert into liberty
 
 			$this->mDb->StartTrans();
 			$table = BIT_DB_PREFIX."contact";
 
 			if( $this->verifyId( $this->mContactId ) ) {
 				if( !empty( $pParamHash['contact_store'] ) ) {
-					$result = $this->mDb->associateUpdate( $table, $pParamHash['contact_store'], array( "contact_id" => $this->mContactId ) );
+					$result = $this->mDb->associateUpdate( $table, $pParamHash['contact_store'], [ "contact_id" => $this->mContactId ] );
 				}
 				} else {
 				$pParamHash['contact_store']['contact_id'] = $pParamHash['contact_id'];
@@ -144,7 +144,7 @@ class Contact extends LibertyBase {
 					$pParamHash['contact_store']['usn'] = $pParamHash['contact_id'];
 				} else {
 					$pParamHash['contact_store']['usn'] = $this->mDb->GenID( 'contact_id_seq');
-				}	
+				}
 				$pParamHash['contact_store']['parent_id'] = $pParamHash['contact_store']['contact_id'];
 				$this->mContactId = $pParamHash['contact_store']['contact_id'];
 				$this->mParentId = $pParamHash['contact_store']['parent_id'];
@@ -171,9 +171,9 @@ class Contact extends LibertyBase {
 		if ($this->isValid() ) {
 			$this->mDb->StartTrans();
 			$query = "DELETE FROM `".BIT_DB_PREFIX."contact` WHERE `contact_id` = ?";
-			$result = $this->mDb->query($query, array($this->mContactId ) );
+			$result = $this->mDb->query($query, [$this->mContactId ] );
 			$query = "DELETE FROM `".BIT_DB_PREFIX."contact_type_map` WHERE `contact_id` = ?";
-			$result = $this->mDb->query($query, array($this->mContactId ) );
+			$result = $this->mDb->query($query, [$this->mContactId ] );
 			if (LibertyContent::expunge() ) {
 			$ret = TRUE;
 				$this->mDb->CompleteTrans();
@@ -183,7 +183,7 @@ class Contact extends LibertyBase {
 		}
 		return $ret;
 	}
-    
+
 	/**
 	 * Returns Request_URI to a Contact content object
 	 *
@@ -251,10 +251,10 @@ class Contact extends LibertyBase {
 	 */
 	function getList( &$pListHash ) {
 		LibertyContent::prepGetList( $pListHash );
-		
+
 		$whereSql = $joinSql = $selectSql = '';
-		$bindVars = array();
-		
+		$bindVars = [];
+
 		if ( isset($pListHash['find']) ) {
 			$findesc = '%' . strtoupper( $pListHash['find'] ) . '%';
 			$whereSql .= " AND (UPPER(con.`SURNAME`) like ? or UPPER(con.`FORENAME`) like ?) ";
@@ -274,7 +274,7 @@ class Contact extends LibertyBase {
 				$joinSql
 				WHERE $whereSql";
 
-		$ret = array();
+		$ret = [];
 		$this->mDb->StartTrans();
 		$result = $this->mDb->query( $query, $bindVars, $pListHash['max_records'], $pListHash['offset'] );
 		$cant = $this->mDb->getOne( $query_cant, $bindVars );
@@ -299,7 +299,7 @@ class Contact extends LibertyBase {
 		$query = "SELECT `type_name` FROM `contact_type`
 				  ORDER BY `type_name`";
 		$result = $this->mDb->query($query);
-		$ret = array();
+		$ret = [];
 
 		while ($res = $result->fetchRow()) {
 			$ret[] = trim($res["type_name"]);
@@ -357,7 +357,7 @@ class Contact extends LibertyBase {
 		$this->mContactId = 0;
 //		$pDataHash['contact_store']['contact_id'] = $pDataHash['contact_id'];
 //		$pDataHash['address_store']['contact_id'] = $pDataHash['contact_id'];
-			
+
 		$result = $this->mDb->associateInsert( $table, $pDataHash['contact_store'] );
 		$result = $this->mDb->associateInsert( $atable, $pDataHash['address_store'] );
 		$this->mDb->CompleteTrans();
@@ -366,9 +366,9 @@ class Contact extends LibertyBase {
 			$this->mErrors['store'] = 'Failed to store this contact.';
 		}				
 */
-		return( count( $this->mErrors ) == 0 ); 
+		return( count( $this->mErrors ) == 0 );
 	}
-	
+
 	/**
 	 * Delete contact object and all related records
 	 */
@@ -440,9 +440,9 @@ class Contact extends LibertyBase {
 			$this->mErrors['store'] = 'Failed to store this contact.';
 		}				
 */
-		return( count( $this->mErrors ) == 0 ); 
+		return( count( $this->mErrors ) == 0 );
 	}
-	
+
 	/**
 	 * Delete contact object and all related records
 	 */
@@ -462,7 +462,7 @@ class Contact extends LibertyBase {
 	 */
 	function getContactList( &$pParamHash ) {
 		global $gBitSystem, $gBitUser;
-		
+
 		if ( empty( $pParamHash['sort_mode'] ) ) {
 			if ( empty( $_REQUEST["sort_mode"] ) ) {
 				$pParamHash['sort_mode'] = 'organisation_asc';
@@ -470,16 +470,16 @@ class Contact extends LibertyBase {
 			$pParamHash['sort_mode'] = $_REQUEST['sort_mode'];
 			}
 		}
-		
+
 		LibertyContent::prepGetList( $pParamHash );
 
 		$findSql = '';
 		$selectSql = '';
 		$joinSql = '';
 		$whereSql = '';
-		$bindVars = array();
+		$bindVars = [];
 		$type = 'organisation';
-		
+
 		// this will set $find, $sort_mode, $max_records and $offset
 		extract( $pParamHash );
 
@@ -491,10 +491,10 @@ class Contact extends LibertyBase {
 			$sort_mode = 'organisation_asc';
 		}
 		if( isset( $find_name ) and is_string( $find_name ) and $find_name <> '' ) {
-		    $split = preg_split('|[,. ]|', $find_name, 2);
+			$split = preg_split('|[,. ]|', $find_name, 2);
 			$whereSql .= " AND UPPER( ci.`surname` ) STARTING ? ";
 			$bindVars[] = strtoupper( $split[0] );
-		    if ( array_key_exists( 1, $split ) ) {
+			if ( array_key_exists( 1, $split ) ) {
 				$split[1] = trim( $split[1] );
 				$whereSql .= " AND UPPER( ci.`forename` ) STARTING ? ";
 				$bindVars[] = strtoupper( $split[1] );
@@ -521,10 +521,10 @@ class Contact extends LibertyBase {
 			FROM `".BIT_DB_PREFIX."contact` ci
 			JOIN `".BIT_DB_PREFIX."contact_address` a ON a.contact_id = ci.contact_id $findSql
 			$joinSql WHERE ci.`".$type."` <> '' $whereSql ";
-//			INNER JOIN `".BIT_DB_PREFIX."contact_address` a ON a.contact_id = ci.contact_id 
+//			INNER JOIN `".BIT_DB_PREFIX."contact_address` a ON a.contact_id = ci.contact_id
 vd($query);
 		$result = $this->mDb->query( $query, $bindVars, $max_records, $offset );
-		$ret = array();
+		$ret = [];
 		while( $res = $result->fetchRow() ) {
 			if (!empty($parse_split)) {
 				$res = array_merge($this->parseSplit($res), $res);
@@ -537,7 +537,6 @@ vd($query);
 		return $ret;
 	}
 
-
 	/**
 	 * loadContact( &$pParamHash );
 	 * Get contact record 
@@ -549,7 +548,7 @@ vd($query);
 			LEFT JOIN `".BIT_DB_PREFIX."contact_address` a ON a.usn = ci.usn
 			LEFT JOIN `".BIT_DB_PREFIX."postcode` p ON p.`postcode` = a.`postcode`
 			WHERE ci.`contact_id` = ?";
-			if( $rs = $this->mDb->query( $sql, array( $this->mContactId ) ) ) {
+			if( $rs = $this->mDb->query( $sql, [ $this->mContactId ] ) ) {
 				if(	$this->mInfo = $rs->fields ) {
 /*					if(	$this->mInfo['local_custodian_code'] == 0 ) {
 						global $gBitSystem;
@@ -567,7 +566,7 @@ vd($query);
 							
  */
 
-					$result = $this->mDb->query( $sql, array( $this->mContactId ) );
+					$result = $this->mDb->query( $sql, [ $this->mContactId ] );
 
 					while( $res = $result->fetchRow() ) {
 						$this->mInfo['xref'][] = $res;
@@ -597,14 +596,13 @@ vd($query);
 		return( count( $this->mInfo ) );
 	}
 
-
 	/**
 	 * getXrefList( &$pParamHash );
 	 * Get list of xref records for this contact record
 	 */
 	function loadXrefList() {
 		if( empty( $this->mInfo['xref'] ) ) {
-		
+
 			$sql = "SELECT x.`last_update_date`, x.`source`, s.`cross_ref_title` || '-' || x.`xorder` AS source_title, x.`cross_reference`, x.`data`, x.`xref_key` AS usn 
 				FROM `".BIT_DB_PREFIX."contact_xref` x
 				JOIN `".BIT_DB_PREFIX."contact_xref_source` s 
@@ -612,7 +610,7 @@ vd($query);
 				WHERE x.contact_id = ?
 				ORDER BY x.`source`, x.`xorder`";
 
-			$result = $this->mDb->query( $sql, array( $this->mContactId ) );
+			$result = $this->mDb->query( $sql, [ $this->mContactId ] );
 
 			while( $res = $result->fetchRow() ) {
 				$this->mInfo['xref'][] = $res;
@@ -621,7 +619,7 @@ vd($query);
 
 			$sql = "SELECT t.* FROM `".BIT_DB_PREFIX."task_ticket` t 
 				WHERE t.usn = ?";
-			$result = $this->mDb->query( $sql, array( '9000000001' ) ); //$this->mContactId ) );
+			$result = $this->mDb->query( $sql, [ '9000000001' ] ); //$this->mContactId ) );
 			while( $res = $result->fetchRow() ) {
 				$this->mInfo['tickets'][] = $res;
 			}

@@ -17,7 +17,6 @@
   //  - Added OSGB36/WGS84 data conversions
   // 1.0 - 11 Aug 2005  //  - Initial version  //--------------------------------------------------------------------------
 
-
   require_once("phpcoord-2.3.php");
 ?>
 
@@ -46,13 +45,13 @@ $d = $lld1->distance($lld2);
 echo "Surface Distance between New York and London: " . $d . "km";</pre>
 
       <?php
-        $lld1 = new LatLng(40.718119, -73.995667); // New York
-        echo "New York Lat/Long: " . $lld1->toString() . "<br />";
-        $lld2 = new LatLng(51.499981, -0.125313);  // London
-        echo "London Lat/Long: " . $lld2->toString() . "<br />";
-        $d = $lld1->distance($lld2);
-        echo "Surface Distance between New York and London: " . $d . "km";
-      ?>
+		$lld1 = new LatLng(40.718119, -73.995667); // New York
+		echo "New York Lat/Long: " . $lld1->toString() . "<br />";
+		$lld2 = new LatLng(51.499981, -0.125313);  // London
+		echo "London Lat/Long: " . $lld2->toString() . "<br />";
+		$d = $lld1->distance($lld2);
+		echo "Surface Distance between New York and London: " . $d . "km";
+	  ?>
     </p>
 
     <h2>Convert OS Grid Reference to Latitude/Longitude</h2>
@@ -72,11 +71,11 @@ $ll1 = $os1->toLatLng();
 echo "Converted to Lat/Long: " . $ll1->toString();</pre>
 
       <?php
-        $os1 = new OSRef(651409.903, 313177.270);
-        echo "OS Grid Reference: " . $os1->toString() . " - " . $os1->toSixFigureString() . "<br />";
-        $ll1 = $os1->toLatLng();
-        echo "Converted to Lat/Long: " . $ll1->toString();
-      ?>
+		$os1 = new OSRef(651409.903, 313177.270);
+		echo "OS Grid Reference: " . $os1->toString() . " - " . $os1->toSixFigureString() . "<br />";
+		$ll1 = $os1->toLatLng();
+		echo "Converted to Lat/Long: " . $ll1->toString();
+	  ?>
     </p>
 
     <p>
@@ -89,12 +88,12 @@ $l1w->OSGB36ToWGS84();
 echo "Converted to Lat/Long: " . $ll1w->toString();</pre>
 
       <?php
-        $os1w = new OSRef(651409.903, 313177.270);
-        echo "OS Grid Reference: " . $os1w->toString() . " - " . $os1w->toSixFigureString() . "<br />";
-        $ll1w = $os1w->toLatLng();
-        $ll1w->OSGB36ToWGS84();
-        echo "Converted to Lat/Long: " . $ll1w->toString();
-      ?>
+		$os1w = new OSRef(651409.903, 313177.270);
+		echo "OS Grid Reference: " . $os1w->toString() . " - " . $os1w->toSixFigureString() . "<br />";
+		$ll1w = $os1w->toLatLng();
+		$ll1w->OSGB36ToWGS84();
+		echo "Converted to Lat/Long: " . $ll1w->toString();
+	  ?>
     </p>
 
     <h2>Convert Latitude/Longitude to OS Grid Reference</h2>
@@ -114,11 +113,11 @@ $os2 = $ll2->toOSRef();
 echo "Converted to OS Grid Ref: " . $os2->toString() . " - " . $os2->toSixFigureString();</pre>
 
       <?php
-        $ll2 = new LatLng(52.657570301933, 1.7179215806451);
-        echo "Latitude/Longitude: " . $ll2->toString() . "<br />";
-        $os2 = $ll2->toOSRef();
-        echo "Converted to OS Grid Ref: " . $os2->toString() . " - " . $os2->toSixFigureString();
-      ?>
+		$ll2 = new LatLng(52.657570301933, 1.7179215806451);
+		echo "Latitude/Longitude: " . $ll2->toString() . "<br />";
+		$os2 = $ll2->toOSRef();
+		echo "Converted to OS Grid Ref: " . $os2->toString() . " - " . $os2->toSixFigureString();
+	  ?>
     </p>
 
     <p>
@@ -131,12 +130,12 @@ $os2w = $ll2w->toOSRef();
 echo "Converted to OS Grid Ref: " . $os2w->toString() . " - " . $os2w->toSixFigureString();</pre>
 
       <?php
-        $ll2w = new LatLng(52.657570301933, 1.7179215806451);
-        echo "Latitude/Longitude: " . $ll2->toString() . "<br />";
-        $ll2w->WGS84ToOSGB36();
-        $os2w = $ll2w->toOSRef();
-        echo "Converted to OS Grid Ref: " . $os2w->toString() . " - " . $os2w->toSixFigureString();
-      ?>
+		$ll2w = new LatLng(52.657570301933, 1.7179215806451);
+		echo "Latitude/Longitude: " . $ll2->toString() . "<br />";
+		$ll2w->WGS84ToOSGB36();
+		$os2w = $ll2w->toOSRef();
+		echo "Converted to OS Grid Ref: " . $os2w->toString() . " - " . $os2w->toSixFigureString();
+	  ?>
     </p>
     
     <h2>Convert Six-Figure OS Grid Reference String to an OSRef Object</h2>
@@ -150,11 +149,11 @@ $os6x = getOSRefFromSixFigureReference($os6);
 echo "Converted to OS Grid Ref: " . $os6x->toString() . " - " . $os6x->toSixFigureString();</pre>    
       
       <?php
-        $os6 = "TG514131";
-        echo "Six figure string: " . $os6 . "<br />";
-        $os6x = getOSRefFromSixFigureReference($os6);
-        echo "Converted to OS Grid Ref: " . $os6x->toString() . " - " . $os6x->toSixFigureString();
-      ?>
+		$os6 = "TG514131";
+		echo "Six figure string: " . $os6 . "<br />";
+		$os6x = getOSRefFromSixFigureReference($os6);
+		echo "Converted to OS Grid Ref: " . $os6x->toString() . " - " . $os6x->toSixFigureString();
+	  ?>
     </p>
 
     <h2>Convert UTM Reference to Latitude/Longitude</h2>
@@ -166,11 +165,11 @@ $ll3 = $utm1->toLatLng();
 echo "Converted to Lat/Long: " . $ll3->toString();</pre>
 
       <?php
-        $utm1 = new UTMRef(456463.99, 3335334.05, "E", 12);
-        echo "UTM Reference: " . $utm1->toString() . "<br />";
-        $ll3 = $utm1->toLatLng();
-        echo "Converted to Lat/Long: " . $ll3->toString();
-      ?>
+		$utm1 = new UTMRef(456463.99, 3335334.05, "E", 12);
+		echo "UTM Reference: " . $utm1->toString() . "<br />";
+		$ll3 = $utm1->toLatLng();
+		echo "Converted to Lat/Long: " . $ll3->toString();
+	  ?>
     </p>
 
     <h2>Convert Latitude/Longitude to UTM Reference</h2>
@@ -182,11 +181,11 @@ $utm2 = $ll4->toUTMRef();
 echo "Converted to UTM Ref: " . $utm2->toString() ;</pre>
 
       <?php
-        $ll4 = new LatLng(-60.1167, -111.7833);
-        echo "Latitude/Longitude: " . $ll4->toString() . "<br />";
-        $utm2 = $ll4->toUTMRef();
-        echo "Converted to UTM Ref: " . $utm2->toString() ;
-      ?>
+		$ll4 = new LatLng(-60.1167, -111.7833);
+		echo "Latitude/Longitude: " . $ll4->toString() . "<br />";
+		$utm2 = $ll4->toUTMRef();
+		echo "Converted to UTM Ref: " . $utm2->toString() ;
+	  ?>
     </p>
 
     <p>

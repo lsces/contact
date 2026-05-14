@@ -20,11 +20,11 @@ $gContent = new Contact();
 $gBitSmarty->assign( 'xref_type_info', $gContent->mInfo);
 
 if( isset( $_REQUEST["fSubmitSaveXrefType"] ) ) {
-    $gContent->storeXrefType( $_REQUEST );
+	$gContent->storeXrefType( $_REQUEST );
 	$gContent->loadXrefType();
-    header( "Location: " . CONTACT_PKG_URL . "admin/admin_xref_type.php" );
+	header( "Location: " . CONTACT_PKG_URL . "admin/admin_xref_type.php" );
 } elseif( isset( $_REQUEST['fRemoveXref'] ) ) {
 	$gContent->expungeXrefType();
 }
 
-$gBitSystem->display( 'bitpackage:contact/edit_xref_type.tpl' , NULL, array( 'display_mode' => 'edit' ));
+$gBitSystem->display( 'bitpackage:contact/edit_xref_type.tpl' , NULL, [ 'display_mode' => 'edit' ]);

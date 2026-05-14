@@ -41,7 +41,7 @@ if (isset( $_REQUEST["preview"] )) {
 	$gBitSmarty->assign( 'title', $_REQUEST["title"] );
 
 	$parsed = $gContent->parseData( $formInfo['edit'], !empty( $_REQUEST['format_guid'] ) ? $_REQUEST['format_guid'] :
-		( isset( $gContent->mInfo['format_guid'] ) ? $gContent->mInfo['format_guid'] : 'tikiwiki' ) );
+		( $gContent->mInfo['format_guid'] ?? 'tikiwiki' ), );
 	$gBitSmarty->assign('parsed', $parsed);
 	$gContent->invokeServices( 'content_preview_function' );
 } else {
@@ -62,7 +62,7 @@ if (isset($_REQUEST["fCancel"])) {
 		$formInfo = $_REQUEST;
 		$formInfo['data'] = &$_REQUEST['edit'];
 	}
-} 
+}
 
 // formInfo might be set due to a error on submit
 if( empty( $formInfo ) ) {
@@ -76,4 +76,4 @@ $gBitSmarty->assign( 'errors', $gContent->mErrors );
 $gBitSmarty->assign( (!empty( $_REQUEST['tab'] ) ? $_REQUEST['tab'] : 'body').'TabSelect', 'tdefault' );
 $gBitSmarty->assign('show_page_bar', 'y');
 
-$gBitSystem->display( 'bitpackage:contact/edit.tpl', 'Edit: ' , array( 'display_mode' => 'edit' ));
+$gBitSystem->display( 'bitpackage:contact/edit.tpl', 'Edit: ' , [ 'display_mode' => 'edit' ]);

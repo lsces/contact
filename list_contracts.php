@@ -26,11 +26,11 @@ if ( !isset($_REQUEST['contract'])) {
 	$_REQUEST['contract'] = 0;
 }
 
-// Get a list of Contracts 
+// Get a list of Contracts
 $contracts = $contacts->getContractList( $_REQUEST['contract'] );
 
 $gBitSmarty->assign('listInfo', $_REQUEST['listInfo']);
 $gBitSmarty->assign('list', $contracts);
 
 // Display the template
-$gBitSystem->display( 'bitpackage:contact/list_contracts.tpl', NULL, array( 'display_mode' => 'list' ));
+$gBitSystem->display( 'bitpackage:contact/list_contracts.tpl', NULL, [ 'display_mode' => 'list' ]);

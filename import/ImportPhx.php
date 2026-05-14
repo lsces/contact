@@ -59,7 +59,7 @@
 		$this->mContactId = 0;
 //		$pDataHash['contact_store']['contact_id'] = $pDataHash['contact_id'];
 //		$pDataHash['address_store']['contact_id'] = $pDataHash['contact_id'];
-			
+
 		$result = $this->mDb->associateInsert( $table, $pDataHash['contact_store'] );
 		$result = $this->mDb->associateInsert( $atable, $pDataHash['address_store'] );
 		$this->mDb->CompleteTrans();
@@ -68,9 +68,9 @@
 			$this->mErrors['store'] = 'Failed to store this contact.';
 		}				
 */
-		return( count( $this->mErrors ) == 0 ); 
+		return( count( $this->mErrors ) == 0 );
 	}
-	
+
 	/**
 	 * Delete contact object and all related records
 	 */
