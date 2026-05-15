@@ -16,6 +16,7 @@
 require_once '../kernel/includes/setup_inc.php';
 
 use Bitweaver\Contact\Contact;
+use Bitweaver\KernelTools;
 
 $gBitSystem->verifyPackage( 'contact' );
 $gBitSystem->verifyPermission( 'p_contact_view' );
@@ -43,7 +44,7 @@ if( $gBitUser->hasPermission("p_contact_view_changes") && $_SESSION['contact']['
 $listcontacts = $gContent->getList( $listHash );
 
 if ( $listHash['listInfo']['count'] == 1 ){
-	bit_redirect( CONTACT_PKG_URL."display_contact.php?content_id=".$listcontacts[0]['content_id'] );
+	KernelTools::bit_redirect( CONTACT_PKG_URL."display_contact.php?content_id=".$listcontacts[0]['content_id'] );
 }
 
 $gBitSmarty->assign( 'listcontacts', $listcontacts );

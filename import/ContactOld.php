@@ -12,6 +12,7 @@
 /**
  * required setup
  */
+use Bitweaver\KernelTools;
 use Bitweaver\Liberty\LibertyBase;		// Contact base class
 require_once CONTACT_PKG_PATH . 'lib/phpcoord-2.3.php';
 
@@ -552,7 +553,7 @@ vd($query);
 				if(	$this->mInfo = $rs->fields ) {
 /*					if(	$this->mInfo['local_custodian_code'] == 0 ) {
 						global $gBitSystem;
-						$gBitSystem->fatalError( tra( 'You do not have permission to access this contact record' ), 'error.tpl', tra( 'Permission denied.' ) );
+						$gBitSystem->fatalError( KernelTools::tra( 'You do not have permission to access this contact record' ), 'error.tpl', KernelTools::tra( 'Permission denied.' ) );
 					}
 */
 
@@ -589,7 +590,7 @@ vd($query);
 //vd($this->mInfo);
 				} else {
 					global $gBitSystem;
-					$gBitSystem->fatalError( tra( 'Contact record does not exist' ), 'error.tpl', tra( 'Not found.' ) );
+					$gBitSystem->fatalError( KernelTools::tra( 'Contact record does not exist' ), 'error.tpl', KernelTools::tra( 'Not found.' ) );
 				}
 			}
 		}

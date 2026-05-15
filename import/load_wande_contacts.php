@@ -9,6 +9,7 @@
 // Initialization
 require_once '../../kernel/includes/setup_inc.php';
 use Bitweaver\Contact\Contact;
+use Bitweaver\KernelTools;
 
 // Is package installed and enabled
 $gBitSystem->verifyPackage( 'contact' );
@@ -35,4 +36,4 @@ if ( $handle == FALSE) {
 
 $gBitSmarty->assign( 'count', $row );
 
-$gBitSystem->display( 'bitpackage:contact/load_contacts.tpl', tra( 'Load results: ' ) );
+$gBitSystem->display( 'bitpackage:contact/load_contacts.tpl', KernelTools::tra( 'Load results: ' ) );
