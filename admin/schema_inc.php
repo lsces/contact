@@ -13,7 +13,7 @@ $tables = [
   xref_id I8 PRIMARY,
   content_id I8 NOTNULL,
   source C(20) PRIMARY,
-  xorder I2
+  xorder I2,
   xref I8,
   xkey C(32),
   xkey_ext C(250),
@@ -85,7 +85,7 @@ $gBitInstaller->registerSchemaIndexes( CONTACT_PKG_NAME, $indices );
 
 // ### Sequences
 $sequences =  [
-	'contact_xref_seq' => [ 'start' => 1 ],
+//	'contact_xref_seq' => [ 'start' => 1 ],
 ];
 $gBitInstaller->registerSchemaSequences( CONTACT_PKG_NAME, $sequences );
 
@@ -131,7 +131,6 @@ $gBitInstaller->registerSchemaDefault( CONTACT_PKG_NAME, [
 	"INSERT INTO `" . BIT_DB_PREFIX . "contact_xref_source`  VALUES ('#C', 'Contact Address', '1', '0', '3', '../nlpg/?uprn=', 'address', NULL)",
 	"INSERT INTO `" . BIT_DB_PREFIX . "contact_xref_source`  VALUES ('#E', 'eMail Address', '1', '1', '3', '../contact/?contact_id=', 'text', NULL)",
 	"INSERT INTO `" . BIT_DB_PREFIX . "contact_xref_source`  VALUES ('#F', 'Fax', '1', '1', '3', '../contact/?contact_id=', 'text', NULL)",
-	"INSERT INTO `" . BIT_DB_PREFIX . "contact_xref_source`  VALUES ('#E', 'eMail Address', '1', '1', '3', '../contact/?contact_id=', 'text', NULL)",
 	"INSERT INTO `" . BIT_DB_PREFIX . "contact_xref_source`  VALUES ('#I', 'Invoice Address', '1', '0', '3', '../nlpg/?uprn=', 'address', NULL)",
 	"INSERT INTO `" . BIT_DB_PREFIX . "contact_xref_source`  VALUES ('#P', 'Telephone', '1', '1', '3', '../contact/?contact_id=', 'phone', NULL)",
 	"INSERT INTO `" . BIT_DB_PREFIX . "contact_xref_source`  VALUES ('#R', 'Residential Address', '1', '0', '3', '../nlpg/?uprn=', 'address', NULL)",
