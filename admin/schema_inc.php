@@ -9,40 +9,6 @@ $tables = [
   xkey C(32)
 ",
 
-	'contact_xref'        => "
-  xref_id I8 PRIMARY,
-  content_id I8 NOTNULL,
-  source C(20) PRIMARY,
-  xorder I2,
-  xref I8,
-  xkey C(32),
-  xkey_ext C(250),
-  data X,
-  start_date T,
-  last_update_date T,
-  entry_date T,
-  end_date T
-  ",
-
-	'contact_xref_source' => "
-  source C(20) PRIMARY,
-  cross_ref_title C(64),
-  xref_type I2,
-  multi I2,
-  role_id I4,
-  cross_ref_href C(256),
-  template C(32),
-  data X
-  ",
-
-	'contact_xref_type'   => "
-  xref_type I2 PRIMARY,
-  source C(20),
-  title C(64),
-  role_id I4,
-  type_href C(256)
-  ",
-
 	'contact_address'     => "
   content_id I8 PRIMARY,
   address_id I8,
@@ -84,9 +50,7 @@ $indices = [
 $gBitInstaller->registerSchemaIndexes( CONTACT_PKG_NAME, $indices );
 
 // ### Sequences
-$sequences =  [
-//	'contact_xref_seq' => [ 'start' => 1 ],
-];
+$sequences = [];
 $gBitInstaller->registerSchemaSequences( CONTACT_PKG_NAME, $sequences );
 
 // ### Defaults
@@ -110,45 +74,52 @@ $gBitInstaller->registerPreferences( CONTACT_PKG_NAME, [
 	[ CONTACT_PKG_NAME, 'contact_list_user', 'y' ],
 ] );
 
+// liberty_xref_type columns: xref_type, content_type_guid, title, sort_order, role_id, type_href
+// liberty_xref_source columns: source, content_type_guid, xref_type, cross_ref_title, multi, role_id, cross_ref_href, template, data
 $gBitInstaller->registerSchemaDefault( CONTACT_PKG_NAME, [
-	"INSERT INTO `" . BIT_DB_PREFIX . "contact_xref_type` VALUES ('0', 'type', 'Contact Type List', '3', '')",
-	"INSERT INTO `" . BIT_DB_PREFIX . "contact_xref_type` VALUES ('1', 'contact', 'General Contact Details', '3', '')",
-	"INSERT INTO `" . BIT_DB_PREFIX . "contact_xref_type` VALUES ('2', 'links', 'Linked Contact Items', '3', '')",
-	"INSERT INTO `" . BIT_DB_PREFIX . "contact_xref_type` VALUES ('3', 'alarm', 'Security System Links', '3', '')",
-	"INSERT INTO `" . BIT_DB_PREFIX . "contact_xref_type` VALUES ('4', 'council', 'Council reference links', '3', '')",
-	"INSERT INTO `" . BIT_DB_PREFIX . "contact_xref_type` VALUES ('5', 'account', 'Account Details', '4', '')",
-	"INSERT INTO `" . BIT_DB_PREFIX . "contact_xref_source`  VALUES ('$00', 'Personal', '0', '0', '3', '/contact/?type=0', NULL, NULL)",
-	"INSERT INTO `" . BIT_DB_PREFIX . "contact_xref_source`  VALUES ('$01', 'Business', '0', '0', '3', '/contact/?type=1', NULL, NULL)",
-	"INSERT INTO `" . BIT_DB_PREFIX . "contact_xref_source`  VALUES ('$02', 'Manufacturer', '0', '0', '3', '/contact/?type=2', NULL, NULL)",
-	"INSERT INTO `" . BIT_DB_PREFIX . "contact_xref_source`  VALUES ('$03', 'Distributor', '0', '0', '3', '/contact/?type=3', NULL, NULL)",
-	"INSERT INTO `" . BIT_DB_PREFIX . "contact_xref_source`  VALUES ('$04', 'Supplier', '0', '0', '3', '/contact/?type=4', NULL, NULL)",
-	"INSERT INTO `" . BIT_DB_PREFIX . "contact_xref_source`  VALUES ('$05', 'Record Company', '0', '0', '3', '/contact/?type=5', NULL, NULL)",
-	"INSERT INTO `" . BIT_DB_PREFIX . "contact_xref_source`  VALUES ('$06', 'Record Artist', '0', '0', '3', '/contact/?type=6', NULL, NULL)",
-	"INSERT INTO `" . BIT_DB_PREFIX . "contact_xref_source`  VALUES ('$07', 'Cartographer', '0', '0', '3', '/contact/?type=7', NULL, NULL)",
-	"INSERT INTO `" . BIT_DB_PREFIX . "contact_xref_source`  VALUES ('$08', 'PHX Client', '0', '0', '3', '/contact/?type=8', NULL, NULL)",
-	"INSERT INTO `" . BIT_DB_PREFIX . "contact_xref_source`  VALUES ('$09', 'LSCES Supplier', '0', '0', '3', '/contact/?type=9', NULL, NULL)",
-	"INSERT INTO `" . BIT_DB_PREFIX . "contact_xref_source`  VALUES ('$10', 'Paypal Client', '0', '0', '3', '/contact/?type=10', NULL, NULL)",
-	"INSERT INTO `" . BIT_DB_PREFIX . "contact_xref_source`  VALUES ('#C', 'Contact Address', '1', '0', '3', '../nlpg/?uprn=', 'address', NULL)",
-	"INSERT INTO `" . BIT_DB_PREFIX . "contact_xref_source`  VALUES ('#E', 'eMail Address', '1', '1', '3', '../contact/?contact_id=', 'text', NULL)",
-	"INSERT INTO `" . BIT_DB_PREFIX . "contact_xref_source`  VALUES ('#F', 'Fax', '1', '1', '3', '../contact/?contact_id=', 'text', NULL)",
-	"INSERT INTO `" . BIT_DB_PREFIX . "contact_xref_source`  VALUES ('#I', 'Invoice Address', '1', '0', '3', '../nlpg/?uprn=', 'address', NULL)",
-	"INSERT INTO `" . BIT_DB_PREFIX . "contact_xref_source`  VALUES ('#P', 'Telephone', '1', '1', '3', '../contact/?contact_id=', 'phone', NULL)",
-	"INSERT INTO `" . BIT_DB_PREFIX . "contact_xref_source`  VALUES ('#R', 'Residential Address', '1', '0', '3', '../nlpg/?uprn=', 'address', NULL)",
-	"INSERT INTO `" . BIT_DB_PREFIX . "contact_xref_source`  VALUES ('#S', 'Service Address', '1', '0', '3', '../nlpg/?uprn=', 'address', NULL)",
-	"INSERT INTO `" . BIT_DB_PREFIX . "contact_xref_source`  VALUES ('#T', 'Tenant Address', '1', '0', '3', '../nlpg/?uprn=', 'address', NULL)",
-	"INSERT INTO `" . BIT_DB_PREFIX . "contact_xref_source`  VALUES ('#W', 'Web Site Url', '1', '1', '3', '../contact/?contact_id=', 'text', NULL)",
-	"INSERT INTO `" . BIT_DB_PREFIX . "contact_xref_source`  VALUES ('0', 'Free format information', '1', '1', '3', '../contact/?xref=', 'text', NULL)",
-	"INSERT INTO `" . BIT_DB_PREFIX . "contact_xref_source`  VALUES ('CON', 'Contact', '1', '1', '3', '../nlpg/?uprn=', 'text', NULL)",
-	"INSERT INTO `" . BIT_DB_PREFIX . "contact_xref_source`  VALUES ('#A', 'Alarm Maintainer', '3', '0', '3', '../nlpg/?uprn=', 'text', NULL)",
-	"INSERT INTO `" . BIT_DB_PREFIX . "contact_xref_source`  VALUES ('#K', 'Keyholder', '3', '1', '3', '../nlpg/?uprn=', 'phone', NULL)",
-	"INSERT INTO `" . BIT_DB_PREFIX . "contact_xref_source`  VALUES ('ALARM', 'Alarm System', '3', '0', '3', '../nlpg/?uprn=', 'text', NULL)",
-	"INSERT INTO `" . BIT_DB_PREFIX . "contact_xref_source`  VALUES ('CTAX', 'Council Tax', '4', '0', '3', '../nlpg/?uprn=', 'text', NULL)",
-	"INSERT INTO `" . BIT_DB_PREFIX . "contact_xref_source`  VALUES ('ER', 'Electoral Roll', '4', '0', '3', '../nlpg/?uprn=', 'text', NULL)",
-	"INSERT INTO `" . BIT_DB_PREFIX . "contact_xref_source`  VALUES ('HBEN', 'Housing Benefit', '4', '0', '3', '../nlpg/?uprn=', 'text', NULL)",
-	"INSERT INTO `" . BIT_DB_PREFIX . "contact_xref_source`  VALUES ('NNDR', 'National Non-domestic Rates', '4', '0', '3', '../nlpg/?uprn=', 'text', NULL)",
-	"INSERT INTO `" . BIT_DB_PREFIX . "contact_xref_source`  VALUES ('ACC_TO', 'Account Turnover', '5', '0', '3', '../vat/?vat=', 'text', NULL)",
-	"INSERT INTO `" . BIT_DB_PREFIX . "contact_xref_source`  VALUES ('SAGEID', 'SAGE Account Reference', '5', '0', '3', '''sage''', 'text', NULL)",
-	"INSERT INTO `" . BIT_DB_PREFIX . "contact_xref_source`  VALUES ('VAT_NO', 'VAT Number', '5', '0', '3', '../vat/?vat=', 'text', NULL)",
+	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_type` (`xref_type`,`content_type_guid`,`title`,`sort_order`,`role_id`,`type_href`) VALUES ('type',   'contact','Contact Type List',       0,3,'')",
+	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_type` (`xref_type`,`content_type_guid`,`title`,`sort_order`,`role_id`,`type_href`) VALUES ('contact','contact','General Contact Details', 1,3,'')",
+	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_type` (`xref_type`,`content_type_guid`,`title`,`sort_order`,`role_id`,`type_href`) VALUES ('links',  'contact','Linked Contact Items',    2,3,'')",
+	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_type` (`xref_type`,`content_type_guid`,`title`,`sort_order`,`role_id`,`type_href`) VALUES ('alarm',  'contact','Security System Links',   3,3,'')",
+	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_type` (`xref_type`,`content_type_guid`,`title`,`sort_order`,`role_id`,`type_href`) VALUES ('council','contact','Council reference links',  4,3,'')",
+	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_type` (`xref_type`,`content_type_guid`,`title`,`sort_order`,`role_id`,`type_href`) VALUES ('account','contact','Account Details',          5,4,'')",
+
+	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_source` (`source`,`content_type_guid`,`xref_type`,`cross_ref_title`,`multi`,`role_id`,`cross_ref_href`,`template`,`data`) VALUES ('\$00','contact','type','Personal',          0,3,'/contact/?type=0', NULL,NULL)",
+	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_source` (`source`,`content_type_guid`,`xref_type`,`cross_ref_title`,`multi`,`role_id`,`cross_ref_href`,`template`,`data`) VALUES ('\$01','contact','type','Business',           0,3,'/contact/?type=1', NULL,NULL)",
+	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_source` (`source`,`content_type_guid`,`xref_type`,`cross_ref_title`,`multi`,`role_id`,`cross_ref_href`,`template`,`data`) VALUES ('\$02','contact','type','Manufacturer',        0,3,'/contact/?type=2', NULL,NULL)",
+	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_source` (`source`,`content_type_guid`,`xref_type`,`cross_ref_title`,`multi`,`role_id`,`cross_ref_href`,`template`,`data`) VALUES ('\$03','contact','type','Distributor',         0,3,'/contact/?type=3', NULL,NULL)",
+	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_source` (`source`,`content_type_guid`,`xref_type`,`cross_ref_title`,`multi`,`role_id`,`cross_ref_href`,`template`,`data`) VALUES ('\$04','contact','type','Supplier',            0,3,'/contact/?type=4', NULL,NULL)",
+	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_source` (`source`,`content_type_guid`,`xref_type`,`cross_ref_title`,`multi`,`role_id`,`cross_ref_href`,`template`,`data`) VALUES ('\$05','contact','type','Record Company',       0,3,'/contact/?type=5', NULL,NULL)",
+	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_source` (`source`,`content_type_guid`,`xref_type`,`cross_ref_title`,`multi`,`role_id`,`cross_ref_href`,`template`,`data`) VALUES ('\$06','contact','type','Record Artist',        0,3,'/contact/?type=6', NULL,NULL)",
+	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_source` (`source`,`content_type_guid`,`xref_type`,`cross_ref_title`,`multi`,`role_id`,`cross_ref_href`,`template`,`data`) VALUES ('\$07','contact','type','Cartographer',         0,3,'/contact/?type=7', NULL,NULL)",
+	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_source` (`source`,`content_type_guid`,`xref_type`,`cross_ref_title`,`multi`,`role_id`,`cross_ref_href`,`template`,`data`) VALUES ('\$08','contact','type','PHX Client',           0,3,'/contact/?type=8', NULL,NULL)",
+	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_source` (`source`,`content_type_guid`,`xref_type`,`cross_ref_title`,`multi`,`role_id`,`cross_ref_href`,`template`,`data`) VALUES ('\$09','contact','type','LSCES Supplier',       0,3,'/contact/?type=9', NULL,NULL)",
+	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_source` (`source`,`content_type_guid`,`xref_type`,`cross_ref_title`,`multi`,`role_id`,`cross_ref_href`,`template`,`data`) VALUES ('\$10','contact','type','Paypal Client',        0,3,'/contact/?type=10',NULL,NULL)",
+
+	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_source` (`source`,`content_type_guid`,`xref_type`,`cross_ref_title`,`multi`,`role_id`,`cross_ref_href`,`template`,`data`) VALUES ('#C','contact','contact','Contact Address',     0,3,'../nlpg/?uprn=',          'address',NULL)",
+	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_source` (`source`,`content_type_guid`,`xref_type`,`cross_ref_title`,`multi`,`role_id`,`cross_ref_href`,`template`,`data`) VALUES ('#E','contact','contact','eMail Address',        1,3,'../contact/?contact_id=', 'text',   NULL)",
+	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_source` (`source`,`content_type_guid`,`xref_type`,`cross_ref_title`,`multi`,`role_id`,`cross_ref_href`,`template`,`data`) VALUES ('#F','contact','contact','Fax',                  1,3,'../contact/?contact_id=', 'text',   NULL)",
+	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_source` (`source`,`content_type_guid`,`xref_type`,`cross_ref_title`,`multi`,`role_id`,`cross_ref_href`,`template`,`data`) VALUES ('#I','contact','contact','Invoice Address',      0,3,'../nlpg/?uprn=',          'address',NULL)",
+	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_source` (`source`,`content_type_guid`,`xref_type`,`cross_ref_title`,`multi`,`role_id`,`cross_ref_href`,`template`,`data`) VALUES ('#P','contact','contact','Telephone',            1,3,'../contact/?contact_id=', 'phone',  NULL)",
+	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_source` (`source`,`content_type_guid`,`xref_type`,`cross_ref_title`,`multi`,`role_id`,`cross_ref_href`,`template`,`data`) VALUES ('#R','contact','contact','Residential Address',  0,3,'../nlpg/?uprn=',          'address',NULL)",
+	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_source` (`source`,`content_type_guid`,`xref_type`,`cross_ref_title`,`multi`,`role_id`,`cross_ref_href`,`template`,`data`) VALUES ('#S','contact','contact','Service Address',      0,3,'../nlpg/?uprn=',          'address',NULL)",
+	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_source` (`source`,`content_type_guid`,`xref_type`,`cross_ref_title`,`multi`,`role_id`,`cross_ref_href`,`template`,`data`) VALUES ('#T','contact','contact','Tenant Address',       0,3,'../nlpg/?uprn=',          'address',NULL)",
+	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_source` (`source`,`content_type_guid`,`xref_type`,`cross_ref_title`,`multi`,`role_id`,`cross_ref_href`,`template`,`data`) VALUES ('#W','contact','contact','Web Site Url',         1,3,'../contact/?contact_id=', 'text',   NULL)",
+	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_source` (`source`,`content_type_guid`,`xref_type`,`cross_ref_title`,`multi`,`role_id`,`cross_ref_href`,`template`,`data`) VALUES ('0', 'contact','contact','Free format information',1,3,'../contact/?xref=',     'text',   NULL)",
+	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_source` (`source`,`content_type_guid`,`xref_type`,`cross_ref_title`,`multi`,`role_id`,`cross_ref_href`,`template`,`data`) VALUES ('CON','contact','links', 'Contact',             1,3,'../nlpg/?uprn=',          'text',   NULL)",
+
+	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_source` (`source`,`content_type_guid`,`xref_type`,`cross_ref_title`,`multi`,`role_id`,`cross_ref_href`,`template`,`data`) VALUES ('#A',  'contact','alarm',  'Alarm Maintainer',             0,3,'../nlpg/?uprn=','text', NULL)",
+	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_source` (`source`,`content_type_guid`,`xref_type`,`cross_ref_title`,`multi`,`role_id`,`cross_ref_href`,`template`,`data`) VALUES ('#K',  'contact','alarm',  'Keyholder',                    1,3,'../nlpg/?uprn=','phone',NULL)",
+	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_source` (`source`,`content_type_guid`,`xref_type`,`cross_ref_title`,`multi`,`role_id`,`cross_ref_href`,`template`,`data`) VALUES ('ALARM','contact','alarm', 'Alarm System',                 0,3,'../nlpg/?uprn=','text', NULL)",
+
+	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_source` (`source`,`content_type_guid`,`xref_type`,`cross_ref_title`,`multi`,`role_id`,`cross_ref_href`,`template`,`data`) VALUES ('CTAX','contact','council','Council Tax',                  0,3,'../nlpg/?uprn=','text',NULL)",
+	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_source` (`source`,`content_type_guid`,`xref_type`,`cross_ref_title`,`multi`,`role_id`,`cross_ref_href`,`template`,`data`) VALUES ('ER',  'contact','council','Electoral Roll',               0,3,'../nlpg/?uprn=','text',NULL)",
+	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_source` (`source`,`content_type_guid`,`xref_type`,`cross_ref_title`,`multi`,`role_id`,`cross_ref_href`,`template`,`data`) VALUES ('HBEN','contact','council','Housing Benefit',              0,3,'../nlpg/?uprn=','text',NULL)",
+	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_source` (`source`,`content_type_guid`,`xref_type`,`cross_ref_title`,`multi`,`role_id`,`cross_ref_href`,`template`,`data`) VALUES ('NNDR','contact','council','National Non-domestic Rates',   0,3,'../nlpg/?uprn=','text',NULL)",
+
+	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_source` (`source`,`content_type_guid`,`xref_type`,`cross_ref_title`,`multi`,`role_id`,`cross_ref_href`,`template`,`data`) VALUES ('ACC_TO','contact','account','Account Turnover',           0,3,'../vat/?vat=', 'text',NULL)",
+	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_source` (`source`,`content_type_guid`,`xref_type`,`cross_ref_title`,`multi`,`role_id`,`cross_ref_href`,`template`,`data`) VALUES ('SAGEID','contact','account','SAGE Account Reference',      0,3,'''sage''',     'text',NULL)",
+	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_source` (`source`,`content_type_guid`,`xref_type`,`cross_ref_title`,`multi`,`role_id`,`cross_ref_href`,`template`,`data`) VALUES ('VAT_NO','contact','account','VAT Number',                  0,3,'../vat/?vat=', 'text',NULL)",
 ] );
 
 // Requirements
