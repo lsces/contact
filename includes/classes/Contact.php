@@ -469,7 +469,7 @@ class Contact extends LibertyContent {
 		$bindVars = [];
 		$bindVars = array_merge( $bindVars, $roles, [ $gBitUser->mUserId ] );
 
-		$query = "SELECT g.* FROM `".BIT_DB_PREFIX."liberty_xref_type` g
+		$query = "SELECT g.*, g.`xref_type` AS source FROM `".BIT_DB_PREFIX."liberty_xref_type` g
 				  LEFT OUTER JOIN `".BIT_DB_PREFIX."users_roles_map` purm ON ( purm.`user_id`=".$gBitUser->mUserId." ) AND ( purm.`role_id`=g.`role_id` )
 				  WHERE g.`content_type_guid` = 'contact' AND g.`sort_order` > 0 AND (g.`role_id` IN(". implode(',', array_fill(0, count($roles), '?')) ." ) OR purm.`user_id`=?)
 				  ORDER BY g.`sort_order`";
