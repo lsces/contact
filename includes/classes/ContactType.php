@@ -37,9 +37,10 @@ class ContactType extends BitBase {
 			$bindVars = array_merge( $bindVars, $roles, [ $gBitUser->mUserId ] );
 
 			$sql = "SELECT r.`source`, r.`cross_ref_title`
-					FROM `".BIT_DB_PREFIX."contact_xref_source` r
+					FROM `".BIT_DB_PREFIX."liberty_xref_source` r
+					JOIN `".BIT_DB_PREFIX."liberty_xref_type` t ON t.`xref_type` = r.`xref_type` AND t.`content_type_guid` = r.`content_type_guid`
 					LEFT OUTER JOIN `".BIT_DB_PREFIX."users_roles_map` purm ON ( purm.`user_id`=".$gBitUser->mUserId." ) AND ( purm.`role_id`=r.`role_id` )
-					WHERE r.xref_type = 0 AND (r.`role_id` IN(". implode(',', array_fill(0, count($roles), '?')) ." ) OR purm.`user_id`=?)
+					WHERE r.`content_type_guid` = 'contact' AND t.`sort_order` = 0 AND (r.`role_id` IN(". implode(',', array_fill(0, count($roles), '?')) ." ) OR purm.`user_id`=?)
 					ORDER BY r.`source`";
 
 		$result = $this->mDb->query( $sql, $bindVars );
@@ -86,17 +87,22 @@ class ContactType extends BitBase {
 			$bindVars[] = $pOptionHash['title'];
 		}
 
+		$guidWhere = " cxt.`content_type_guid` = 'contact' ";
+		$where     = $where ? $where . " AND $guidWhere" : " WHERE $guidWhere";
+
 		$query = "SELECT cxt.*
-				 FROM `".BIT_DB_PREFIX."contact_xref_type` cxt
-				 $where ORDER BY cxt.`xref_type`";
+				 FROM `".BIT_DB_PREFIX."liberty_xref_type` cxt
+				 $where ORDER BY cxt.`sort_order`";
 
 		$result = $gBitSystem->mDb->query( $query, $bindVars );
 
 		$ret = [];
 
 		while( $res = $result->fetchRow() ) {
-			$res["num_types"] = $gBitSystem->mDb->getOne( "SELECT COUNT(*) FROM `".BIT_DB_PREFIX."contact_xref_source` WHERE `xref_type`= ?", [ $res["xref_type"] ] );
-
+			$res["num_types"] = $gBitSystem->mDb->getOne(
+				"SELECT COUNT(*) FROM `".BIT_DB_PREFIX."liberty_xref_source` WHERE `xref_type` = ? AND `content_type_guid` = 'contact'",
+				[ $res["xref_type"] ]
+			);
 			$ret[] = $res;
 		}
 
