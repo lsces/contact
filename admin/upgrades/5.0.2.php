@@ -13,8 +13,8 @@ $gBitInstaller->registerPackageUpgrade(
 	],
 	[
 		[ 'DATADICT' => [
-			[ 'DROPTABLE'    => [ [ 'contact_xref', 'contact_xref_source', 'contact_xref_type' ] ] ],
-			[ 'DROPSEQUENCE' => [ [ 'contact_xref_seq' ] ] ],
+			[ 'DROPTABLE'    => [ 'contact_xref', 'contact_xref_source', 'contact_xref_type' ] ],
+			[ 'DROPSEQUENCE' => [ 'contact_xref_seq' ] ],
 		]],
 	]
 );
