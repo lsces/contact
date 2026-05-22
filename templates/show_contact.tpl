@@ -18,6 +18,6 @@
 			{/jstab}
 		{/if}
 	{/jstabs}
-	{include file="`$smarty.const.FISHEYE_PKG_PATH`gallery_views/fixed_grid/fisheye_fixed_grid_test.tpl" }
+	{include file="bitpackage:contact/fisheye_fixed_grid_contact.tpl"}
 	</div> {* end .body *}
 </div> {* end .contact *}

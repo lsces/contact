@@ -142,7 +142,7 @@ for ( $n = 0; $n < $mbox->size(); $n++ ) {
 
 		$from_emails = ( !empty( $to_emails[0] ) ) ? array_unique( $to_emails[0] ) : array_unique( $emails[0] );
 
-		$sql = "SELECT e.content_id FROM `" . BIT_DB_PREFIX . "contact_xref` e WHERE e.`xkey_ext` = ?";
+		$sql = "SELECT e.content_id FROM `" . BIT_DB_PREFIX . "liberty_xref` e WHERE e.`xkey_ext` = ?";
 		$result = $storeComment->mDb->getRow( $sql, $from_emails );
 
 		if ($result) {
