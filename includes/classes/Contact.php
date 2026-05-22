@@ -30,6 +30,8 @@ class Contact extends LibertyContent {
 	public $mDate;
 	public $mTypes;
 
+	protected $mXrefTypeKey = 'contact_types';
+
 	/**
 	 * Constructor
 	 *
@@ -122,8 +124,8 @@ class Contact extends LibertyContent {
 					$this->mInfo['x_coordinate'] = $ll1->lng;
 				}
 
-				$this->loadContentTypeList();
-				if ( $this->mInfo['contact_types'][2]['content_id'] ) {
+				$this->loadXrefTypeList();
+				if ( !empty( $this->mInfo['contact_types'][2]['content_id'] ) ) {
 					$this->loadClientList();
 				}
 				$this->loadXrefList();
@@ -458,117 +460,6 @@ class Contact extends LibertyContent {
 	}
 
 	/**
-	* Returns titles of the contact type table
-	*
-	* @return array List of contact type names from the contact mamager in alphabetical order
-	*/
-	public function getContactGroupList() {
-		global $gBitUser, $gBitSmarty;
-
-		$roles = array_keys($gBitUser->mRoles);
-		$bindVars = [];
-		$bindVars = array_merge( $bindVars, $roles, [ $gBitUser->mUserId ] );
-
-		$query = "SELECT g.*, g.`xref_type` AS source FROM `".BIT_DB_PREFIX."liberty_xref_type` g
-				  LEFT OUTER JOIN `".BIT_DB_PREFIX."users_roles_map` purm ON ( purm.`user_id`=".$gBitUser->mUserId." ) AND ( purm.`role_id`=g.`role_id` )
-				  WHERE g.`content_type_guid` = 'contact' AND g.`sort_order` > 0 AND (g.`role_id` IN(". implode(',', array_fill(0, count($roles), '?')) ." ) OR purm.`user_id`=?)
-				  ORDER BY g.`sort_order`";
-		$result = $this->mDb->query( $query, $bindVars );
-		$ret = [];
-		while ($res = $result->fetchRow()) {
-			$ret[] = $res;
-		}
-		return $ret;
-	}
-
-	/**
-	* Returns titles of the contact type table
-	*
-	* @return array List of contact type names from the contact mamager in alphabetical order
-	*/
-	public function getContactSourceList() {
-		global $gBitUser, $gBitSmarty;
-
-		$roles = array_keys($gBitUser->mRoles);
-		$bindVars = [];
-		$bindVars = array_merge( $bindVars, $roles, [ $gBitUser->mUserId ] );
-
-		$query = "SELECT g.`cross_ref_title` AS `type_name`, g.`source` FROM `".BIT_DB_PREFIX."liberty_xref_source` g
-				  JOIN `".BIT_DB_PREFIX."liberty_xref_type` t ON t.`xref_type` = g.`xref_type` AND t.`content_type_guid` = 'contact'
-				  LEFT OUTER JOIN `".BIT_DB_PREFIX."users_roles_map` purm ON ( purm.`user_id`=".$gBitUser->mUserId." ) AND ( purm.`role_id`=g.`role_id` )
-				  WHERE g.`content_type_guid` = 'contact' AND t.`sort_order` = 0 AND (g.`role_id` IN(". implode(',', array_fill(0, count($roles), '?')) ." ) OR purm.`user_id`=?)
-				  ORDER BY g.`source`";
-		$result = $this->mDb->query( $query, $bindVars );
-		$ret = [];
-		$cnt = 0;
-		while ($res = $result->fetchRow()) {
-			$ret[$cnt]['source'] = $res["source"];
-			$ret[$cnt++]['name'] = trim($res["type_name"]);
-		}
-		return $ret;
-	}
-
-	/**
-	* Returns titles of the xref type table
-	* @param $xrefGroup selects a single group of xref types
-	* @return array List of xref type names from the contact mamager in alphabetical order
-	*/
-	public function getXrefTypeList( $xrefGroup = 0, $xrefTemplate = NULL ) {
-		if ( $xrefTemplate ) {
-			$query = "SELECT s.`cross_ref_title` AS `type_name`, s.`source`, s.`template`  FROM `".BIT_DB_PREFIX."liberty_xref_source` s
-					  WHERE s.`content_type_guid` = 'contact' AND s.`template` = '$xrefTemplate'
-					  ORDER BY s.`cross_ref_title`";
-			$result = $this->mDb->query($query, [] );
-		} elseif ( $xrefGroup > -1 ) {
-			$query = "SELECT s.`cross_ref_title` AS `type_name`, s.`source`, s.`template`  FROM `".BIT_DB_PREFIX."liberty_xref_source` s
-					  JOIN `".BIT_DB_PREFIX."liberty_xref_type` t ON t.`xref_type` = s.`xref_type` AND t.`content_type_guid` = 'contact'
-					  LEFT JOIN `".BIT_DB_PREFIX."liberty_xref` x ON x.`source` = s.`source` AND x.`content_id` = ? AND ( x.`end_date` IS NULL OR x.`end_date` > CURRENT_TIMESTAMP )
-					  WHERE s.`content_type_guid` = 'contact' AND t.`sort_order` = ? AND ( x.`xref_id` IS NULL OR x.`xorder` > 0 )
-					  ORDER BY s.`cross_ref_title`";
-			$result = $this->mDb->query($query, [ $this->mContentId, $xrefGroup ] );
-		} else {
-			$query = "SELECT s.`cross_ref_title` AS `type_name`, s.`source`, s.`template`  FROM `".BIT_DB_PREFIX."liberty_xref_source` s
-					  JOIN `".BIT_DB_PREFIX."liberty_xref_type` t ON t.`xref_type` = s.`xref_type` AND t.`content_type_guid` = 'contact'
-					  LEFT JOIN `".BIT_DB_PREFIX."liberty_xref` x ON x.`source` = s.`source` AND x.`content_id` = ? AND ( x.`end_date` IS NULL OR x.`end_date` > CURRENT_TIMESTAMP )
-					  WHERE s.`content_type_guid` = 'contact' AND t.`sort_order` > 0 AND ( x.`xref_id` IS NULL OR x.`xorder` > 0 )
-					  ORDER BY s.`cross_ref_title`";
-			$result = $this->mDb->query($query, [ $this->mContentId ] );
-		}
-		$ret = [];
-
-		while ($res = $result->fetchRow()) {
-			$ret['list'][$res["source"]] = trim($res["type_name"]);
-			$ret['type'][$res["source"]] = trim($res["template"]) <> '' ? trim($res["template"]) : 'generic';
-		}
-		return $ret;
-	}
-
-	/**
-	* Returns titles of the contact format templates table
-	*
-	* @return array List of contact format templates names from the contact mamager in alphabetical order
-	*/
-	public function getXrefFormatList() {
-		global $gBitUser, $gBitSmarty;
-
-		$roles = array_keys($gBitUser->mRoles);
-		$bindVars = [];
-		$bindVars = array_merge( $bindVars, $roles, [ $gBitUser->mUserId ] );
-
-		$query = "SELECT DISTINCT g.`template` FROM `".BIT_DB_PREFIX."liberty_xref_source` g
-				  LEFT OUTER JOIN `".BIT_DB_PREFIX."users_roles_map` purm ON ( purm.`user_id`=".$gBitUser->mUserId." ) AND ( purm.`role_id`=g.`role_id` )
-				  WHERE (g.`role_id` IN(". implode(',', array_fill(0, count($roles), '?')) ." ) OR purm.`user_id`=?)
-				  ORDER BY g.`template`";
-		$result = $this->mDb->query( $query, $bindVars );
-		$ret = [];
-		$cnt = 0;
-		while ($res = $result->fetchRow()) {
-			$ret[] = trim($res["template"]) <> '' ? trim($res["template"]) : 'generic';
-		}
-		return $ret;
-	}
-
-	/**
 	* Returns Contract Numbers list
 	* @param $contract selects a single type of contract to list
 	* @return array List of contact numbers in contract number order
@@ -599,125 +490,6 @@ class Contact extends LibertyContent {
 	 */
 	public function getContactTypes() {
 		return $this->mTypes->mContactType;
-	}
-
-	/**
-	 * getXrefList( &$pParamHash );
-	 * Get list of xref records for this contact record
-	 */
-	public function loadContentTypeList() {
-		if( $this->isValid() && empty( $this->mInfo['contact_types'] ) ) {
-			global $gBitUser;
-
-			$roles = array_keys($gBitUser->mRoles);
-			$bindVars = [];
-			array_push( $bindVars, $this->mContentId );
-			$bindVars = array_merge( $bindVars, $roles, [ $gBitUser->mUserId ] );
-
-			$sql = "SELECT r.`source`, r.`cross_ref_title`, d.`content_id`
-					FROM `".BIT_DB_PREFIX."liberty_xref_source` r
-					JOIN `".BIT_DB_PREFIX."liberty_xref_type` t ON t.`xref_type` = r.`xref_type` AND t.`content_type_guid` = 'contact'
-					LEFT JOIN `".BIT_DB_PREFIX."liberty_xref` d ON d.`content_id` = ? AND d.`source` = r.`source`
-					LEFT OUTER JOIN `".BIT_DB_PREFIX."users_roles_map` purm ON ( purm.`user_id`=".$gBitUser->mUserId." ) AND ( purm.`role_id`=r.`role_id` )
-					WHERE r.`content_type_guid` = 'contact' AND t.`sort_order` = 0 AND (r.`role_id` IN(". implode(',', array_fill(0, count($roles), '?')) ." ) OR purm.`user_id`=?)
-					ORDER BY r.`source`";
-
-			$result = $this->mDb->query( $sql, $bindVars );
-
-			while( $res = $result->fetchRow() ) {
-				$this->mInfo['contact_types'][] = $res;
-			}
-		}
-	}
-
-	/**
-	 * getXrefList( &$pParamHash );
-	 * Get list of xref records for this contact record
-	 */
-	public function loadXrefList() {
-		if( $this->isValid() && empty( $this->mInfo['xref'] ) ) {
-			global $gBitUser;
-
-			$roles = array_keys($gBitUser->mRoles);
-			$bindVars = [];
-			array_push( $bindVars, $this->mDb->NOW() );
-			array_push( $bindVars, $this->mContentId );
-			$bindVars = array_merge( $bindVars, $roles, [ $gBitUser->mUserId ] );
-
-			$sql = "SELECT s.xref_type, x.`xref_id`, x.`last_update_date`, x.`source`, t.`title` AS type_title,
-					CASE
-					WHEN x.`end_date` < ? THEN 'history'
-					ELSE t.`xref_type` END as type_source,
-					CASE
-					WHEN x.`xorder` = 0 THEN s.`cross_ref_title`
-					ELSE s.`cross_ref_title` || '-' || x.`xorder` END
-					AS source_title,
-					x.`xref`, x.`xkey`, x.`xkey_ext`, x.`data`,
-					x.`start_date`, x.`end_date`, s.`template`,
-					pc.`add1` || ',' || pc.`add2` || ',' || pc.`add4` || ',' || pc.`town` as address
-					FROM `".BIT_DB_PREFIX."liberty_xref` x
-					JOIN `".BIT_DB_PREFIX."liberty_xref_source` s ON s.`source` = x.`source` AND s.`content_type_guid` = 'contact'
-					LEFT JOIN `".BIT_DB_PREFIX."address_postcode` pc ON pc.`postcode` = x.`xkey`
-					JOIN `".BIT_DB_PREFIX."liberty_xref_type` t ON t.`xref_type` = s.`xref_type` AND t.`content_type_guid` = 'contact'
-					LEFT OUTER JOIN `".BIT_DB_PREFIX."users_roles_map` purm ON ( purm.`user_id`=".$gBitUser->mUserId." ) AND ( purm.`role_id`=s.`role_id` )
-					WHERE x.content_id = ? AND (s.`role_id` IN(". implode(',', array_fill(0, count($roles), '?')) ." ) OR purm.`user_id`=?)
-					ORDER BY x.`source`, x.`xorder`";
-
-			$result = $this->mDb->query( $sql, $bindVars );
-
-			if($result) {
-				while( $res = $result->fetchRow() ) {
-					$this->mInfo[$res['type_source']][] = $res;
-				}
-			}
-		}
-	}
-
-	/**
-	 * loadXref( &$pParamHash );
-	 * find contact record that matches the supplied xref record
-	 */
-	public function loadXref( $pXrefId = NULL ) {
-		if( BitBase::verifyId( $pXrefId ) ) {
-			$xref = new ContactXref( $pXrefId );
-			if( $xref->mContentId ) {
-				$this->load( $xref->mContentId );
-				$this->mInfo['xref_title'] = $xref->mContentId;
-				$this->mInfo['xref_store'] = $xref->mInfo;
-				$this->mInfo['format_guid'] = 'text';
-			}
-		}
-	}
-
-	/**
-	 * storeXref( &$pParamHash );
-	 * store or update xref records for this contact record
-	 */
-	public function storeXref( &$pParamHash ) {
-		$xref = new ContactXref( $pParamHash['xref_id'] ?? NULL );
-		if ( $xref->store( $pParamHash ) ) {
-				$this->mInfo['xref_title'] = $xref->mContentId;
-				$this->mInfo['xref_store'] = $xref->mInfo;
-				$pParamHash['xref_id'] = $xref->mXrefId;
-				$this->load();
-
-				return true;
-		}  return false;
-	}
-
-	/**
-	 * stepXref( &$pParamHash );
-	 * find contact record that matches the supplied xref record
-	 */
-	public function stepXref( &$pParamHash ) {
-		$xref = new ContactXref( $pParamHash['xref_id'] );
-		if ( $xref->stepXref( $pParamHash ) ) {
-			$this->mInfo['xref_title'] = $xref->mContentId;
-			$this->mInfo['xref_store'] = $xref->mInfo;
-			$this->load();
-
-			return true;
-		}  return false;
 	}
 
 	/**

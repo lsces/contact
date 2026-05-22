@@ -51,7 +51,7 @@ if ($gContent->isCommentable()) {
 	}
 }
 
-$gContent->mInfo['type'] = $gContent->getContactGroupList();
+$gContent->mInfo['type'] = $gContent->getXrefGroupList();
 
 $gBitSystem->setBrowserTitle("Contact Information");
 $gBitSystem->display( 'bitpackage:contact/show_contact.tpl');

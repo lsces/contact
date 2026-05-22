@@ -69,7 +69,7 @@ if( empty( $formInfo ) ) {
 	$formInfo = &$gContent->mInfo;
 }
 
-$formInfo['contact_type_list'] = $gContent->getContactSourceList();
+$formInfo['contact_type_list'] = $gContent->getXrefSourceList();
 $gBitSmarty->assign( 'pageInfo', $formInfo );
 
 $gBitSmarty->assign( 'errors', $gContent->mErrors );

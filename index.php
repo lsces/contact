@@ -34,6 +34,6 @@ if ($gContent->isCommentable()) {
 	include_once LIBERTY_PKG_PATH . 'comments_inc.php';
 }
 
-$gContent->mInfo['type'] = $gContent->getContactGroupList();
+$gContent->mInfo['type'] = $gContent->getXrefGroupList();
 	$gBitSystem->setBrowserTitle("Contact List Item");
 	$gBitSystem->display( 'bitpackage:contact/show_contact.tpl', NULL, [ 'display_mode' => 'display' ]);
