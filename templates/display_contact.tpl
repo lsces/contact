@@ -65,6 +65,6 @@
 
 		{jstabs}
 			{section name=type loop=$gContent->mInfo.type}
-				{include file="bitpackage:contact/list_xref_generic.tpl" source=$gContent->mInfo.type[type].source source_title=$gContent->mInfo.type[type].title xref_type=$gContent->mInfo.type[type].sort_order}
+				{include file="bitpackage:liberty/list_xref.tpl" source=$gContent->mInfo.type[type].source source_title=$gContent->mInfo.type[type].title xref_type=$gContent->mInfo.type[type].sort_order allow_add=true}
 			{/section}
 		{/jstabs}
