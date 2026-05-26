@@ -5,7 +5,7 @@ function updateContactXrefFormat() { {/literal}
 	document.getElementById('{$output}-format').style.display = 'none';
 {/foreach} {literal}
 	var form = document.getElementById('editContactXrefForm');
-	var input = form.source;
+	var input = form.item;
     var i  = input.selectedIndex; 
     var select = document.getElementById('format-'+input.options[i].value).value;
 	document.getElementById(select+'-format').style.display = 'block';
@@ -25,7 +25,7 @@ function updateContactXrefFormat() { {/literal}
 	<div class="body">
 		{form enctype="multipart/form-data" id="editContactXrefForm"}
 			<input type="hidden" name="content_id" value="{$xrefInfo.content_id}" />
-			<input type="hidden" name="xref_type" value="{$xrefInfo.xref_type}" />
+			<input type="hidden" name="group" value="{$xrefInfo.group}" />
 			{foreach from=$xrefInfo.xref_type_list.type key=feature item=output}
 				<input type="hidden" id="format-{$feature}" name="format-{$feature}" value="{$output}" />
 			{/foreach}
@@ -36,9 +36,9 @@ function updateContactXrefFormat() { {/literal}
 						{formfeedback error=$errors warning=$contactWarnings success=$contactSuccess}
 						
 						<div class="form-group">
-							{formlabel label="Reference Type" for="source"}
+							{formlabel label="Reference Type" for="item"}
 							{forminput}
-								{html_options name="source" id="source" options=$xrefInfo.xref_type_list.list selected=$smarty.const.CONTACT_FORMAT_GENERIC onchange="updateContactXrefFormat();"}
+								{html_options name="item" id="item" options=$xrefInfo.xref_type_list.list selected=$smarty.const.CONTACT_FORMAT_GENERIC onchange="updateContactXrefFormat();"}
 								{formhelp note="Select type of reference information to add"}
 							{/forminput}
 						</div>

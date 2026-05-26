@@ -36,17 +36,17 @@ class ContactType extends BitBase {
 			$bindVars = [];
 			$bindVars = array_merge( $bindVars, $roles, [ $gBitUser->mUserId ] );
 
-			$sql = "SELECT r.`source`, r.`cross_ref_title`
-					FROM `".BIT_DB_PREFIX."liberty_xref_source` r
-					JOIN `".BIT_DB_PREFIX."liberty_xref_type` t ON t.`xref_type` = r.`xref_type` AND t.`content_type_guid` = r.`content_type_guid`
+			$sql = "SELECT r.`item`, r.`cross_ref_title`
+					FROM `".BIT_DB_PREFIX."liberty_xref_item` r
+					JOIN `".BIT_DB_PREFIX."liberty_xref_group` t ON t.`x_group` = r.`x_group` AND t.`content_type_guid` = r.`content_type_guid`
 					LEFT OUTER JOIN `".BIT_DB_PREFIX."users_roles_map` purm ON ( purm.`user_id`=".$gBitUser->mUserId." ) AND ( purm.`role_id`=r.`role_id` )
 					WHERE r.`content_type_guid` = 'contact' AND t.`sort_order` = 0 AND (r.`role_id` IN(". implode(',', array_fill(0, count($roles), '?')) ." ) OR purm.`user_id`=?)
-					ORDER BY r.`source`";
+					ORDER BY r.`item`";
 
 		$result = $this->mDb->query( $sql, $bindVars );
 
 		while( $res = $result->fetchRow() ) {
-			$this->mContactType[ $res['source']] = $res['cross_ref_title'];
+			$this->mContactType[ $res['item']] = $res['cross_ref_title'];
 		}
 
 //		asort($this->mContactType);
@@ -91,7 +91,7 @@ class ContactType extends BitBase {
 		$where     = $where ? $where . " AND $guidWhere" : " WHERE $guidWhere";
 
 		$query = "SELECT cxt.*
-				 FROM `".BIT_DB_PREFIX."liberty_xref_type` cxt
+				 FROM `".BIT_DB_PREFIX."liberty_xref_group` cxt
 				 $where ORDER BY cxt.`sort_order`";
 
 		$result = $gBitSystem->mDb->query( $query, $bindVars );
@@ -100,8 +100,8 @@ class ContactType extends BitBase {
 
 		while( $res = $result->fetchRow() ) {
 			$res["num_types"] = $gBitSystem->mDb->getOne(
-				"SELECT COUNT(*) FROM `".BIT_DB_PREFIX."liberty_xref_source` WHERE `xref_type` = ? AND `content_type_guid` = 'contact'",
-				[ $res["xref_type"] ]
+				"SELECT COUNT(*) FROM `".BIT_DB_PREFIX."liberty_xref_item` WHERE `x_group` = ? AND `content_type_guid` = 'contact'",
+				[ $res["x_group"] ]
 			);
 			$ret[] = $res;
 		}

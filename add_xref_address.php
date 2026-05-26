@@ -36,13 +36,13 @@ if (isset($_REQUEST["fCancel"])) {
 	}
 }
 
-$_REQUEST['xref_type'] = 10;
+$_REQUEST['group'] = 10;
 
 // formInfo might be set due to a error on submit
 if( empty( $xrefInfo ) ) {
 	$xrefInfo = &$gContent->mInfo['xref_store'];
 	$xrefInfo['content_id'] = $gContent->mContentId;
-	$xrefInfo['xref_type'] = $_REQUEST['xref_type'];
+	$xrefInfo['group'] = $_REQUEST['group'];
 }
 $xrefInfo['xref_type_list'] = $gContent->getXrefTypeList( 0, 'address' );
 // Don't use ckeditor for text fields '

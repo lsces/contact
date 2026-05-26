@@ -86,10 +86,10 @@ class Contact extends LibertyContent {
 				LEFT JOIN `".BIT_DB_PREFIX."liberty_content` lc ON lc.content_id = con.content_id
 				LEFT JOIN `".BIT_DB_PREFIX."users_users` uue ON (uue.`user_id` = lc.`modifier_user_id`)
 				LEFT JOIN `".BIT_DB_PREFIX."users_users` uuc ON (uuc.`user_id` = lc.`user_id`)
-				LEFT JOIN `".BIT_DB_PREFIX."liberty_xref` img ON img.`content_id` = con.`content_id` AND img.`source` = 'IMG'
-				LEFT JOIN `".BIT_DB_PREFIX."liberty_xref` x00 ON x00.`content_id` = con.`content_id` AND x00.`source` = '$00'
-				LEFT JOIN `".BIT_DB_PREFIX."liberty_xref` xhA ON xhA.`content_id` = con.`content_id` AND xhA.`source` = '#S' AND ( xhA.`end_date` IS NULL OR xhA.`end_date` > CURRENT_TIMESTAMP )
-				LEFT JOIN `".BIT_DB_PREFIX."liberty_xref` xhL ON xhL.`content_id` = con.`content_id` AND xhL.`source` = '#L' AND ( xhL.`end_date` IS NULL OR xhL.`end_date` > CURRENT_TIMESTAMP )
+				LEFT JOIN `".BIT_DB_PREFIX."liberty_xref` img ON img.`content_id` = con.`content_id` AND img.`item` = 'IMG'
+				LEFT JOIN `".BIT_DB_PREFIX."liberty_xref` x00 ON x00.`content_id` = con.`content_id` AND x00.`item` = '$00'
+				LEFT JOIN `".BIT_DB_PREFIX."liberty_xref` xhA ON xhA.`content_id` = con.`content_id` AND xhA.`item` = '#S' AND ( xhA.`end_date` IS NULL OR xhA.`end_date` > CURRENT_TIMESTAMP )
+				LEFT JOIN `".BIT_DB_PREFIX."liberty_xref` xhL ON xhL.`content_id` = con.`content_id` AND xhL.`item` = '#L' AND ( xhL.`end_date` IS NULL OR xhL.`end_date` > CURRENT_TIMESTAMP )
 				LEFT JOIN `".BIT_DB_PREFIX."address_postcode` ap ON ap.`postcode` = xhA.`xkey`
 				WHERE con.`content_id`=?";
 			$result = $this->mDb->query( $query, [ $this->mContentId ] );
@@ -209,17 +209,17 @@ class Contact extends LibertyContent {
 					$result = $this->mDb->associateInsert( $atable, $pParamHash['contact_store'] );
 				}
 				if( !empty( $pParamHash['contact_types'] ) ) {
-					$query = "DELETE FROM `".BIT_DB_PREFIX."liberty_xref` WHERE `content_id` = ? AND `source` LIKE '$%'";
+					$query = "DELETE FROM `".BIT_DB_PREFIX."liberty_xref` WHERE `content_id` = ? AND `item` LIKE '$%'";
 					$result = $this->mDb->query($query, [$this->mContentId ] );
 					 foreach ( $pParamHash['contact_types'] as $key => $source ) {
 						if ( $source == '$00' ) {
-							$query = "INSERT INTO `".BIT_DB_PREFIX."liberty_xref` (`content_id`, `source`, `xkey_ext`, `last_update_date`) VALUES ( ?, ?, ?, NULL )";
+							$query = "INSERT INTO `".BIT_DB_PREFIX."liberty_xref` (`content_id`, `item`, `xkey_ext`, `last_update_date`) VALUES ( ?, ?, ?, NULL )";
 							$result = $this->mDb->query($query, [ $this->mContentId, $source, $pParamHash['name'] ] );
 						} else if ( $source == '$01' ) {
-							$query = "INSERT INTO `".BIT_DB_PREFIX."liberty_xref` (`content_id`, `source`, `xkey_ext`, `last_update_date`) VALUES ( ?, ?, ?, NULL )";
+							$query = "INSERT INTO `".BIT_DB_PREFIX."liberty_xref` (`content_id`, `item`, `xkey_ext`, `last_update_date`) VALUES ( ?, ?, ?, NULL )";
 							$result = $this->mDb->query($query, [ $this->mContentId, $source, $pParamHash['organisation'] ] );
 						} else {
-						$query = "INSERT INTO `".BIT_DB_PREFIX."liberty_xref` (`content_id`, `source`, `last_update_date`) VALUES ( ?, ?, NULL )";
+						$query = "INSERT INTO `".BIT_DB_PREFIX."liberty_xref` (`content_id`, `item`, `last_update_date`) VALUES ( ?, ?, NULL )";
 						$result = $this->mDb->query($query, [ $this->mContentId, $source ] );
 						}
 					 }
@@ -345,7 +345,7 @@ class Contact extends LibertyContent {
 			}
 		}
 		elseif ( isset( $pParamHash['contact_type_guid'][0] ) ) {
-			$joinSql .= "JOIN `".BIT_DB_PREFIX."liberty_xref` cx ON cx.`content_id` = con.`content_id` AND cx.`source` = ? ";
+			$joinSql .= "JOIN `".BIT_DB_PREFIX."liberty_xref` cx ON cx.`content_id` = con.`content_id` AND cx.`item` = ? ";
 			$bindVars[] = $pParamHash['contact_type_guid'][0];
 		}
 
@@ -425,11 +425,11 @@ class Contact extends LibertyContent {
 		$query = "SELECT con.`content_id` as content_id, con.*, lc.*,
 			ap.*, xhA.`xkey_ext` AS house,
 			xhL.`xkey` as x_coordinate, xhL.`xkey_ext` as y_coordinate,
- 			(SELECT COUNT(*) FROM `".BIT_DB_PREFIX."liberty_xref` x WHERE x.`content_id` = con.`content_id` AND x.`source` NOT STARTING WITH '$' ) AS refs
+ 			(SELECT COUNT(*) FROM `".BIT_DB_PREFIX."liberty_xref` x WHERE x.`content_id` = con.`content_id` AND x.`item` NOT STARTING WITH '$' ) AS refs
 			FROM `".BIT_DB_PREFIX."contact` con
 			LEFT JOIN `".BIT_DB_PREFIX."liberty_content` lc ON lc.`content_id` = con.`content_id`
-			LEFT JOIN `".BIT_DB_PREFIX."liberty_xref` xhA ON xhA.`content_id` = con.`content_id` AND ( xhA.`source` IN ( SELECT `source` FROM `".BIT_DB_PREFIX."liberty_xref_source` WHERE `template` = 'address' AND `content_type_guid` = 'contact' ) ) AND ( xhA.`end_date` IS NULL OR xhA.`end_date` > CURRENT_TIMESTAMP )
-			LEFT JOIN `".BIT_DB_PREFIX."liberty_xref` xhL ON xhL.`content_id` = con.`content_id` AND xhL.`source` = '#L' AND ( xhL.`end_date` IS NULL OR xhL.`end_date` > CURRENT_TIMESTAMP )
+			LEFT JOIN `".BIT_DB_PREFIX."liberty_xref` xhA ON xhA.`content_id` = con.`content_id` AND ( xhA.`item` IN ( SELECT `item` FROM `".BIT_DB_PREFIX."liberty_xref_item` WHERE `template` = 'address' AND `content_type_guid` = 'contact' ) ) AND ( xhA.`end_date` IS NULL OR xhA.`end_date` > CURRENT_TIMESTAMP )
+			LEFT JOIN `".BIT_DB_PREFIX."liberty_xref` xhL ON xhL.`content_id` = con.`content_id` AND xhL.`item` = '#L' AND ( xhL.`end_date` IS NULL OR xhL.`end_date` > CURRENT_TIMESTAMP )
 			LEFT JOIN `".BIT_DB_PREFIX."address_postcode` ap ON ap.`postcode` = xhA.`xkey`
 			$findSql
 			$joinSql
@@ -440,7 +440,7 @@ class Contact extends LibertyContent {
 		$query_cant = "SELECT COUNT( * )
 			FROM `".BIT_DB_PREFIX."contact` con
 			LEFT JOIN `".BIT_DB_PREFIX."liberty_content` lc ON lc.content_id = con.content_id
-			LEFT JOIN `".BIT_DB_PREFIX."liberty_xref` xhA ON xhA.`content_id` = con.`content_id` AND xhA.`source` = '#S' AND ( xhA.`end_date` IS NULL OR xhA.`end_date` > CURRENT_TIMESTAMP )
+			LEFT JOIN `".BIT_DB_PREFIX."liberty_xref` xhA ON xhA.`content_id` = con.`content_id` AND xhA.`item` = '#S' AND ( xhA.`end_date` IS NULL OR xhA.`end_date` > CURRENT_TIMESTAMP )
 			LEFT JOIN `".BIT_DB_PREFIX."address_postcode` ap ON ap.`postcode` = xhA.`xkey`
 			$joinSql WHERE lc.`content_type_guid` = ? $whereSql ";
 		$result = $this->mDb->query( $query, $bindVars, $max_records, $offset );
@@ -471,9 +471,9 @@ class Contact extends LibertyContent {
 				ELSE CAST ( r.`xkey_ext` AS INTEGER ) END AS XORDERBY
 				FROM `".BIT_DB_PREFIX."liberty_xref` r
 				LEFT JOIN `".BIT_DB_PREFIX."liberty_content` lc ON lc.`content_id` = r.`content_id`
-				LEFT JOIN `".BIT_DB_PREFIX."liberty_xref` xhA ON xhA.`content_id` = lc.`content_id` AND xhA.`source` = '#S' AND ( xhA.`end_date` IS NULL OR xhA.`end_date` > CURRENT_TIMESTAMP )
+				LEFT JOIN `".BIT_DB_PREFIX."liberty_xref` xhA ON xhA.`content_id` = lc.`content_id` AND xhA.`item` = '#S' AND ( xhA.`end_date` IS NULL OR xhA.`end_date` > CURRENT_TIMESTAMP )
 				LEFT JOIN `".BIT_DB_PREFIX."address_postcode` ap ON ap.`postcode` = xhA.`xkey`
-				WHERE r.`source` = 'KEY_S' AND r.`xref` = ? AND ( r.`end_date` IS NULL OR r.`end_date` > CURRENT_TIMESTAMP )
+				WHERE r.`item` = 'KEY_S' AND r.`xref` = ? AND ( r.`end_date` IS NULL OR r.`end_date` > CURRENT_TIMESTAMP )
 				ORDER BY r.`xref`, XORDERBY";
 		$result = $this->mDb->query($query, [ $contract ] );
 
@@ -510,12 +510,12 @@ class Contact extends LibertyContent {
 			$sql = "SELECT r.`xref_id`, r.`content_id`, r.`last_update_date`, c.`title`,
 					CASE
 					WHEN r.`end_date` < ? THEN 'history'
-					ELSE r.`source` END as type_source,
+					ELSE r.`item` END as type_source,
 					r.`xkey`, r.`xkey_ext`, r.`data`,
 					r.`start_date`, r.`end_date`
 					FROM `".BIT_DB_PREFIX."liberty_xref` r
 					JOIN `".BIT_DB_PREFIX."liberty_content` c ON c.`content_id` = r.`content_id`
-					WHERE r.`xref` = ? AND r.`source` = '#A'
+					WHERE r.`xref` = ? AND r.`item` = '#A'
 					ORDER BY c.`title`";
 //					LEFT OUTER JOIN `".BIT_DB_PREFIX."users_roles_map` purm ON ( purm.`user_id`=".$gBitUser->mUserId." ) AND ( purm.`role_id` = s.`role_id` )
 //					AND (s.`role_id` IN(". implode(',', array_fill(0, count($roles), '?')) ." ) OR purm.`user_id`=?)
@@ -542,10 +542,10 @@ class Contact extends LibertyContent {
 			array_push( $bindVars, $this->mContentId );
 			$bindVars = array_merge( $bindVars, $roles, [ $gBitUser->mUserId ] );
 
-			$sql = "SELECT s.xref_type, x.`xref_id`, x.`last_update_date`, x.`source`, t.`title` AS type_title,
+			$sql = "SELECT s.`x_group`, x.`xref_id`, x.`last_update_date`, x.`item`, t.`title` AS type_title,
 					CASE
 					WHEN x.`end_date` < ? THEN 'history'
-					ELSE t.`xref_type` END as type_source,
+					ELSE t.`x_group` END as type_source,
 					CASE
 					WHEN x.`xorder` = 0 THEN s.`cross_ref_title`
 					ELSE s.`cross_ref_title` || '-' || x.`xorder` END
@@ -553,12 +553,12 @@ class Contact extends LibertyContent {
 					x.`xkey_ext` AS house, ap.`add1`, ap.`add2`, ap.`add3`, ap.`add4`, ap.`town`, ap.`county`, x.`xkey` AS postcode, ap.`grideast`, ap.`gridnorth`, x.`data`,
 					x.`start_date`, x.`end_date`
 					FROM `".BIT_DB_PREFIX."liberty_xref` x
-					JOIN `".BIT_DB_PREFIX."liberty_xref_source` s ON s.`source` = x.`source` AND s.`content_type_guid` = 'contact'
-					JOIN `".BIT_DB_PREFIX."liberty_xref_type` t ON t.`xref_type` = s.`xref_type` AND t.`content_type_guid` = 'contact'
+					JOIN `".BIT_DB_PREFIX."liberty_xref_item` s ON s.`item` = x.`item` AND s.`content_type_guid` = 'contact'
+					JOIN `".BIT_DB_PREFIX."liberty_xref_group` t ON t.`x_group` = s.`x_group` AND t.`content_type_guid` = 'contact'
 					LEFT JOIN `".BIT_DB_PREFIX."address_postcode` ap ON ap.`postcode` = x.`xkey`
 					LEFT OUTER JOIN `".BIT_DB_PREFIX."users_roles_map` purm ON ( purm.`user_id`=".$gBitUser->mUserId." ) AND ( purm.`role_id`=s.`role_id` )
 					WHERE x.content_id = ? AND s.`template` = 'address' AND (s.`role_id` IN(". implode(',', array_fill(0, count($roles), '?')) ." ) OR purm.`user_id`=?)
-					ORDER BY x.`source`, x.`xorder`";
+					ORDER BY x.`item`, x.`xorder`";
 
 			$result = $this->mDb->query( $sql, $bindVars );
 

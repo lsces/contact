@@ -11,15 +11,15 @@
 	<div class="body">
 		{form enctype="multipart/form-data" id="writexref"}
 			<input type="hidden" name="content_id" value="{$xrefInfo.content_id}" />
-			<input type="hidden" name="xref_type" value="{$xrefInfo.xref_type}" />
+			<input type="hidden" name="group" value="{$xrefInfo.group}" />
 
 			{jstabs}
 				{jstab title="Address Details"}
 					{legend legend="Contents"}
 						<div class="form-group">
-							{formlabel label="Address Type" for="source"}
+							{formlabel label="Address Type" for="item"}
 							{forminput}
-								{html_options name="$xrefInfo.xref_type_list[$xrefInfo.source]" options=$xrefInfo.xref_type_list selected=$xrefInfo.source}
+								{html_options name="$xrefInfo.xref_type_list[$xrefInfo.item]" options=$xrefInfo.xref_type_list selected=$xrefInfo.item}
 								{formhelp note="Type of cross link reference to add."}
 							{/forminput}
 						</div>

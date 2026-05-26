@@ -28,7 +28,7 @@ if (isset($_REQUEST["fCancel"])) {
 	}
 	die;
 } elseif (isset($_REQUEST["fAddXref"])) {
-	$source = $_REQUEST["source"];
+	$source = $_REQUEST["item"];
 	$format = $_REQUEST["format-".$source];
 	if ( $format != 'generic' ) {
 		if ( isset( $_REQUEST[$format."xref"] ) ) { $_REQUEST["xref"] = $_REQUEST[$format."xref"]; }
@@ -44,7 +44,7 @@ if (isset($_REQUEST["fCancel"])) {
 
 }
 
-if( !isset( $_REQUEST['xref_type'] ) ) $_REQUEST['xref_type'] = 0;
+if( !isset( $_REQUEST['group'] ) ) $_REQUEST['group'] = 0;
 
 $gBitSystem->setOnloadScript( 'updateContactXrefFormat();' );
 
@@ -52,9 +52,9 @@ $gBitSystem->setOnloadScript( 'updateContactXrefFormat();' );
 if( empty( $xrefInfo ) ) {
 	$xrefInfo = &$gContent->mInfo['xref_store'];
 	$xrefInfo['content_id'] = $gContent->mContentId;
-	$xrefInfo['xref_type'] = $_REQUEST['xref_type'];
+	$xrefInfo['group'] = $_REQUEST['group'];
 }
-$xrefInfo['xref_type_list'] = $gContent->getXrefTypeList( $xrefInfo['xref_type'] );
+$xrefInfo['xref_type_list'] = $gContent->getXrefTypeList( $xrefInfo['group'] );
 $xrefInfo['xref_format_list'] = $gContent->getXrefFormatList();
 
 // Don't use ckeditor for text fields '
