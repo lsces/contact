@@ -94,13 +94,6 @@
 						{/if}
 {* include edit_personal.tpl *}
 
-						<div class="form-group">
-							{formlabel label="Key Number" for="xkey"}
-							{forminput}
-								<input size="10" type="text" name="xkey" id="xkey" value="{$gContent->mInfo.xkey|escape}" />
-							{/forminput}
-							<div class="clear"></div>
-						</div>
 
 						<div class="form-group">
 							{formlabel label="Note" for="description"}

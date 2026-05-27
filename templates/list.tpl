@@ -14,17 +14,11 @@
 		<table class="col-xs-12">
 			<caption>{tr}Available Content{/tr} <span class="total">[ {$listInfo.total_records} ]</span></caption>
 			<tr>
-				<th class="width2p">{smartlink ititle="Contract" isort="xkey" ihash=$listInfo.ihash|default:''}</th>
 				<th>{smartlink ititle="Title" isort="title" idefault=1 iorder=desc ihash=$listInfo.ihash|default:''}</th>
 				<th>{smartlink ititle="Address" isort="street" ihash=$listInfo.ihash|default:''}</th>
 			</tr>
 			{section name=content loop=$listcontacts}
 				<tr class="first">
-					<td class="alignright">
-						<a href="display_contact.php?content_id={$listcontacts[content].content_id}" title="ci_{$listcontacts[content].content_id}">
-						   {$listcontacts[content].xkey}
-						</a>
-					</td>
 					<td class="alignleft">
 						<a href="display_contact.php?content_id={$listcontacts[content].content_id}" title="ci_{$listcontacts[content].content_id}">
 							{$listcontacts[content].title}

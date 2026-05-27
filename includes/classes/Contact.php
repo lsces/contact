@@ -213,14 +213,14 @@ class Contact extends LibertyContent {
 					$result = $this->mDb->query($query, [$this->mContentId ] );
 					 foreach ( $pParamHash['contact_types'] as $key => $source ) {
 						if ( $source == '$00' ) {
-							$query = "INSERT INTO `".BIT_DB_PREFIX."liberty_xref` (`content_id`, `item`, `xkey_ext`, `last_update_date`) VALUES ( ?, ?, ?, NULL )";
-							$result = $this->mDb->query($query, [ $this->mContentId, $source, $pParamHash['name'] ] );
+							$query = "INSERT INTO `".BIT_DB_PREFIX."liberty_xref` (`xref_id`, `content_id`, `item`, `xkey_ext`, `last_update_date`) VALUES ( ?, ?, ?, ?, NULL )";
+							$result = $this->mDb->query($query, [ $this->mDb->GenID('liberty_xref_seq'), $this->mContentId, $source, $pParamHash['name'] ] );
 						} else if ( $source == '$01' ) {
-							$query = "INSERT INTO `".BIT_DB_PREFIX."liberty_xref` (`content_id`, `item`, `xkey_ext`, `last_update_date`) VALUES ( ?, ?, ?, NULL )";
-							$result = $this->mDb->query($query, [ $this->mContentId, $source, $pParamHash['organisation'] ] );
+							$query = "INSERT INTO `".BIT_DB_PREFIX."liberty_xref` (`xref_id`, `content_id`, `item`, `xkey_ext`, `last_update_date`) VALUES ( ?, ?, ?, ?, NULL )";
+							$result = $this->mDb->query($query, [ $this->mDb->GenID('liberty_xref_seq'), $this->mContentId, $source, $pParamHash['organisation'] ] );
 						} else {
-						$query = "INSERT INTO `".BIT_DB_PREFIX."liberty_xref` (`content_id`, `item`, `last_update_date`) VALUES ( ?, ?, NULL )";
-						$result = $this->mDb->query($query, [ $this->mContentId, $source ] );
+							$query = "INSERT INTO `".BIT_DB_PREFIX."liberty_xref` (`xref_id`, `content_id`, `item`, `last_update_date`) VALUES ( ?, ?, ?, NULL )";
+							$result = $this->mDb->query($query, [ $this->mDb->GenID('liberty_xref_seq'), $this->mContentId, $source ] );
 						}
 					 }
 				}
@@ -379,14 +379,6 @@ class Contact extends LibertyContent {
 		}
 		$pParamHash["listInfo"]["active"] = $active;
 
-		if( isset( $find_key ) and is_string( $find_key ) and $find_key <> '' ) {
-			$whereSql .= " AND UPPER( con.`xkey` ) = ? ";
-			$bindVars[] = strtoupper( $find_key );
-			$pParamHash["listInfo"]["ihash"]["find_key"] = $find_key;
-			$find_title = '';
-			$find_location = '';
-			$find_postcode = '';
-		}
 
 		if( isset( $find_title ) and is_string( $find_title ) and $find_title <> '' ) {
 			$whereSql .= " AND UPPER( lc.`title` ) like ? ";
@@ -456,31 +448,6 @@ class Contact extends LibertyContent {
 		$pParamHash["listInfo"]["count"] = $pParamHash["cant"];
 
 		LibertyContent::postGetList( $pParamHash );
-		return $ret;
-	}
-
-	/**
-	* Returns Contract Numbers list
-	* @param $contract selects a single type of contract to list
-	* @return array List of contact numbers in contract number order
-	*/
-	public function getContractList( $contract = 0 ) {
-		$query = "SELECT r.`xkey_ext` AS `contract`, r.`content_id`, lc.`title`, r.`xref`, r.`xkey`, r.`data`,
-				ap.*, xhA.`xkey_ext` AS house, r.xref,
-				CASE WHEN r.`xkey_ext` STARTING 'C' THEN CAST ( SUBSTRING ( r.`xkey_ext` FROM 2 FOR 4 ) AS INTEGER )
-				ELSE CAST ( r.`xkey_ext` AS INTEGER ) END AS XORDERBY
-				FROM `".BIT_DB_PREFIX."liberty_xref` r
-				LEFT JOIN `".BIT_DB_PREFIX."liberty_content` lc ON lc.`content_id` = r.`content_id`
-				LEFT JOIN `".BIT_DB_PREFIX."liberty_xref` xhA ON xhA.`content_id` = lc.`content_id` AND xhA.`item` = '#S' AND ( xhA.`end_date` IS NULL OR xhA.`end_date` > CURRENT_TIMESTAMP )
-				LEFT JOIN `".BIT_DB_PREFIX."address_postcode` ap ON ap.`postcode` = xhA.`xkey`
-				WHERE r.`item` = 'KEY_S' AND r.`xref` = ? AND ( r.`end_date` IS NULL OR r.`end_date` > CURRENT_TIMESTAMP )
-				ORDER BY r.`xref`, XORDERBY";
-		$result = $this->mDb->query($query, [ $contract ] );
-
-		$ret = [];
-		while ($res = $result->fetchRow()) {
-			$ret[] = $res;
-		}
 		return $ret;
 	}
 

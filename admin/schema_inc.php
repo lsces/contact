@@ -24,7 +24,7 @@ $tables = [
   zone_id I4,
   country C(80),
   country_id I4,
-  last_update_date T DEFAULT CURRENT_TIMESTAMP,
+  last_update_date T DEFAULT LOCALTIMESTAMP,
   cltype I2
 ",
 
@@ -83,9 +83,7 @@ $gBitInstaller->registerSchemaDefault( CONTACT_PKG_NAME, [
 	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_group` (`x_group`,`content_type_guid`,`title`,`sort_order`,`role_id`,`type_href`) VALUES ('type',   'contact','Contact Type List',        0,3,'')",
 	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_group` (`x_group`,`content_type_guid`,`title`,`sort_order`,`role_id`,`type_href`) VALUES ('contact','contact','General Contact Details',   1,3,'')",
 	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_group` (`x_group`,`content_type_guid`,`title`,`sort_order`,`role_id`,`type_href`) VALUES ('links',  'contact','Linked Contact Items',     2,3,'')",
-	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_group` (`x_group`,`content_type_guid`,`title`,`sort_order`,`role_id`,`type_href`) VALUES ('alarm',  'contact','Security System Links',    3,3,'')",
-	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_group` (`x_group`,`content_type_guid`,`title`,`sort_order`,`role_id`,`type_href`) VALUES ('council','contact','Council reference links',   4,3,'')",
-	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_group` (`x_group`,`content_type_guid`,`title`,`sort_order`,`role_id`,`type_href`) VALUES ('account','contact','Account Details',           5,4,'')",
+	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_group` (`x_group`,`content_type_guid`,`title`,`sort_order`,`role_id`,`type_href`) VALUES ('account','contact','Account Details',           3,4,'')",
 
 	// --- liberty_xref_item (formerly contact_xref_source) ---
 	// group: type
@@ -112,15 +110,8 @@ $gBitInstaller->registerSchemaDefault( CONTACT_PKG_NAME, [
 	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_item` (`item`,`content_type_guid`,`x_group`,`cross_ref_title`,`multiple`,`role_id`,`cross_ref_href`,`template`) VALUES ('#W','contact','contact','Web Site Url',              1,3,'../contact/?contact_id=','text'   )",
 	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_item` (`item`,`content_type_guid`,`x_group`,`cross_ref_title`,`multiple`,`role_id`,`cross_ref_href`,`template`) VALUES ('0', 'contact','contact','Free format information',   1,3,'../contact/?xref=',      'text'   )",
 	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_item` (`item`,`content_type_guid`,`x_group`,`cross_ref_title`,`multiple`,`role_id`,`cross_ref_href`,`template`) VALUES ('CON','contact','contact','Contact',                  1,3,'../nlpg/?uprn=',         'text'   )",
-	// group: alarm
-	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_item` (`item`,`content_type_guid`,`x_group`,`cross_ref_title`,`multiple`,`role_id`,`cross_ref_href`,`template`) VALUES ('#A',  'contact','alarm','Alarm Maintainer',          0,3,'../nlpg/?uprn=','text' )",
-	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_item` (`item`,`content_type_guid`,`x_group`,`cross_ref_title`,`multiple`,`role_id`,`cross_ref_href`,`template`) VALUES ('#K',  'contact','alarm','Keyholder',                 1,3,'../nlpg/?uprn=','phone')",
-	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_item` (`item`,`content_type_guid`,`x_group`,`cross_ref_title`,`multiple`,`role_id`,`cross_ref_href`,`template`) VALUES ('ALARM','contact','alarm','Alarm System',             0,3,'../nlpg/?uprn=','text' )",
-	// group: council
-	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_item` (`item`,`content_type_guid`,`x_group`,`cross_ref_title`,`multiple`,`role_id`,`cross_ref_href`,`template`) VALUES ('CTAX','contact','council','Council Tax',              0,3,'../nlpg/?uprn=','text')",
-	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_item` (`item`,`content_type_guid`,`x_group`,`cross_ref_title`,`multiple`,`role_id`,`cross_ref_href`,`template`) VALUES ('ER',  'contact','council','Electoral Roll',           0,3,'../nlpg/?uprn=','text')",
-	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_item` (`item`,`content_type_guid`,`x_group`,`cross_ref_title`,`multiple`,`role_id`,`cross_ref_href`,`template`) VALUES ('HBEN','contact','council','Housing Benefit',          0,3,'../nlpg/?uprn=','text')",
-	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_item` (`item`,`content_type_guid`,`x_group`,`cross_ref_title`,`multiple`,`role_id`,`cross_ref_href`,`template`) VALUES ('NNDR','contact','council','National Non-domestic Rates',0,3,'../nlpg/?uprn=','text')",
+	// group: links
+	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_item` (`item`,`content_type_guid`,`x_group`,`cross_ref_title`,`multiple`,`role_id`,`cross_ref_href`,`template`) VALUES ('SCREF','contact','links','Stock Source Reference',0,3,'../stock/?content_id=','text')",
 	// group: account
 	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_item` (`item`,`content_type_guid`,`x_group`,`cross_ref_title`,`multiple`,`role_id`,`cross_ref_href`,`template`) VALUES ('ACC_TO','contact','account','Account Turnover',           0,3,'../vat/?vat=', 'text')",
 	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_item` (`item`,`content_type_guid`,`x_group`,`cross_ref_title`,`multiple`,`role_id`,`cross_ref_href`,`template`) VALUES ('SAGEID','contact','account','SAGE Account Reference',     0,3,'''sage''',    'text')",
