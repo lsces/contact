@@ -24,8 +24,9 @@
 				</thead>
 				<tbody>
 					{section name=xref loop=$gContent->mInfo.$source}
+						{assign var=_rowTpl value=$gContent->mInfo.$source[xref].template}
 						<tr class="{cycle values="even,odd"}" title="{$gContent->mInfo.title|escape}">
-							{include file="bitpackage:contact/view_xref_`$gContent->mInfo.$source[xref].template`_record.tpl"}
+							{include file=$gContent->getXrefRecordTemplate($_rowTpl)}
 						</tr>
 					{sectionelse}
 						<tr class="norecords">
