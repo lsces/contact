@@ -32,7 +32,7 @@ class ContactType extends BitBase {
 	public function setup() {
 		global $gBitUser, $gBitSmarty;
 
-			$roles = array_keys($gBitUser->mRoles);
+			$roles = array_keys($gBitUser->mRoles ?? []) ?: [-1];
 			$bindVars = [];
 			$bindVars = array_merge( $bindVars, $roles, [ $gBitUser->mUserId ] );
 
