@@ -9,20 +9,19 @@
 			<div class="clear"></div>
 		</div>
 		{/if}
-		{if isset($gContent->mInfo.name) && ($gContent->mInfo.name <> '') }
+		{if $gContent->mInfo.contact_types.0.content_id}
 		<div class="form-group">
-			{formlabel label="Name" for="name"}
+			{formlabel label="Name"}
 			{forminput}
-				{$gContent->mInfo.name|escape} 
+				{$gContent->mInfo.name|escape}
 			{/forminput}
 			<div class="clear"></div>
 		</div>
-		{/if}
-		{if isset($gContent->mInfo.organisation) && ($gContent->mInfo.organisation <> '') }
+		{else}
 		<div class="form-group">
-			{formlabel label="Organisation" for="organisation"}
+			{formlabel label="Organisation"}
 			{forminput}
-				{$gContent->mInfo.organisation|escape} 
+				{$gContent->mInfo.organisation|escape}
 			{/forminput}
 			<div class="clear"></div>
 		</div>
@@ -45,26 +44,21 @@
 			<div class="clear"></div>
 		</div>
 		{/if}
-		{section name=address loop=$gContent->mInfo.address}
-			{include file="bitpackage:contact/display_address.tpl" header=$gContent->mInfo.address[address].source_title address=$gContent->mInfo.address[address] locate=1}
-		{sectionelse}
-			<li class="item norecords">
-				{tr}No addresses found{/tr}
-				{if $gBitUser->hasPermission('p_edit_contact')}
-					{smartlink ititle="Add an address record" ifile="add_xref_address.php" booticon="icon-note-add" content_id=$gContent->mInfo.content_id}
-				{/if}
-			</li>
-		{/section}
-
+		{if $gContent->mInfo.data}
 		<div class="form-group">
-			{formlabel label="General Notes" for="data"}
+			{formlabel label="Note"}
 			{forminput}
 				{$gContent->mInfo.data}
 			{/forminput}
 		</div>
+		{/if}
+
+		{section name=address loop=$gContent->mInfo.address}
+			{include file="bitpackage:contact/display_address.tpl" header=$gContent->mInfo.address[address].source_title address=$gContent->mInfo.address[address] locate=1}
+		{/section}
 
 		{jstabs}
 			{section name=type loop=$gContent->mInfo.type}
-				{include file="bitpackage:liberty/list_xref.tpl" source=$gContent->mInfo.type[type].source source_title=$gContent->mInfo.type[type].title group=$gContent->mInfo.type[type].sort_order allow_add=true}
+				{include file="bitpackage:liberty/list_xref.tpl" source=$gContent->mInfo.type[type].source source_title=$gContent->mInfo.type[type].title group=$gContent->mInfo.type[type].sort_order allow_edit=false}
 			{/section}
 		{/jstabs}

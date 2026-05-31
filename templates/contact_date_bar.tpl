@@ -5,7 +5,6 @@
   {if $print_page ne 'y'}
     {if !$lock}
       {if $gBitUser->hasPermission('p_edit_contact')}
-		{smartlink ititle='Add additional crossref record' ifile="add_xref.php" booticon="icon-note-add" content_id=$gContent->mInfo.content_id group=-1}
 		{smartlink ititle="Edit Contact" ifile="edit.php" booticon="icon-user-edit" content_id=$gContent->mInfo.content_id}
       {/if}
     {/if}

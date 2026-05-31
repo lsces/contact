@@ -69,7 +69,14 @@ if( empty( $formInfo ) ) {
 	$formInfo = &$gContent->mInfo;
 }
 
-$formInfo['contact_type_list'] = $gContent->getXrefSourceList();
+$isPerson = !empty( $gContent->mInfo['contact_types'][0]['content_id'] );
+$gContent->mInfo['contact_xref_groups'] = $gContent->getXrefGroupList();
+$gBitSmarty->assign( 'isPerson', $isPerson );
+
+$allTypes = $gContent->getXrefSourceList();
+$formInfo['contact_type_list'] = $isPerson
+	? []
+	: array_values( array_filter( $allTypes, fn($t) => $t['item'] > '$01' ) );
 $gBitSmarty->assign( 'pageInfo', $formInfo );
 
 $gBitSmarty->assign( 'errors', $gContent->mErrors );

@@ -51,8 +51,10 @@
 							<div class="clear"></div>
 						</div>
 
-						{include file="bitpackage:contact/edit_type_header.tpl"}
-							
+						{if !$isPerson}
+							{include file="bitpackage:contact/edit_type_header.tpl"}
+						{/if}
+
 						{if $gContent->mInfo.name || $gContent->mInfo.contact_types.0.content_id || !isset( $gContent->mInfo.contact_types ) }
 							<div class="form-group">
 								{formlabel label="Title" for="prefix"}
@@ -83,7 +85,7 @@
 								<div class="clear"></div>
 							</div>
 						{/if}
-						{if $gContent->mInfo.organisation || $gContent->mInfo.contact_types.1.content_id || !isset( $gContent->mInfo.contact_types ) }
+						{if !$isPerson && ( $gContent->mInfo.organisation || !isset( $gContent->mInfo.contact_types ) )}
 							<div class="form-group">
 								{formlabel label="Organisation" for="organisation"}
 								{forminput}
@@ -95,14 +97,21 @@
 {* include edit_personal.tpl *}
 
 
-						<div class="form-group">
-							{formlabel label="Note" for="description"}
-							{forminput}
-								<input size="60" type="text" name="description" id="description" value="{$gContent->mInfo.description|escape}" />
-							{/forminput}
-							<div class="clear"></div>
-						</div>
 					{/legend}
+
+					{if $gContent->mInfo.contact_xref_groups && $gContent->isValid()}
+						{jstabs}
+							{section name=xrefGroup loop=$gContent->mInfo.contact_xref_groups}
+								{include file=$gContent->getXrefListTemplate($gContent->mInfo.contact_xref_groups[xrefGroup].template)
+									source=$gContent->mInfo.contact_xref_groups[xrefGroup].source
+									source_title=$gContent->mInfo.contact_xref_groups[xrefGroup].title
+									group=$gContent->mInfo.contact_xref_groups[xrefGroup].sort_order
+									allow_add=true
+									allow_edit=true}
+							{/section}
+						{/jstabs}
+					{/if}
+
 				{/jstab}
 
 				{jstab title="Contact Notes"}

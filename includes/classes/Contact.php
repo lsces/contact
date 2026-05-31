@@ -169,7 +169,9 @@ class Contact extends LibertyContent {
 				else if ( strlen($pParamHash['forename']) > 0 ) $pParamHash['title'] .= ', '.$pParamHash['forename'];
 			}
 		}
-		$pParamHash['title'] = $pParamHash['organisation'];
+		if( empty( $pParamHash['title'] ) ) {
+			$pParamHash['title'] = $pParamHash['organisation'] ?? '';
+		}
 		$pParamHash['title'] = trim( $pParamHash['title'] );
 		$pParamHash['contact_store']['xkey'] = $pParamHash['xkey'];
 		return count( $this->mErrors ) == 0;

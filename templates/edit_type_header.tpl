@@ -3,7 +3,9 @@
 	{forminput}
 		{if isset( $gContent->mInfo.contact_types ) }
 			{foreach from=$gContent->mInfo.contact_types key=type_id item=type}
-				<input type="checkbox" name="contact_types[{$type_id}]" value="{$type.item}" {if isset($type.content_id) } checked="checked"{/if} /> {$type.cross_ref_title}<br/>
+				{if $type.item gt '$01'}
+					<input type="checkbox" name="contact_types[{$type_id}]" value="{$type.item}" {if isset($type.content_id) } checked="checked"{/if} /> {$type.cross_ref_title}<br/>
+				{/if}
 			{/foreach}
 		{else}
 			{foreach from=$gContent->mInfo.contact_type_list key=type_id item=type}

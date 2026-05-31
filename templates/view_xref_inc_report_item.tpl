@@ -29,14 +29,14 @@
 	<span class="actionicon">
 		{if $gBitUser->hasPermission( 'p_contact_view_detail' )}
 			{smartlink ititle="View" ifile="view_form.php" booticon="icon-view" content_id=$gContent->mInfo.content_id xref_id=$gContent->mInfo.$source[xref].xref_id}
-		{/if}	
-		{if $gBitUser->hasPermission( 'p_contact_expunge' ) }
+		{/if}
+		{if $xrefAllowEdit && $gBitUser->hasPermission( 'p_contact_expunge' ) }
 			{if $source eq 'history' }
 				{smartlink ititle="Restore" ifile="edit_xref.php" booticon="icon-note-edit" content_id=$gContent->mInfo.content_id xref_id=$gContent->mInfo.$source[xref].xref_id expunge=-1}
 			{else}
 				{smartlink ititle="Delete" ifile="edit_xref.php" booticon="icon-note-delete" content_id=$gContent->mInfo.content_id xref_id=$gContent->mInfo.$source[xref].xref_id expunge=1}
-			{/if}	
-		{/if}	
+			{/if}
+		{/if}
 	</span>
 </td>
 {/strip}
