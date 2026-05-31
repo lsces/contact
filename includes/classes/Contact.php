@@ -105,7 +105,7 @@ class Contact extends LibertyContent {
 				$this->mInfo['creator'] = $result->fields['creator_real_name'] ?? $result->fields['creator_user'];
 				$this->mInfo['editor'] = $result->fields['modifier_real_name'] ?? $result->fields['modifier_user'];
 				$this->mInfo['display_url'] = $this->getDisplayUrl();
-				$this->mInfo['organisation'] = trim($this->mInfo['organisation']);
+				$this->mInfo['organisation'] = trim($this->mInfo['organisation'] ?? '');
 				$name = explode( '|', $this->mInfo['name'] ?? '' );
 				$this->mInfo['prefix'] = $name[0] ?? '';
 				$this->mInfo['forename'] = $name[1] ?? '';
