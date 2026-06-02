@@ -40,17 +40,11 @@
 						{$listcontacts[content].postcode}</td>
 				</tr>
 				<tr class="second {$rowclass}">
-					<td>{$item.display_link|default:'Not Set'}</td>
-					<td>{assign var=content_type_guid value=$item.content_type_guid|default:'bitpage'}{$gLibertySystem->getContentTypeName($content_type_guid|default:'bitpage')}</td>
-					<td>
+					<td colspan="2">
 						{tr}Refs{/tr}: {$listcontacts[content].refs|default:0}&nbsp;&nbsp;
 						{tr}Tasks{/tr}: {$listcontacts[content].tasks|default:0}&nbsp;&nbsp;
 						{tr}Addresses{/tr}: {$listcontacts[content].addresses|default:0}
 					</td>
-					{if $gBitUser->hasPermission( 'p_liberty_view_all_status' )}
-						<td>{if isset($listcontacts[content].dob) && ($listcontacts[content].dob <> '')  }DOB: {$listcontacts[content].dob}{/if}</td>
-						<td>{if isset($listcontacts[content].nino) && ($listcontacts[content].nino <> '') }NI: {$listcontacts[content].nino}{/if}</td>
-					{/if}
 				</tr>
 			{sectionelse}
 				<tr class="norecords">
