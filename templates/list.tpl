@@ -18,7 +18,8 @@
 				<th>{smartlink ititle="Address" isort="street" ihash=$listInfo.ihash|default:''}</th>
 			</tr>
 			{section name=content loop=$listcontacts}
-				<tr class="first">
+				{if $smarty.section.content.rownum % 2 != 0}{assign var=rowclass value="odd"}{else}{assign var=rowclass value="even"}{/if}
+				<tr class="first {$rowclass}">
 					<td class="alignleft">
 						<a href="display_contact.php?content_id={$listcontacts[content].content_id}" title="ci_{$listcontacts[content].content_id}">
 							{$listcontacts[content].title}
@@ -38,7 +39,7 @@
 							{$listcontacts[content].town},&nbsp;{/if}
 						{$listcontacts[content].postcode}</td>
 				</tr>
-				<tr class="second">
+				<tr class="second {$rowclass}">
 					<td>{$item.display_link|default:'Not Set'}</td>
 					<td>{assign var=content_type_guid value=$item.content_type_guid|default:'bitpage'}{$gLibertySystem->getContentTypeName($content_type_guid|default:'bitpage')}</td>
 					<td>

@@ -24,7 +24,7 @@ $gBitSystem->verifyPermission( 'p_contact_update' );
 include_once CONTACT_PKG_INCLUDE_PATH . 'lookup_contact_inc.php';
 
 if (!$gContent->mContentId) {
-	header( "location: " . CONTACT_PKG_URL . "list.php" );
+	header( "location: " . CONTACT_PKG_URL . "list_contacts.php" );
 	die;
 }
 

@@ -1,37 +1,29 @@
 <?php
 /**
- * @version $Header: /cvsroot/bitweaver/_bit_contact/list_contacts.php,v 1.4 2010/02/08 21:27:22 wjames5 Exp $
- *
- * Copyright (c) 2006 bitweaver.org
- * All Rights Reserved. See below for details and a complete list of authors.
- * Licensed under the GNU LESSER GENERAL PUBLIC LICENSE. See http://www.gnu.org/copyleft/lesser.html for details
- *
  * @package contact
  * @subpackage functions
  */
 
-/**
- * required setup
- */
 require_once '../kernel/includes/setup_inc.php';
+
 use Bitweaver\Contact\Contact;
+use Bitweaver\KernelTools;
 
-$gBitSystem->isPackageActive('contact', TRUE);
+$gBitSystem->verifyPackage( 'contact' );
+$gBitSystem->verifyPermission( 'p_contact_view' );
 
-// Now check permissions to access this page
-$gBitSystem->verifyPermission('p_read_contact');
+$gContent = new Contact();
+$gContent->invokeServices( 'content_list_function', $_REQUEST );
 
-$contacts = new Contact();
+$listHash = $_REQUEST;
+$listcontacts = $gContent->getList( $listHash );
 
-if ( empty( $_REQUEST["sort_mode"] ) ) {
-	$sort_mode = 'organisation_asc';
+if( $listHash['listInfo']['count'] == 1 ) {
+	KernelTools::bit_redirect( CONTACT_PKG_URL."display_contact.php?content_id=".$listcontacts[0]['content_id'] );
 }
 
-// Get a list of Contacts
-$contacts->getList( $_REQUEST );
+$gBitSmarty->assign( 'listcontacts', $listcontacts );
+$gBitSmarty->assign( 'listInfo', $listHash['listInfo'] );
 
-$smarty->assign('listInfo', $_REQUEST['listInfo']);
-$smarty->assign('list', $contacts);
-
-// Display the template
-$gBitSystem->display( 'bitpackage:contact/list_contacts.tpl', NULL, [ 'display_mode' => 'list' ]);
+$gBitSystem->setBrowserTitle( "View Contacts List" );
+$gBitSystem->display( 'bitpackage:contact/list.tpl', NULL, [ 'display_mode' => 'list' ] );

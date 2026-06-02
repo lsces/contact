@@ -33,7 +33,7 @@ $gBitSmarty->assign( 'galleryId', $gGallery->mGalleryId );
 $gBitSmarty->assign( 'galLayout', 'fixed_grid' );
 
 if (!$gContent->isValid()) {
-	header( "location: " . CONTACT_PKG_URL . "list.php" );
+	header( "location: " . CONTACT_PKG_URL . "list_contacts.php" );
 	die;
 }
 

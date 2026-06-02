@@ -57,7 +57,7 @@
 
 					<td>
 						<h3>
-							<a href="{$smarty.const.CONTACT_PKG_URL}list.php?source={$xref_types[type].source}">{$xref_types[type].cross_ref_title}</a>
+							<a href="{$smarty.const.CONTACT_PKG_URL}list_contacts.php?source={$xref_types[type].source}">{$xref_types[type].cross_ref_title}</a>
 							&nbsp; <small>[ {$xref_types[type].num_entries} ]</small>
 						</h3>
 
