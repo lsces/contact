@@ -24,7 +24,7 @@ $tables = [
   zone_id I4,
   country C(80),
   country_id I4,
-  last_update_date T DEFAULT LOCALTIMESTAMP,
+  last_update_date T DEFTIMESTAMP,
   cltype I2
 ",
 
