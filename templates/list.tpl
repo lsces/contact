@@ -15,7 +15,7 @@
 			<caption>{tr}Available Content{/tr} <span class="total">[ {$listInfo.total_records} ]</span></caption>
 			<tr>
 				<th>{smartlink ititle="Title" isort="title" idefault=1 iorder=desc ihash=$listInfo.ihash|default:''}</th>
-				<th>{smartlink ititle="Address" isort="street" ihash=$listInfo.ihash|default:''}</th>
+				<th>{tr}Address{/tr}</th>
 			</tr>
 			{section name=content loop=$listcontacts}
 				{if $smarty.section.content.rownum % 2 != 0}{assign var=rowclass value="odd"}{else}{assign var=rowclass value="even"}{/if}
