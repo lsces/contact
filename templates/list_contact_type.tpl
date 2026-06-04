@@ -18,7 +18,7 @@
 								{$gContent->mInfo.xref0[xref].last_update_date|bit_short_date}
 							</td>
 							<td>
-								{smartlink ititle="Add additional contact types" ifile="add_xref.php" booticon="icon-page-add" content_id=$gContent->mInfo.content_id}
+								{smartlink ititle="Add additional contact types" ifile="add_xref.php" biticon="list-add" content_id=$gContent->mInfo.content_id}
 							</td>
 						</tr>
 					{/section}

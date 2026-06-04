@@ -14,7 +14,7 @@
 		<table class="table data clear">
 			<caption>{tr}Available Content{/tr} <span class="total">[ {$listInfo.total_records} ]</span></caption>
 			<tr>
-				<th class="width2p">{booticon ipackage="icons" iname="icon-link" iexplain="sort by"}</th>
+				<th class="width2p">{biticon ipackage="icons" iname="emblem-symbolic-link" iexplain="sort by"}</th>
 				<th>{smartlink ititle="Contract" isort="xkey" ihash=$listInfo.ihash}</th>
 	{*			{if $gBitUser->hasPermission( 'p_liberty_view_all_status' )}
 					<th>{smartlink ititle="Forename" isort="forename" ihash=$listInfo.ihash}</th>

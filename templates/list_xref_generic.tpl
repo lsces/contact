@@ -41,7 +41,7 @@
 		{if $gBitUser->hasPermission('p_contact_update')}
 			<div>
 				{if $source ne 'history' }
-					{smartlink ititle="Add additional detail record" ifile="add_xref.php" booticon="icon-note-add" content_id=$gContent->mInfo.content_id group=$group}
+					{smartlink ititle="Add additional detail record" ifile="add_xref.php" biticon="list-add" content_id=$gContent->mInfo.content_id group=$group}
 				{/if}	
 			</div>
 		{/if}

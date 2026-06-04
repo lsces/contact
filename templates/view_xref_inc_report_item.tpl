@@ -8,7 +8,7 @@
 <td>
 	{if isset($gContent->mInfo.$source[xref].xref) && $gContent->mInfo.$source[xref].xref <> '' && $gContent->mInfo.$source[xref].xref > 100 }
 		{$gContent->mInfo.$source[xref].xref|escape}
-		{smartlink ititle="Link to" ifile="view_form.php" booticon="icon-note-edit" content_id=$gContent->mInfo.$source[xref].xref}
+		{smartlink ititle="Link to" ifile="view_form.php" biticon="document-properties" content_id=$gContent->mInfo.$source[xref].xref}
 	{else}
 		------
 	{/if}
@@ -28,13 +28,13 @@
 <td>
 	<span class="actionicon">
 		{if $gBitUser->hasPermission( 'p_contact_view_detail' )}
-			{smartlink ititle="View" ifile="view_form.php" booticon="icon-view" content_id=$gContent->mInfo.content_id xref_id=$gContent->mInfo.$source[xref].xref_id}
+			{smartlink ititle="View" ifile="view_form.php" biticon="view-fullscreen" content_id=$gContent->mInfo.content_id xref_id=$gContent->mInfo.$source[xref].xref_id}
 		{/if}
 		{if $xrefAllowEdit && $gBitUser->hasPermission( 'p_contact_expunge' ) }
 			{if $source eq 'history' }
-				{smartlink ititle="Restore" ifile="edit_xref.php" booticon="icon-note-edit" content_id=$gContent->mInfo.content_id xref_id=$gContent->mInfo.$source[xref].xref_id expunge=-1}
+				{smartlink ititle="Restore" ifile="edit_xref.php" biticon="document-properties" content_id=$gContent->mInfo.content_id xref_id=$gContent->mInfo.$source[xref].xref_id expunge=-1}
 			{else}
-				{smartlink ititle="Delete" ifile="edit_xref.php" booticon="icon-note-delete" content_id=$gContent->mInfo.content_id xref_id=$gContent->mInfo.$source[xref].xref_id expunge=1}
+				{smartlink ititle="Delete" ifile="edit_xref.php" biticon="edit-delete" content_id=$gContent->mInfo.content_id xref_id=$gContent->mInfo.$source[xref].xref_id expunge=1}
 			{/if}
 		{/if}
 	</span>

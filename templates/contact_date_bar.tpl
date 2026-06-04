@@ -1,16 +1,16 @@
 <div class="floaticon">
   {if $lock}
-    {booticon iname="icon-lock" ipackage="icons" iexplain="Locked"}{$info.editor|userlink}
+    {biticon ipackage="icons" iname="lock" ipackage="icons" iexplain="Locked"}{$info.editor|userlink}
   {/if}
   {if $print_page ne 'y'}
     {if !$lock}
       {if $gBitUser->hasPermission('p_edit_contact')}
-		{smartlink ititle="Edit Contact" ifile="edit.php" booticon="icon-user-edit" content_id=$gContent->mInfo.content_id}
+		{smartlink ititle="Edit Contact" ifile="edit.php" biticon="document-properties" content_id=$gContent->mInfo.content_id}
       {/if}
     {/if}
-    <a title="{tr}print{/tr}" href="print.php?content_id={$gContent->mInfo.content_id}">{booticon ipackage="icons" iname="icon-print" iexplain="print"}</a>
+    <a title="{tr}print{/tr}" href="print.php?content_id={$gContent->mInfo.content_id}">{biticon ipackage="icons" iname="document-print" iexplain="print"}</a>
       {if $gBitUser->hasPermission('p_remove_contact')}
-        <a title="{tr}remove this contact{/tr}" href="remove_contact.php?content_id={$gContent->mInfo.content_id}">{booticon ipackage="icons" iname="icon-user-delete" iexplain="delete"}</a>
+        <a title="{tr}remove this contact{/tr}" href="remove_contact.php?content_id={$gContent->mInfo.content_id}">{biticon ipackage="icons" iname="edit-delete" iexplain="delete"}</a>
       {/if}
   {/if} {* end print_page *}
 </div> {*end .floaticon *}

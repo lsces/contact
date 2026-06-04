@@ -27,16 +27,16 @@
 <td>
 	<span class="actionicon">
 		{if $gBitUser->hasPermission( 'p_contact_view_detail' )}
-			{smartlink ititle="View" ifile="view_xref.php" booticon="icon-view" content_id=$gContent->mInfo.content_id xref_id=$gContent->mInfo.$source[xref].xref_id}
+			{smartlink ititle="View" ifile="view_xref.php" biticon="view-fullscreen" content_id=$gContent->mInfo.content_id xref_id=$gContent->mInfo.$source[xref].xref_id}
 		{/if}
 		{if $gBitUser->hasPermission( 'p_contact_update' ) && $source ne 'history' }
-			{smartlink ititle="Edit" ifile="edit_xref.php" booticon="icon-note-edit" content_id=$gContent->mInfo.content_id xref_id=$gContent->mInfo.$source[xref].xref_id}
+			{smartlink ititle="Edit" ifile="edit_xref.php" biticon="document-properties" content_id=$gContent->mInfo.content_id xref_id=$gContent->mInfo.$source[xref].xref_id}
 		{/if}
 		{if $gBitUser->hasPermission( 'p_contact_expunge' ) && $gContent->mInfo.$source[xref].item ne 'KEY_B' }
 			{if $source eq 'history' }
-				{smartlink ititle="Restore" ifile="edit_xref.php" booticon="icon-note-edit" content_id=$gContent->mInfo.content_id xref_id=$gContent->mInfo.$source[xref].xref_id expunge=-1}
+				{smartlink ititle="Restore" ifile="edit_xref.php" biticon="document-properties" content_id=$gContent->mInfo.content_id xref_id=$gContent->mInfo.$source[xref].xref_id expunge=-1}
 			{else}
-				{smartlink ititle="Delete" ifile="edit_xref.php" booticon="icon-note-delete" content_id=$gContent->mInfo.content_id xref_id=$gContent->mInfo.$source[xref].xref_id expunge=1}
+				{smartlink ititle="Delete" ifile="edit_xref.php" biticon="edit-delete" content_id=$gContent->mInfo.content_id xref_id=$gContent->mInfo.$source[xref].xref_id expunge=1}
 			{/if}
 		{/if}
 	</span>
