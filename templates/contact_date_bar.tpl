@@ -5,7 +5,7 @@
   {if $print_page ne 'y'}
     {if !$lock}
       {if $gBitUser->hasPermission('p_edit_contact')}
-		{smartlink ititle="Edit Contact" ifile="edit.php" biticon="document-properties" content_id=$gContent->mInfo.content_id}
+		{smartlink ititle="Edit Contact" ifile="edit.php" biticon="edit" content_id=$gContent->mInfo.content_id}
       {/if}
     {/if}
     <a title="{tr}print{/tr}" href="print.php?content_id={$gContent->mInfo.content_id}">{biticon ipackage="icons" iname="document-print" iexplain="print"}</a>

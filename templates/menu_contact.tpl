@@ -3,8 +3,8 @@
 <ul class="{$packageMenuClass}">
 	<li><a class="item" href="{$smarty.const.CONTACT_PKG_URL}list_contacts.php">{biticon ipackage="icons" iname="preferences-system-network-proxy" iexplain="List contacts" ilocation=menu}</a></li>
 	{if $gBitUser->isAdmin() || $gBitUser->hasPermission( 'p_contact_edit' ) }
-		<li><a class="item" href="{$smarty.const.CONTACT_PKG_URL}add_person.php">{biticon ipackage="icons" iname="document-properties" iexplain="Add Person" ilocation=menu}</a></li>
-		<li><a class="item" href="{$smarty.const.CONTACT_PKG_URL}add_business.php">{biticon ipackage="icons" iname="document-properties" iexplain="Add Business" ilocation=menu}</a></li>
+		<li><a class="item" href="{$smarty.const.CONTACT_PKG_URL}add_person.php">{biticon ipackage="icons" iname="edit" iexplain="Add Person" ilocation=menu}</a></li>
+		<li><a class="item" href="{$smarty.const.CONTACT_PKG_URL}add_business.php">{biticon ipackage="icons" iname="edit" iexplain="Add Business" ilocation=menu}</a></li>
 	{/if}
 	{if !empty($gContent->mContentId) && $gBitUser->hasPermission( 'p_liberty_post_comments' ) }
 		<li><a class="item" href="{$smarty.const.CONTACT_PKG_URL}display_contact.php?content_id={$gContent->mContentId}#addcomment">{biticon ipackage="icons" iname="dialog-error" iexplain="Log a call" ilocation=menu}</a></li>

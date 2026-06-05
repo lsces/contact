@@ -80,7 +80,7 @@
 					</td>
 
 					<td class="">
-						{smartlink ititle='edit' biticon="document-properties" ifile='edit_xref_type.php' source=$xref_types[type].source}
+						{smartlink ititle='edit' biticon="edit" ifile='edit_xref_type.php' source=$xref_types[type].source}
 						{* smartlink ititle='permissions' biticon="lock" ipackage='kernel' ifile='object_permissions.php' objectName="Topic `$xref_types[type].name`" object_type=topic permType=topics object_id=$xref_types[type].topic_id *}
 						<a href="{$smarty.const.CONTACT_PKG_URL}admin/admin_topics.php?fRemoveSource=1&amp;source={$xref_types[type].topic_id}">{biticon ipackage="icons" iname="user-trash" ipackage="icons" iforce=icon_text iexplain="Remove Source"}</a>
 					</td>

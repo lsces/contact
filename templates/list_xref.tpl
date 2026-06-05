@@ -30,7 +30,7 @@
 							<td>
 								{if isset($gContent->mInfo.xref[xref].usn) && ($gContent->mInfo.xref[xref].usn <> '') }
 									{$gContent->mInfo.xref[xref].usn|escape}
-									{smartlink ititle="Link to" ifile="../property/display_property.php" biticon="document-properties" property_id=$gContent->mInfo.xref[xref].usn}
+									{smartlink ititle="Link to" ifile="../property/display_property.php" biticon="edit" property_id=$gContent->mInfo.xref[xref].usn}
 								{/if}
 							</td>
 							{if $gBitSystem->isFeatureActive( 'contact_list_last_modified' )}
@@ -43,7 +43,7 @@
 									{smartlink ititle="View" ifile="view_xref.php" biticon="go-next" source=$gContent->mInfo.xref[xref].source xref=$gContent->mInfo.xref[xref].cross_reference}
 								</span>
 								<span class="actionicon">
-									{smartlink ititle="Edit" ifile="edit_xref.php" biticon="document-properties" source=$gContent->mInfo.xref[xref].source xref=$gContent->mInfo.xref[xref].cross_reference}								</span>
+									{smartlink ititle="Edit" ifile="edit_xref.php" biticon="edit" source=$gContent->mInfo.xref[xref].source xref=$gContent->mInfo.xref[xref].cross_reference}								</span>
 								</span>
 								<label for="ev_{$gContent->mInfo.xref[xref].cross_reference}">	
 									{$gContent->mInfo.xref[xref].cross_reference}
