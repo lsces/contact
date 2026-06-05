@@ -32,7 +32,7 @@
 <tr>
 {*  at the moment, the only working option to use the checkboxes for is deleting pages. so for now the checkboxes are visible iff $bit_p_remove is set. Other applications make sense as well (categorize, convert to pdf, etc). Add necessary corresponding permission here: *}
 
-{if $gBitUser->hasPermission('p_remove_contact')}              {* ... "or $bit_p_other_sufficient_condition_for_checkboxes eq 'y'"  *}
+{if $gBitUser->hasPermission('p_contact_expunge')}              {* ... "or $bit_p_other_sufficient_condition_for_checkboxes eq 'y'"  *}
   {assign var='checkboxes_on' value='y'}
 {else}
   {assign var='checkboxes_on' value='n'}
@@ -98,7 +98,7 @@
 {if $checkboxes_on eq 'y'} {* what happens to the checked items *}
   <select name="submit_mult" onchange="this.form.submit();">
     <option value="" selected="selected">{tr}with checked{/tr}:</option>
-    {if $gBitUser->hasPermission('p_remove_contact')}
+    {if $gBitUser->hasPermission('p_contact_expunge')}
       <option value="remove_contact">{tr}remove{/tr}</option>
     {/if}
     {* add here e.g. <option value="categorize">{tr}categorize{/tr}</option> *}
