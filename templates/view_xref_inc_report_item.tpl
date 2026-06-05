@@ -34,7 +34,7 @@
 			{if $source eq 'history' }
 				{smartlink ititle="Restore" ifile="edit_xref.php" biticon="document-properties" content_id=$gContent->mInfo.content_id xref_id=$gContent->mInfo.$source[xref].xref_id expunge=-1}
 			{else}
-				{smartlink ititle="Delete" ifile="edit_xref.php" biticon="edit-delete" content_id=$gContent->mInfo.content_id xref_id=$gContent->mInfo.$source[xref].xref_id expunge=1}
+				{smartlink ititle="Delete" ifile="edit_xref.php" biticon="user-trash" content_id=$gContent->mInfo.content_id xref_id=$gContent->mInfo.$source[xref].xref_id expunge=1}
 			{/if}
 		{/if}
 	</span>

@@ -10,7 +10,7 @@
     {/if}
     <a title="{tr}print{/tr}" href="print.php?content_id={$gContent->mInfo.content_id}">{biticon ipackage="icons" iname="document-print" iexplain="print"}</a>
       {if $gBitUser->hasPermission('p_remove_contact')}
-        <a title="{tr}remove this contact{/tr}" href="remove_contact.php?content_id={$gContent->mInfo.content_id}">{biticon ipackage="icons" iname="edit-delete" iexplain="delete"}</a>
+        <a title="{tr}remove this contact{/tr}" href="remove_contact.php?content_id={$gContent->mInfo.content_id}">{biticon ipackage="icons" iname="user-trash" iexplain="delete"}</a>
       {/if}
   {/if} {* end print_page *}
 </div> {*end .floaticon *}

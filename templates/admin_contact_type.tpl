@@ -53,7 +53,7 @@
 						{smartlink ititle='edit' biticon="document-properties" ifile='edit_contact_type.php' xref_type=$contacttype[user].xref_type}
 						{* smartlink ititle='permissions' biticon="lock" ipackage='kernel' ifile='object_permissions.php' objectName="Topic `$topics[user].name`" object_type=topic permType=topics object_id=$topics[user].topic_id *}
 						<br />
-						<a href="{$smarty.const.CONTACT_PKG_URL}admin/admin_contact_type.php?fRemoveType=1&amp;topic_id={$contacttype[user].xref_type}">{biticon ipackage="icons" iname="edit-delete" ipackage="icons" iforce=icon_text iexplain="Remove Contact Type"}</a>
+						<a href="{$smarty.const.CONTACT_PKG_URL}admin/admin_contact_type.php?fRemoveType=1&amp;topic_id={$contacttype[user].xref_type}">{biticon ipackage="icons" iname="user-trash" ipackage="icons" iforce=icon_text iexplain="Remove Contact Type"}</a>
 					</td>
 				</tr>
 			{sectionelse}
