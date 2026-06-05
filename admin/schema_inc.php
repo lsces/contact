@@ -116,11 +116,11 @@ $gBitInstaller->registerSchemaDefault( CONTACT_PKG_NAME, [
 
 // ### Default User Permissions
 $gBitInstaller->registerUserPermissions( CONTACT_PKG_NAME, [
-	[ 'p_contact_view',    'Can browse the Contact List',       'basic',      CONTACT_PKG_NAME ],
-	[ 'p_contact_update',  'Can update the Contact List content','registered', CONTACT_PKG_NAME ],
-	[ 'p_contact_create',  'Can create a new Contact List entry','registered', CONTACT_PKG_NAME ],
+	[ 'p_contact_view',    'Can browse the Contact List',        'registered', CONTACT_PKG_NAME ],
+	[ 'p_contact_create',  'Can create a new Contact List entry','editors',    CONTACT_PKG_NAME ],
+	[ 'p_contact_update',  'Can update the Contact List content','editors',    CONTACT_PKG_NAME ],
+	[ 'p_contact_expunge', 'Can remove a Contact entry',         'admin',      CONTACT_PKG_NAME ],
 	[ 'p_contact_admin',   'Can admin Contact List',             'admin',      CONTACT_PKG_NAME ],
-	[ 'p_contact_expunge', 'Can remove a Contact entry',         'editors',    CONTACT_PKG_NAME ],
 ] );
 
 // ### Default Preferences
