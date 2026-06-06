@@ -1,40 +1,40 @@
 {strip}
 <td>
-	{if $source eq 'history' }
-		{$gContent->mInfo.$source[xref].source_title|escape}
+	{if $isHistory }
+		{$xrefInfo.xref_title|escape}
 	{else}
 		&nbsp;
 	{/if}</td>
 <td>
-	{if isset($gContent->mInfo.$source[xref].xref) && $gContent->mInfo.$source[xref].xref <> '' && $gContent->mInfo.$source[xref].xref > 100 }
-		{$gContent->mInfo.$source[xref].xref|escape}
-		{smartlink ititle="Link to" ifile="view_form.php" biticon="edit" content_id=$gContent->mInfo.$source[xref].xref}
+	{if isset($xrefInfo.xref) && $xrefInfo.xref <> '' && $xrefInfo.xref > 100 }
+		{$xrefInfo.xref|escape}
+		{smartlink ititle="Link to" ifile="view_form.php" biticon="edit" content_id=$xrefInfo.xref}
 	{else}
 		------
 	{/if}
 </td>
 <td>
-	{$gContent->mInfo.$source[xref].xkey|escape} {$gContent->mInfo.$source[xref].xkey_ext|escape}
+	{$xrefInfo.xkey|escape} {$xrefInfo.xkey_ext|escape}
 </td>
 <td>
-	{$gContent->mInfo.$source[xref].data|escape}
+	{$xrefInfo.data|escape}
 </td>
 <td>
-	{$gContent->mInfo.$source[xref].start_date|bit_short_datetime}
+	{$xrefInfo.start_date|bit_short_datetime}
 </td>
 <td>
-	Completed: {$gContent->mInfo.$source[xref].last_update_date|bit_short_datetime}
+	Completed: {$xrefInfo.last_update_date|bit_short_datetime}
 </td>
 <td>
 	<span class="actionicon">
 		{if $gBitUser->hasPermission( 'p_contact_view_detail' )}
-			{smartlink ititle="View" ifile="view_form.php" biticon="view-fullscreen" content_id=$gContent->mInfo.content_id xref_id=$gContent->mInfo.$source[xref].xref_id}
+			{smartlink ititle="View" ifile="view_form.php" biticon="view-fullscreen" content_id=$gContent->mInfo.content_id xref_id=$xrefInfo.xref_id}
 		{/if}
 		{if $xrefAllowEdit && $gBitUser->hasPermission( 'p_contact_expunge' ) }
-			{if $source eq 'history' }
-				{smartlink ititle="Restore" ifile="edit_xref.php" biticon="edit" content_id=$gContent->mInfo.content_id xref_id=$gContent->mInfo.$source[xref].xref_id expunge=-1}
+			{if $isHistory }
+				{smartlink ititle="Restore" ifile="edit_xref.php" biticon="edit" content_id=$gContent->mInfo.content_id xref_id=$xrefInfo.xref_id expunge=-1}
 			{else}
-				{smartlink ititle="Delete" ifile="edit_xref.php" biticon="user-trash" content_id=$gContent->mInfo.content_id xref_id=$gContent->mInfo.$source[xref].xref_id expunge=1}
+				{smartlink ititle="Delete" ifile="edit_xref.php" biticon="user-trash" content_id=$gContent->mInfo.content_id xref_id=$xrefInfo.xref_id expunge=1}
 			{/if}
 		{/if}
 	</span>

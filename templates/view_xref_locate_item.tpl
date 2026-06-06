@@ -1,22 +1,22 @@
 {strip}
 <td>
-	{$gContent->mInfo.$source[xref].source_title|escape}
+	{$xrefInfo.xref_title|escape}
 </td>
 <td>
 	&nbsp;
 </td>
 <td>
-	{$gContent->mInfo.$source[xref].xkey|escape} {$gContent->mInfo.$source[xref].xkey_ext|escape}
+	{$xrefInfo.xkey|escape} {$xrefInfo.xkey_ext|escape}
 </td>
 <td>
-	{$gContent->mInfo.$source[xref].data|escape}
+	{$xrefInfo.data|escape}
 </td>
 {if $xrefAllowEdit}
 <td>
-{if $source ne 'history' }
-	{$gContent->mInfo.$source[xref].start_date|bit_short_date}
+{if !$isHistory }
+	{$xrefInfo.start_date|bit_short_date}
 {else}
-	{$gContent->mInfo.$source[xref].end_date|bit_short_date}
+	{$xrefInfo.end_date|bit_short_date}
 {/if}
 </td>
 {if $gBitSystem->isFeatureActive( 'contact_list_last_modified' )}
@@ -26,14 +26,14 @@
 {/if}
 <td>
 	<span class="actionicon">
-		{if $gBitUser->hasPermission( 'p_contact_update' ) && $source ne 'history' }
-			{smartlink ititle="Edit" ifile="edit_xref.php" biticon="edit" content_id=$gContent->mInfo.content_id xref_id=$gContent->mInfo.$source[xref].xref_id}
+		{if $gBitUser->hasPermission( 'p_contact_update' ) && !$isHistory }
+			{smartlink ititle="Edit" ifile="edit_xref.php" biticon="edit" content_id=$gContent->mInfo.content_id xref_id=$xrefInfo.xref_id}
 		{/if}
 		{if $gBitUser->hasPermission( 'p_contact_expunge' ) }
-			{if $source eq 'history' }
-				{smartlink ititle="Restore" ifile="edit_xref.php" biticon="edit" content_id=$gContent->mInfo.content_id xref_id=$gContent->mInfo.$source[xref].xref_id expunge=-1}
+			{if $isHistory }
+				{smartlink ititle="Restore" ifile="edit_xref.php" biticon="edit" content_id=$gContent->mInfo.content_id xref_id=$xrefInfo.xref_id expunge=-1}
 			{else}
-				{smartlink ititle="Delete" ifile="edit_xref.php" biticon="user-trash" content_id=$gContent->mInfo.content_id xref_id=$gContent->mInfo.$source[xref].xref_id expunge=1}
+				{smartlink ititle="Delete" ifile="edit_xref.php" biticon="user-trash" content_id=$gContent->mInfo.content_id xref_id=$xrefInfo.xref_id expunge=1}
 			{/if}
 		{/if}
 	</span>

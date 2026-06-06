@@ -1,27 +1,27 @@
 {strip}
 <td>
-	{$gContent->mInfo.$source[xref].source_title|escape}
+	{$xrefInfo.xref_title|escape}
 </td>
 <td>
-	{if isset($gContent->mInfo.$source[xref].xref) && $gContent->mInfo.$source[xref].xref <> '' && $gContent->mInfo.$source[xref].xref > 100 }
-		{$gContent->mInfo.$source[xref].xref|escape}
-		{smartlink ititle="Link to" ifile="display_contact.php" biticon="edit" content_id=$gContent->mInfo.$source[xref].xref}
+	{if isset($xrefInfo.xref) && $xrefInfo.xref <> '' && $xrefInfo.xref > 100 }
+		{$xrefInfo.xref|escape}
+		{smartlink ititle="Link to" ifile="display_contact.php" biticon="edit" content_id=$xrefInfo.xref}
 	{else}
 		&nbsp;
 	{/if}
 </td>
 <td>
-	{$gContent->mInfo.$source[xref].xkey|escape} {$gContent->mInfo.$source[xref].xkey_ext|escape}
+	{$xrefInfo.xkey|escape} {$xrefInfo.xkey_ext|escape}
 </td>
 <td>
-	{$gContent->mInfo.$source[xref].data|escape}
+	{$xrefInfo.data|escape}
 </td>
 {if $xrefAllowEdit}
 <td>
-{if $source ne 'history' }
-	{$gContent->mInfo.$source[xref].start_date|bit_short_date}
+{if !$isHistory }
+	{$xrefInfo.start_date|bit_short_date}
 {else}
-	{$gContent->mInfo.$source[xref].end_date|bit_short_date}
+	{$xrefInfo.end_date|bit_short_date}
 {/if}
 </td>
 {if $gBitSystem->isFeatureActive( 'contact_list_last_modified' )}
@@ -31,19 +31,19 @@
 {/if}
 <td>
 	<span class="actionicon">
-		{if $gBitUser->hasPermission( 'p_contact_update' ) && $source ne 'history' }
-			{if $gContent->mInfo.$source[xref].item eq 'KEY_B' }
-				{smartlink ititle="Callout" ifile="edit_key_break.php" biticon="edit-redo" expunge=0 content_id=$gContent->mInfo.content_id xref_id=$gContent->mInfo.$source[xref].xref_id}
-				{smartlink ititle="Reseal" ifile="edit_key_break.php" biticon="edit-undo" expunge=2 content_id=$gContent->mInfo.content_id xref_id=$gContent->mInfo.$source[xref].xref_id}
+		{if $gBitUser->hasPermission( 'p_contact_update' ) && !$isHistory }
+			{if $xrefInfo.item eq 'KEY_B' }
+				{smartlink ititle="Callout" ifile="edit_key_break.php" biticon="edit-redo" expunge=0 content_id=$gContent->mInfo.content_id xref_id=$xrefInfo.xref_id}
+				{smartlink ititle="Reseal" ifile="edit_key_break.php" biticon="edit-undo" expunge=2 content_id=$gContent->mInfo.content_id xref_id=$xrefInfo.xref_id}
 			{else}
-				{smartlink ititle="Edit" ifile="edit_xref.php" biticon="edit" content_id=$gContent->mInfo.content_id xref_id=$gContent->mInfo.$source[xref].xref_id}
+				{smartlink ititle="Edit" ifile="edit_xref.php" biticon="edit" content_id=$gContent->mInfo.content_id xref_id=$xrefInfo.xref_id}
 			{/if}
 		{/if}
-		{if $gBitUser->hasPermission( 'p_contact_expunge' ) && $gContent->mInfo.$source[xref].item ne 'KEY_B' }
-			{if $source eq 'history' }
-				{smartlink ititle="Restore" ifile="edit_xref.php" biticon="edit" content_id=$gContent->mInfo.content_id xref_id=$gContent->mInfo.$source[xref].xref_id expunge=-1}
+		{if $gBitUser->hasPermission( 'p_contact_expunge' ) && $xrefInfo.item ne 'KEY_B' }
+			{if $isHistory }
+				{smartlink ititle="Restore" ifile="edit_xref.php" biticon="edit" content_id=$gContent->mInfo.content_id xref_id=$xrefInfo.xref_id expunge=-1}
 			{else}
-				{smartlink ititle="Delete" ifile="edit_xref.php" biticon="user-trash" content_id=$gContent->mInfo.content_id xref_id=$gContent->mInfo.$source[xref].xref_id expunge=1}
+				{smartlink ititle="Delete" ifile="edit_xref.php" biticon="user-trash" content_id=$gContent->mInfo.content_id xref_id=$xrefInfo.xref_id expunge=1}
 			{/if}
 		{/if}
 	</span>
