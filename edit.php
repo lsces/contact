@@ -70,7 +70,8 @@ if( empty( $formInfo ) ) {
 }
 
 $isPerson = !empty( $gContent->mInfo['contact_types'][0]['content_id'] );
-$gContent->mInfo['contact_xref_groups'] = $gContent->getXrefGroupList();
+$gContent->loadXrefInfo();
+$gBitSmarty->assign( 'gXrefInfo', $gContent->mXrefInfo );
 $gBitSmarty->assign( 'isPerson', $isPerson );
 
 $allTypes = $gContent->getXrefSourceList();

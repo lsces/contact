@@ -99,16 +99,14 @@
 
 					{/legend}
 
-					{if $gContent->mInfo.contact_xref_groups && $gContent->isValid()}
+					{if $gXrefInfo->mGroups && $gContent->isValid()}
 						{jstabs}
-							{section name=xrefGroup loop=$gContent->mInfo.contact_xref_groups}
-								{include file=$gContent->getXrefListTemplate($gContent->mInfo.contact_xref_groups[xrefGroup].template)
-									source=$gContent->mInfo.contact_xref_groups[xrefGroup].source
-									source_title=$gContent->mInfo.contact_xref_groups[xrefGroup].title
-									group=$gContent->mInfo.contact_xref_groups[xrefGroup].sort_order
+							{foreach $gXrefInfo->mGroups as $xrefGroup}
+								{include file=$gContent->getXrefListTemplate($xrefGroup->mTemplate)
+									xrefGroup=$xrefGroup
 									allow_add=true
 									allow_edit=true}
-							{/section}
+							{/foreach}
 						{/jstabs}
 					{/if}
 
