@@ -1,6 +1,6 @@
 <?php
 /**
- * Load contacts from contact/data/Contacts.csv.
+ * Load contacts from storage/contact/Contacts.csv.
  * Matches on title; updates existing, creates new.
  * Append ?clear=y to delete and re-import all rows.
  *
@@ -22,7 +22,7 @@ if( !$gBitUser->hasPermission( 'p_contact_admin' ) ) {
 
 require_once __DIR__ . '/ImportContactCSV.php';
 
-$csvFile = dirname( __DIR__ ) . '/data/Contacts.csv';
+$csvFile = CONTACT_IMPORT_PATH . 'Contacts.csv';
 $doClear = ( ( $_REQUEST['clear'] ?? '' ) === 'y' );
 $loaded  = 0;
 $updated = 0;

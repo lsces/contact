@@ -17,6 +17,7 @@ define( 'CONTACT_PKG_PATH', BIT_ROOT_PATH . basename( $pRegisterHash['package_pa
 define( 'CONTACT_PKG_INCLUDE_PATH', BIT_ROOT_PATH . basename( $pRegisterHash['package_path'] ) . '/includes/');
 define( 'CONTACT_PKG_CLASS_PATH',   BIT_ROOT_PATH . basename( $pRegisterHash['package_path'] ) . '/includes/classes/');
 define( 'CONTACT_PKG_ADMIN_PATH', BIT_ROOT_PATH . basename( $pRegisterHash['package_path'] ) . '/admin/');
+define( 'CONTACT_IMPORT_PATH', STORAGE_PKG_PATH . 'contact/' );
 $gBitSystem->registerPackage( $pRegisterHash );
 
 if( $gBitSystem->isPackageActive( 'contact' ) ) {
