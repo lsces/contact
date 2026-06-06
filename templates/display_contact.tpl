@@ -57,8 +57,12 @@
 			{include file="bitpackage:contact/display_address.tpl" header=$gContent->mInfo.address[address].source_title address=$gContent->mInfo.address[address] locate=1}
 		{/section}
 
+		{if $gXrefInfo->mGroups}
 		{jstabs}
-			{section name=type loop=$gContent->mInfo.type}
-				{include file="bitpackage:liberty/list_xref.tpl" source=$gContent->mInfo.type[type].source source_title=$gContent->mInfo.type[type].title group=$gContent->mInfo.type[type].sort_order allow_edit=false}
-			{/section}
+			{foreach $gXrefInfo->mGroups as $xrefGroup}
+				{include file=$gContent->getXrefListTemplate($xrefGroup->mTemplate)
+					xrefGroup=$xrefGroup
+					allow_edit=false}
+			{/foreach}
 		{/jstabs}
+		{/if}

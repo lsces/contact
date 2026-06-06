@@ -5,9 +5,9 @@
 	<table class="table">
 		<thead>
 			<tr>
-				<th style="width:30%">{tr}Type{/tr}</th>
-				<th style="width:30%">{tr}Value{/tr}</th>
-				<th style="width:40%">{tr}Note{/tr}</th>
+				<th>{tr}Type{/tr}</th>
+				<th>{tr}Value{/tr}</th>
+				<th>{tr}Note{/tr}</th>
 				{if $xrefAllowEdit}<th>{tr}Added{/tr}</th><th>{tr}Edit{/tr}</th>{/if}
 			</tr>
 		</thead>
