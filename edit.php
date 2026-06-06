@@ -49,7 +49,11 @@ if (isset( $_REQUEST["preview"] )) {
 }
 
 // Pro
-if (isset($_REQUEST["fCancel"])) {
+if( !empty( $_REQUEST['expunge'] ) && $gContent->isValid() ) {
+	$gBitSystem->verifyPermission( 'p_contact_expunge' );
+	$gContent->expunge();
+	KernelTools::bit_redirect( CONTACT_PKG_URL . 'list_contacts.php' );
+} elseif (isset($_REQUEST["fCancel"])) {
 	if( !empty( $gContent->mContentId ) ) {
 		KernelTools::bit_redirect( $gContent->getDisplayUrl() );
 	} else {
