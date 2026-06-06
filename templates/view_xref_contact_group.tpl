@@ -2,7 +2,7 @@
 {jstab title="`$xrefGroup->mTitle` ({$xrefGroup->mXrefs|@count})"}
 {legend legend=$xrefGroup->mTitle}
 <div class="form-group table-responsive">
-	<table>
+	<table class="table">
 		<thead>
 			<tr>
 				<th style="width:30%">{tr}Type{/tr}</th>
