@@ -10,7 +10,7 @@
 </td>
 {if $xrefAllowEdit}
 <td>
-{if $source ne 'history' }
+{if !$isHistory }
 	{$xrefInfo.start_date|bit_short_date}
 {else}
 	{$xrefInfo.end_date|bit_short_date}
@@ -26,11 +26,11 @@
 		{if $gBitUser->hasPermission( 'p_contact_view_detail' )}
 			{smartlink ititle="View" ifile="view_xref.php" biticon="view-fullscreen" content_id=$gContent->mInfo.content_id xref_id=$xrefInfo.xref_id}
 		{/if}
-		{if $gBitUser->hasPermission( 'p_contact_update' ) && $source ne 'history' }
+		{if $gBitUser->hasPermission( 'p_contact_update' ) && !$isHistory }
 			{smartlink ititle="Edit" ifile="edit_xref.php" biticon="edit" content_id=$gContent->mInfo.content_id xref_id=$xrefInfo.xref_id}
 		{/if}
 		{if $gBitUser->hasPermission( 'p_contact_expunge' ) && $xrefInfo.item ne 'KEY_B' }
-			{if $source eq 'history' }
+			{if $isHistory }
 				{smartlink ititle="Restore" ifile="edit_xref.php" biticon="edit" content_id=$gContent->mInfo.content_id xref_id=$xrefInfo.xref_id expunge=-1}
 			{else}
 				{smartlink ititle="Delete" ifile="edit_xref.php" biticon="user-trash" content_id=$gContent->mInfo.content_id xref_id=$xrefInfo.xref_id expunge=1}
