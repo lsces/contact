@@ -98,9 +98,6 @@
 {if $checkboxes_on eq 'y'} {* what happens to the checked items *}
   <select name="submit_mult" onchange="this.form.submit();">
     <option value="" selected="selected">{tr}with checked{/tr}:</option>
-    {if $gBitUser->hasPermission('p_contact_expunge')}
-      <option value="remove_contact">{tr}remove{/tr}</option>
-    {/if}
     {* add here e.g. <option value="categorize">{tr}categorize{/tr}</option> *}
   </select>
   <script>
