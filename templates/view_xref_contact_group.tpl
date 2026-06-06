@@ -1,4 +1,4 @@
-{assign var=xrefAllowEdit value=$allow_edit|default:true}
+{assign var=xrefAllowEdit value=$allow_edit|default:false}
 {jstab title="`$xrefGroup->mTitle` ({$xrefGroup->mXrefs|@count})"}
 {legend legend=$xrefGroup->mTitle}
 <div class="form-group table-responsive">
