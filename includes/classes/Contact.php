@@ -125,11 +125,7 @@ class Contact extends LibertyContent {
 				}
 
 				$this->loadXrefTypeList();
-				if ( !empty( $this->mInfo['contact_types'][2]['content_id'] ) ) {
-					$this->loadClientList();
-				}
-				$this->loadXrefList();
-				$this->loadAddressList();
+				$this->loadXrefInfo();
 			}
 		}
 		LibertyContent::load();
