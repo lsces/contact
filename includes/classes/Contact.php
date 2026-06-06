@@ -1,16 +1,11 @@
 <?php
 /**
- * @version $Header: /cvsroot/bitweaver/_bit_contact/Contact.php,v 1.13 2010/04/18 02:27:23 wjames5 Exp $
+ * Contact content class — person or business contact stored in liberty_content.
  *
- * Copyright ( c ) 2006 bitweaver.org
- * All Rights Reserved. See below for details and a complete list of authors.
- * Licensed under the GNU LESSER GENERAL PUBLIC LICENSE. See http://www.gnu.org/copyleft/lesser.html for details
+ * Person contacts carry name parts in a $00 xref (xkey_ext = prefix|forename|surname|suffix).
+ * Business contacts store the organisation name directly in lc.title.
  *
  * @package contact
- */
-
-/**
- * required setup
  */
 namespace Bitweaver\Contact;
 
@@ -21,9 +16,6 @@ require_once CONTACT_PKG_PATH.'lib/phpcoord-2.3.php';
 
 define( 'CONTACT_CONTENT_TYPE_GUID', 'contact' );
 
-/**
- * @package contact
- */
 class Contact extends LibertyContent {
 
 	public $mParentId;
@@ -33,11 +25,8 @@ class Contact extends LibertyContent {
 	protected $mXrefTypeKey = 'contact_types';
 
 	/**
-	 * Constructor
-	 *
-	 * Build a Contact object based on LibertyContent
-	 * @param integer Contact Id identifer
-	 * @param integer Base content_id identifier
+	 * @param int|null $pContactId  Unused legacy param — pass null.
+	 * @param int|null $pContentId  liberty_content.content_id to load.
 	 */
 	public function __construct( $pContactId = NULL, $pContentId = NULL ) {
 		parent::__construct();
@@ -68,9 +57,10 @@ class Contact extends LibertyContent {
 	}
 
 	/**
-	 * Load a Contact content Item
+	 * Load contact record, name parts, and xref groups into $this->mInfo.
 	 *
-	 * (Describe Contact object here )
+	 * @param int|null   $pContentId    Override mContentId for this load.
+	 * @param array|null $pPluginParams Passed through to LibertyContent::load().
 	 */
 	public function load( $pContentId = NULL, $pPluginParams = NULL ) {
 		if ( $pContentId ) $this->mContentId = (int)$pContentId;
@@ -133,11 +123,14 @@ class Contact extends LibertyContent {
 	}
 
 	/**
-	* verify, clean up and prepare data to be stored
-	* @param array $pParamHash all information that is being stored. will update $pParamHash by reference with fixed array of itmes
-	* @return bool TRUE on success, FALSE if store could not occur. If FALSE, $this->mErrors will have reason why
-	* @access private
-	**/
+	 * Validate and normalise $pParamHash before storing.
+	 *
+	 * Builds lc.title from surname (person) or organisation (business).
+	 * Pipe-encodes name parts into $pParamHash['name'] for the $00 xref.
+	 *
+	 * @param  array $pParamHash  Data to store; modified in place.
+	 * @return bool  TRUE if valid; FALSE with $this->mErrors set on failure.
+	 */
 	public function verify( &$pParamHash ): bool {
 		// make sure we're all loaded up if everything is valid
 		if( $this->isValid() && empty( $this->mInfo ) ) {
@@ -174,12 +167,15 @@ class Contact extends LibertyContent {
 	}
 
 	/**
-	* Store contact data
-	* @param array $pParamHash contains all data to store the contact
-	* @var $pParamHash[title] title of the new contact
-	* @var $pParamHash[edit] description of the contact
-	* @return bool TRUE on success, FALSE if store could not occur. If FALSE, $this->mErrors will have reason why
-	**/
+	 * Persist contact and its type xrefs inside a transaction.
+	 *
+	 * Calls verify() then LibertyContent::store(). On a new record also
+	 * inserts the contact_address stub row. Writes contact_types xrefs
+	 * (including $00 person-name and $01 organisation) if present in hash.
+	 *
+	 * @param  array $pParamHash  Data to persist; modified in place.
+	 * @return bool  TRUE on success; FALSE with $this->mErrors set on failure.
+	 */
 	public function store( &$pParamHash ): bool {
 		if( $this->verify( $pParamHash ) ) {
 
@@ -234,7 +230,9 @@ class Contact extends LibertyContent {
 	}
 
 	/**
-	 * Delete content object and all related records
+	 * Delete this contact and all its liberty_xref rows inside a transaction.
+	 *
+	 * @return bool TRUE on success; FALSE if the contact is not valid or the delete fails.
 	 */
 	public function expunge(): bool
 	{
@@ -253,20 +251,15 @@ class Contact extends LibertyContent {
 		return $ret;
 	}
 
-	/**
-	 * Check if the current post can have comments attached to it
-	 */
+	/** @return bool Always TRUE — contacts support comments. */
 	public function isCommentable(){
 		global $gBitSystem;
 		return TRUE; // $gBitSystem->isFeatureActive( 'contact_post_comments' );
 	}
 
 	/**
-	 * Returns Request_URI to a Contact content object
-	 *
-	 * @param string name of
-	 * @param array different possibilities depending on derived class
-	 * @return string the link to display the page.
+	 * @param  int|null $pContentId  Defaults to $this->mContentId.
+	 * @return string   URL to display_contact.php for this contact.
 	 */
 	public function getDisplayUrl( $pContentId=NULL ) {
 		global $gBitSystem;
@@ -278,11 +271,10 @@ class Contact extends LibertyContent {
 	}
 
 	/**
-	 * Returns HTML link to display a Contact object
-	 *
-	 * @param string Not used ( generated locally )
-	 * @param array mInfo style array of content information
-	 * @return string the link to display the page.
+	 * @param  string|null $pLinkText  Unused — link text is derived from mInfo.
+	 * @param  array|null  $pMixed     mInfo-style hash; must contain content_id and title.
+	 * @param  string|null $pAnchor    Unused.
+	 * @return string      HTML anchor element.
 	 */
 	public function getDisplayLink( $pLinkText=NULL, $pMixed=NULL, $pAnchor=NULL ) {
 		if ( $this->mContentId != $pMixed['content_id'] ) $this->load($pMixed['content_id']);
@@ -294,10 +286,9 @@ class Contact extends LibertyContent {
 	}
 
 	/**
-	 * Returns title of an Contact object
-	 *
-	 * @param array mInfo style array of content information
-	 * @return string Text for the title description
+	 * @param  array|null $pHash     mInfo-style hash; defaults to $this->mInfo.
+	 * @param  bool       $pDefault  Unused; kept for LibertyContent interface compatibility.
+	 * @return string|null           Prefixed title ("Contact - <name>") or null if empty.
 	 */
 	public function getTitle( $pHash = NULL, $pDefault=TRUE ) {
 		$ret = NULL;
@@ -319,10 +310,14 @@ class Contact extends LibertyContent {
 	}
 
 	/**
-	 * Returns list of contact entries
+	 * Return a paged list of contacts matching filter criteria.
 	 *
-	 * @param integer
-	 * @return array of contact entries
+	 * Recognised keys in $pParamHash: role_id, contact_type_guid, find_xref,
+	 * find_title, find_location, find_postcode, active, sort_mode, max_records, offset.
+	 * Sets $pParamHash['cant'] and $pParamHash['listInfo'] on return.
+	 *
+	 * @param  array $pParamHash  Filter and pagination params; modified in place.
+	 * @return array              Flat array of result row hashes.
 	 */
 	public function getList( &$pParamHash ) {
 		global $gBitSystem, $gBitUser;
@@ -449,18 +444,15 @@ class Contact extends LibertyContent {
 		return $ret;
 	}
 
-	/**
-	 * getXrefList( &$pParamHash );
-	 * Get list of xref records for this contact record
-	 */
+	/** @return array  Map of item code → label from the ContactType setup. */
 	public function getContactTypes() {
 		return $this->mTypes->mContactType;
 	}
 
 	/**
-	 * getClientList( &$pParamHash );
-	 * Get list of client records for this contact record
-	 * This is used to list related contact records such as contacts handled by a call center or alarm maintainer
+	 * Load contacts that reference this one via the '#A' xref item into $this->mInfo['client_list'].
+	 *
+	 * Used for contacts handled by a third party (e.g. alarm maintainer, call centre).
 	 */
 	public function loadClientList() {
 		if( $this->isValid() ) {
@@ -494,8 +486,10 @@ class Contact extends LibertyContent {
 	}
 
 	/**
-	 * getAddressList( &$pParamHash );
-	 * Get list of address records for this contact record
+	 * Load address xref rows (template='address') into $this->mInfo['address'].
+	 *
+	 * Each row is joined to address_postcode and has grid-reference coordinates
+	 * converted to lat/lng when available.
 	 */
 	public function loadAddressList() {
 		if( $this->isValid() && empty( $this->mInfo['xref'] ) ) {

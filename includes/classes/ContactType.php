@@ -1,23 +1,14 @@
 <?php
 /**
- * @version $Header$
- * @package articles
+ * Contact type registry — loads the sort_order=0 xref groups (person/business subtypes)
+ * and exposes them for use in list filters and the contact edit form.
  *
- * @copyright Copyright (c) 2004-2006, bitweaver.org
- * All Rights Reserved. See below for details and a complete list of authors.
- * Licensed under the GNU LESSER GENERAL PUBLIC LICENSE. See http://www.gnu.org/copyleft/lesser.html for details.
- */
-
-/**
- * Required setup
+ * @package contact
  */
 namespace Bitweaver\Contact;
 
 use Bitweaver\BitBase;
 
-/**
- * @package contact
- */
 class ContactType extends BitBase {
 	public $mContactType;
 
@@ -26,8 +17,8 @@ class ContactType extends BitBase {
 	}
 
 	/**
-	 * setup()
-	 * Setup the contact types for use in the content filter.
+	 * Populate $this->mContactType from liberty_xref_item (sort_order=0 groups)
+	 * and assign 'contContactTypes' to Smarty for use in list/filter templates.
 	 */
 	public function setup() {
 		global $gBitUser, $gBitSmarty;
@@ -54,8 +45,11 @@ class ContactType extends BitBase {
 	}
 
 	/**
-	 * processRequestHash(&$pRequest, &$pStore)
-	 * Build contact_type settins hash for the session
+	 * Merge contact_type_guid from the request into the session store,
+	 * persisting the selection as a user preference for registered users.
+	 *
+	 * @param array $pRequest  Raw $_REQUEST data.
+	 * @param array $pStore    Session/list filter hash; modified in place.
 	 */
 	public function processRequestHash(&$pRequest, &$pStore) {
 		global $gBitUser;
@@ -73,6 +67,12 @@ class ContactType extends BitBase {
 		}
 	}
 
+	/**
+	 * Return liberty_xref_group rows for the contact content type.
+	 *
+	 * @param  array|null $pOptionHash  Optional filters: active_role (int), title (string).
+	 * @return array                    Rows with num_types appended.
+	 */
 	public static function getContactTypeList( $pOptionHash=NULL ) {
 		global $gBitSystem;
 

@@ -25,6 +25,17 @@ namespace Bitweaver\Liberty;
 
 use Bitweaver\Contact\Contact;
 
+/**
+ * Delete any existing xref for ($contentId, $item) then re-insert if either $xkey or
+ * $xkeyExt is non-empty.  Values are silently truncated to column limits (xkey C(32),
+ * xkey_ext C(250)).
+ *
+ * @param int    $contentId  liberty_content.content_id.
+ * @param string $item       xref item code (e.g. '#P', 'SCREF').
+ * @param string $xkey       Short key value (≤ 32 chars after truncation).
+ * @param string $xkeyExt    Extended value (≤ 250 chars after truncation).
+ * @param int    $xorder     Row order within multiple-valued items (0 for singletons).
+ */
 function contactCsvUpsertXref( int $contentId, string $item, string $xkey = '', string $xkeyExt = '', int $xorder = 0 ): void {
 	global $gBitDb;
 	$gBitDb->query(
@@ -44,6 +55,17 @@ function contactCsvUpsertXref( int $contentId, string $item, string $xkey = '', 
 	}
 }
 
+/**
+ * Import or update a single contact from a CSV row.
+ *
+ * Looks up the contact by lc.title; creates a new record if not found.
+ * Calls Contact::store() then upserts all xref items (SCREF, #P, #C, #F, #W, #E, ACCNO).
+ * 10-digit all-digit phone/fax values have a leading zero prepended (Excel strips it).
+ *
+ * @param  array $row     0-based column values; see file header for column layout.
+ * @param  int   $rowNum  1-based row number used in error messages.
+ * @return array{loaded:int, updated:int, skipped:int, errors:string[]}
+ */
 function contactCsvImportRow( array $row, int $rowNum ): array {
 	global $gBitDb;
 
