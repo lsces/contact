@@ -515,7 +515,7 @@ class Contact extends LibertyContent {
 					JOIN `".BIT_DB_PREFIX."liberty_xref_item` s ON s.`item` = x.`item` AND s.`content_type_guid` = 'contact'
 					JOIN `".BIT_DB_PREFIX."liberty_xref_group` t ON t.`x_group` = s.`x_group` AND t.`content_type_guid` = 'contact'
 					LEFT JOIN `".BIT_DB_PREFIX."address_postcode` ap ON ap.`postcode` = x.`xkey`
-					LEFT OUTER JOIN `".BIT_DB_PREFIX."users_roles_map` purm ON ( purm.`user_id`=".$gBitUser->mUserId." ) AND ( purm.`role_id`=s.`role_id` )
+					LEFT OUTER JOIN `".BIT_DB_PREFIX."users_roles_map` purm ON ( purm.`user_id`=".(int)($gBitUser->mUserId ?? 0)." ) AND ( purm.`role_id`=s.`role_id` )
 					WHERE x.content_id = ? AND s.`template` = 'address' AND (s.`role_id` IN(". implode(',', array_fill(0, count($roles), '?')) ." ) OR purm.`user_id`=?)
 					ORDER BY x.`item`, x.`xorder`";
 

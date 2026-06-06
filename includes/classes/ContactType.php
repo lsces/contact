@@ -30,7 +30,7 @@ class ContactType extends BitBase {
 			$sql = "SELECT r.`item`, r.`cross_ref_title`
 					FROM `".BIT_DB_PREFIX."liberty_xref_item` r
 					JOIN `".BIT_DB_PREFIX."liberty_xref_group` t ON t.`x_group` = r.`x_group` AND t.`content_type_guid` = r.`content_type_guid`
-					LEFT OUTER JOIN `".BIT_DB_PREFIX."users_roles_map` purm ON ( purm.`user_id`=".$gBitUser->mUserId." ) AND ( purm.`role_id`=r.`role_id` )
+					LEFT OUTER JOIN `".BIT_DB_PREFIX."users_roles_map` purm ON ( purm.`user_id`=".(int)($gBitUser->mUserId ?? 0)." ) AND ( purm.`role_id`=r.`role_id` )
 					WHERE r.`content_type_guid` = 'contact' AND t.`sort_order` = 0 AND (r.`role_id` IN(". implode(',', array_fill(0, count($roles), '?')) ." ) OR purm.`user_id`=?)
 					ORDER BY r.`item`";
 
