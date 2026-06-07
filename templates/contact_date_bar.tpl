@@ -1,6 +1,6 @@
 <div class="floaticon">
   {if $lock}
-    {biticon ipackage="icons" iname="lock" ipackage="icons" iexplain="Locked"}{$info.editor|userlink}
+    {biticon ipackage="icons" iname="lock" iexplain="Locked"}{$info.editor|userlink}
   {/if}
   {if $print_page ne 'y'}
     {if !$lock}
