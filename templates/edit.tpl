@@ -51,11 +51,9 @@
 							<div class="clear"></div>
 						</div>
 
-						{if !$isPerson}
-							{include file="bitpackage:contact/edit_type_header.tpl"}
-						{/if}
+						{include file="bitpackage:contact/edit_type_header.tpl"}
 
-						{if $gContent->mInfo.name || $gContent->mInfo.contact_types.0.content_id || !isset( $gContent->mInfo.contact_types ) }
+						{if $isPerson}
 							<div class="form-group">
 								{formlabel label="Title" for="prefix"}
 								{forminput}

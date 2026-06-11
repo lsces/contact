@@ -1,19 +1,12 @@
 <div class="form-group">
-	{formlabel label="Contact Types" for=content_types}
+	{formlabel label="Contact Types"}
 	{forminput}
-		{if isset( $gContent->mInfo.contact_types ) }
-			{foreach from=$gContent->mInfo.contact_types key=type_id item=type}
-				{if $type.item gt '$01'}
-					<input type="checkbox" name="contact_types[{$type_id}]" value="{$type.item}" {if isset($type.content_id) } checked="checked"{/if} /> {$type.cross_ref_title}<br/>
-				{/if}
-			{/foreach}
-		{else}
-			{foreach from=$gContent->mInfo.contact_type_list key=type_id item=type}
-				<input type="checkbox" name="contact_types[$type_id]" value="{$type.item}" />{$type.name}<br/>
-			{/foreach}
-		{/if}
+		{foreach from=$gContent->mInfo.contact_type_list item=type}
+			<label class="checkbox-inline">
+				<input type="checkbox" name="contact_types[]" value="{$type.item|escape}"{if $type.checked} checked="checked"{/if} /> {$type.name|escape}
+			</label>
+		{/foreach}
 	{/forminput}
-	{formhelp note=""}
 	<div class="clear"></div>
 </div>
 

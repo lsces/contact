@@ -4,7 +4,7 @@
 
 <div class="listing contacts">
 	<div class="header">
-		<h1>{tr}Contacts{/tr}</h1>
+		<h1>{if $listTitle}{$listTitle|escape}{else}{tr}Contacts{/tr}{/if}</h1>
 	</div>
 
 	<div class="body">

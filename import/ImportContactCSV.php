@@ -24,6 +24,8 @@
 namespace Bitweaver\Liberty;
 
 use Bitweaver\Contact\Contact;
+use Bitweaver\Contact\ContactPerson;
+use Bitweaver\Contact\ContactBusiness;
 
 /**
  * Delete any existing xref for ($contentId, $item) then re-insert if either $xkey or
@@ -95,14 +97,16 @@ function contactCsvImportRow( array $row, int $rowNum ): array {
 		return $result;
 	}
 
-	// --- Find existing or create new via Contact class ---
+	// --- Find existing or create new via Contact subclass ---
+	$isPerson = ( $type === '$00' );
+
 	$contentId = $gBitDb->getOne(
 		"SELECT `content_id` FROM `" . BIT_DB_PREFIX . "liberty_content`
-		 WHERE `content_type_guid` = 'contact' AND `title` = ?",
+		 WHERE `content_type_guid` IN ('contactperson','contactbusiness','contact') AND `title` = ?",
 		[ $title ]
 	);
 
-	$contact = new Contact( null, $contentId ?: null );
+	$contact = $isPerson ? new ContactPerson( null, $contentId ?: null ) : new ContactBusiness( null, $contentId ?: null );
 	if( $contentId ) {
 		$contact->load();
 	}
@@ -118,7 +122,7 @@ function contactCsvImportRow( array $row, int $rowNum ): array {
 
 	if( !empty( $type ) && $type[0] === '$' ) {
 		$pHash['contact_types'] = [ $type ];
-		if( $type === '$00' ) {
+		if( $isPerson ) {
 			$pHash['name'] = $personName;
 		}
 	}

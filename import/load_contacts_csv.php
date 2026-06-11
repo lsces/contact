@@ -52,7 +52,7 @@ if( !file_exists( $csvFile ) ) {
 				if( empty( $title ) ) continue;
 				$contentId = $gBitDb->getOne(
 					"SELECT `content_id` FROM `" . BIT_DB_PREFIX . "liberty_content`
-					 WHERE `content_type_guid` = 'contact' AND `title` = ?",
+					 WHERE `content_type_guid` IN ('contactperson','contactbusiness') AND `title` = ?",
 					[ $title ]
 				);
 				if( $contentId ) {

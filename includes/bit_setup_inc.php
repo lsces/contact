@@ -21,6 +21,23 @@ define( 'CONTACT_IMPORT_PATH', STORAGE_PKG_PATH . 'contact/' );
 $gBitSystem->registerPackage( $pRegisterHash );
 
 if( $gBitSystem->isPackageActive( 'contact' ) ) {
+	// Register sub-type content types at startup so getLibertyObject() can resolve them.
+	// registerContentType() is a no-op in memory once the row exists in the DB.
+	$gLibertySystem->registerContentType( 'contactperson', [
+		'content_type_guid' => 'contactperson',
+		'content_name'      => 'Person Contact',
+		'handler_class'     => 'ContactPerson',
+		'handler_package'   => 'contact',
+		'handler_file'      => 'ContactPerson.php',
+	] );
+	$gLibertySystem->registerContentType( 'contactbusiness', [
+		'content_type_guid' => 'contactbusiness',
+		'content_name'      => 'Business Contact',
+		'handler_class'     => 'ContactBusiness',
+		'handler_package'   => 'contact',
+		'handler_file'      => 'ContactBusiness.php',
+	] );
+
 	$menuHash = [
 		'package_name'  => CONTACT_PKG_NAME,
 		'index_url'     => CONTACT_PKG_URL . 'index.php',

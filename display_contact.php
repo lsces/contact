@@ -51,6 +51,7 @@ if ($gContent->isCommentable()) {
 	}
 }
 
+$gBitSmarty->assign( 'isPerson', $gContent instanceof \Bitweaver\Contact\ContactPerson );
 $gBitSmarty->assign( 'gXrefInfo', $gContent->mXrefInfo );
 
 $gBitSystem->setBrowserTitle( $gContent->mInfo['title'] );

@@ -15,6 +15,8 @@ use Bitweaver\Liberty\LibertyContent;		// Contact base class
 require_once CONTACT_PKG_PATH.'lib/phpcoord-2.3.php';
 
 define( 'CONTACT_CONTENT_TYPE_GUID', 'contact' );
+defined( 'CONTACTPERSON_CONTENT_TYPE_GUID' )   || define( 'CONTACTPERSON_CONTENT_TYPE_GUID',   'contactperson' );
+defined( 'CONTACTBUSINESS_CONTENT_TYPE_GUID' ) || define( 'CONTACTBUSINESS_CONTENT_TYPE_GUID', 'contactbusiness' );
 
 class Contact extends LibertyContent {
 
@@ -53,7 +55,64 @@ class Contact extends LibertyContent {
 		$this->mAdminContentPerm = 'p_contact_admin';
 
 		$this->mTypes = new ContactType();
-		$this->mTypes->setup();
+	}
+
+	/**
+	 * Load type-tag xref rows (P01/P02/B01–B04) directly from liberty_xref.
+	 *
+	 * The schema-driven getContentTypeMarkers() requires liberty_xref_item rows to
+	 * exist at the contactperson/contactbusiness level — they don't exist until the
+	 * 5.0.3 upgrade runs. Reading liberty_xref directly makes type tags visible in
+	 * both pre- and post-upgrade states. Schema labels are enriched where available.
+	 */
+	public function loadXrefTypeList(): void {
+		if ( !$this->isValid() || !empty( $this->mInfo[$this->mXrefTypeKey] ) ) return;
+
+		$result = $this->mDb->query(
+			"SELECT x.`item`, x.`xkey_ext`, x.`content_id`,
+			        COALESCE( (SELECT FIRST 1 i2.`cross_ref_title`
+			                   FROM `".BIT_DB_PREFIX."liberty_xref_item` i2
+			                   WHERE i2.`item` = x.`item`),
+			                  x.`item` ) AS `cross_ref_title`
+			 FROM `".BIT_DB_PREFIX."liberty_xref` x
+			 WHERE x.`content_id` = ?
+			   AND ( x.`item` STARTING WITH 'P'
+			      OR x.`item` STARTING WITH 'B'
+			      OR x.`item` STARTING WITH '\$' )
+			 ORDER BY x.`item`",
+			[ $this->mContentId ]
+		);
+
+		$this->mInfo[$this->mXrefTypeKey] = [];
+		while ( $row = $result->fetchRow() ) {
+			$this->mInfo[$this->mXrefTypeKey][] = $row;
+		}
+	}
+
+	/**
+	 * Return all available type-tag options for this contact's edit form.
+	 *
+	 * Uses the schema (liberty_xref_item via getTypeMarkers) post-upgrade.
+	 * Falls back to a hard-coded list pre-upgrade so edit checkboxes always appear.
+	 * P01 is always excluded — it is implied for every person and is not a user choice.
+	 *
+	 * @return array[]  Each element: ['item' => string, 'name' => string]
+	 */
+	public function getAvailableTypeItems(): array {
+		$markers = $this->xrefType()->getTypeMarkers();
+		if ( !empty( $markers ) ) {
+			return array_values( array_filter( $markers, fn( $m ) => $m['item'] !== 'P01' ) );
+		}
+		// Pre-upgrade fallback — schema rows not yet migrated
+		if ( $this->mContentTypeGuid === CONTACTPERSON_CONTENT_TYPE_GUID ) {
+			return [ [ 'item' => 'P02', 'name' => 'MERG Kit Elf' ] ];
+		}
+		return [
+			[ 'item' => 'B01', 'name' => 'Service' ],
+			[ 'item' => 'B02', 'name' => 'Manufacturer' ],
+			[ 'item' => 'B03', 'name' => 'Distributor' ],
+			[ 'item' => 'B04', 'name' => 'Supplier' ],
+		];
 	}
 
 	/**
@@ -77,7 +136,7 @@ class Contact extends LibertyContent {
 				LEFT JOIN `".BIT_DB_PREFIX."users_users` uue ON (uue.`user_id` = lc.`modifier_user_id`)
 				LEFT JOIN `".BIT_DB_PREFIX."users_users` uuc ON (uuc.`user_id` = lc.`user_id`)
 				LEFT JOIN `".BIT_DB_PREFIX."liberty_xref` img ON img.`content_id` = con.`content_id` AND img.`item` = 'IMG'
-				LEFT JOIN `".BIT_DB_PREFIX."liberty_xref` x00 ON x00.`content_id` = con.`content_id` AND x00.`item` = '$00'
+				LEFT JOIN `".BIT_DB_PREFIX."liberty_xref` x00 ON x00.`content_id` = con.`content_id` AND x00.`item` = 'P01'
 				LEFT JOIN `".BIT_DB_PREFIX."liberty_xref` xhA ON xhA.`content_id` = con.`content_id` AND xhA.`item` = '#S' AND ( xhA.`end_date` IS NULL OR xhA.`end_date` > CURRENT_TIMESTAMP )
 				LEFT JOIN `".BIT_DB_PREFIX."liberty_xref` xhL ON xhL.`content_id` = con.`content_id` AND xhL.`item` = '#L' AND ( xhL.`end_date` IS NULL OR xhL.`end_date` > CURRENT_TIMESTAMP )
 				LEFT JOIN `".BIT_DB_PREFIX."address_postcode` ap ON ap.`postcode` = xhA.`xkey`
@@ -203,20 +262,17 @@ class Contact extends LibertyContent {
 					$result = $this->mDb->associateInsert( $atable, $pParamHash['contact_store'] );
 				}
 				if( !empty( $pParamHash['contact_types'] ) ) {
-					$query = "DELETE FROM `".BIT_DB_PREFIX."liberty_xref` WHERE `content_id` = ? AND `item` LIKE '$%'";
-					$result = $this->mDb->query($query, [$this->mContentId ] );
-					 foreach ( $pParamHash['contact_types'] as $key => $source ) {
-						if ( $source == '$00' ) {
+					$query = "DELETE FROM `".BIT_DB_PREFIX."liberty_xref` WHERE `content_id` = ? AND (`item` STARTING WITH 'P' OR `item` STARTING WITH 'B')";
+					$result = $this->mDb->query($query, [ $this->mContentId ] );
+					foreach ( $pParamHash['contact_types'] as $key => $source ) {
+						if ( $source === 'P01' ) {
 							$query = "INSERT INTO `".BIT_DB_PREFIX."liberty_xref` (`xref_id`, `content_id`, `item`, `xkey_ext`, `last_update_date`) VALUES ( ?, ?, ?, ?, NULL )";
 							$result = $this->mDb->query($query, [ $this->mDb->GenID('liberty_xref_seq'), $this->mContentId, $source, $pParamHash['name'] ] );
-						} else if ( $source == '$01' ) {
-							$query = "INSERT INTO `".BIT_DB_PREFIX."liberty_xref` (`xref_id`, `content_id`, `item`, `xkey_ext`, `last_update_date`) VALUES ( ?, ?, ?, ?, NULL )";
-							$result = $this->mDb->query($query, [ $this->mDb->GenID('liberty_xref_seq'), $this->mContentId, $source, $pParamHash['organisation'] ] );
 						} else {
 							$query = "INSERT INTO `".BIT_DB_PREFIX."liberty_xref` (`xref_id`, `content_id`, `item`, `last_update_date`) VALUES ( ?, ?, ?, NULL )";
 							$result = $this->mDb->query($query, [ $this->mDb->GenID('liberty_xref_seq'), $this->mContentId, $source ] );
 						}
-					 }
+					}
 				}
 				// load before completing transaction as firebird isolates results
 				$this->load();
@@ -267,7 +323,7 @@ class Contact extends LibertyContent {
 			$pContentId = $this->mContentId;
 		}
 
-		return CONTACT_PKG_URL.'index.php?content_id='.$pContentId;
+		return CONTACT_PKG_URL.'display_contact.php?content_id='.$pContentId;
 	}
 
 	/**
@@ -444,12 +500,7 @@ class Contact extends LibertyContent {
 		return $ret;
 	}
 
-	/** @return array  Map of item code → label from the ContactType setup. */
-	public function getContactTypes() {
-		return $this->mTypes->mContactType;
-	}
-
-	/**
+/**
 	 * Load contacts that reference this one via the '#A' xref item into $this->mInfo['client_list'].
 	 *
 	 * Used for contacts handled by a third party (e.g. alarm maintainer, call centre).

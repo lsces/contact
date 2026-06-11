@@ -4,7 +4,7 @@
  * @subpackage functions
  */
 
-use Bitweaver\Contact\Contact;
+use Bitweaver\Contact\ContactBusiness;
 use Bitweaver\KernelTools;
 
 require_once '../kernel/includes/setup_inc.php';
@@ -14,7 +14,7 @@ global $gBitSystem, $gBitSmarty, $gBitUser;
 $gBitSystem->verifyPackage( 'contact' );
 $gBitSystem->verifyPermission( 'p_contact_update' );
 
-$gContent = new Contact();
+$gContent = new ContactBusiness();
 
 if( !empty( $_REQUEST['fCancel'] ) ) {
 	KernelTools::bit_redirect( CONTACT_PKG_URL );
@@ -37,12 +37,11 @@ if( !empty( $_REQUEST['fSaveContact'] ) ) {
 	}
 }
 
-// Load all business-relevant types ($01 and above) for optional checkboxes
-$allTypes = $gContent->getXrefSourceList();
-$businessTypes = array_filter( $allTypes, fn($t) => $t['item'] !== '$00' && $t['item'] !== '$01' );
+// ContactBusiness type markers are $02+ only ($00/$01 live under contactperson/deprecated)
+$businessTypes = $gContent->getXrefSourceList();
 
 $gBitSmarty->assign( 'gContent', $gContent );
-$gBitSmarty->assign( 'businessTypes', array_values( $businessTypes ) );
+$gBitSmarty->assign( 'businessTypes', array_values( (array)$businessTypes ) );
 $gBitSmarty->assign( 'errors', $gContent->mErrors );
 
 $gBitSystem->display( 'bitpackage:contact/add_business.tpl', KernelTools::tra( 'Add Business' ), [ 'display_mode' => 'edit' ] );

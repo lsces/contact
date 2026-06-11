@@ -16,6 +16,7 @@
 require_once '../kernel/includes/setup_inc.php';
 
 use Bitweaver\Contact\Contact;
+use Bitweaver\Contact\ContactType;
 use Bitweaver\KernelTools;
 
 $gBitSystem->verifyPackage( 'contact' );
@@ -24,7 +25,7 @@ $gBitSystem->verifyPermission( 'p_contact_view' );
 $gContent = new Contact( );
 $gContent->invokeServices( 'content_list_function', $_REQUEST );
 
-// Handle the request hash storing into the session.
+$gBitSmarty->assign( 'contContactTypes', ContactType::getTypeMarkerList() );
 $gContent->mTypes->processRequestHash($_REQUEST, $_SESSION['contact']);
 
 $listHash = $_REQUEST;

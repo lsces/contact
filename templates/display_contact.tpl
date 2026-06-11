@@ -9,7 +9,7 @@
 			<div class="clear"></div>
 		</div>
 		{/if}
-		{if $gContent->mInfo.contact_types.0.content_id}
+		{if $isPerson}
 		<div class="form-group">
 			{formlabel label="Name"}
 			{forminput}

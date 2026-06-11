@@ -7,8 +7,7 @@
 
 use Bitweaver\Contact\ContactType;
 
-$mTypes = new ContactType();
-$mTypes->setup();
+$contactTypeMarkers = ContactType::getTypeMarkerList();
 
 $formContactListFeatures = [
 	"contact_list_id"            => [
@@ -41,7 +40,7 @@ $formContactListFeatures = [
 ];
 $gBitSmarty->assign( 'formContactListFeatures',$formContactListFeatures );
 
-foreach( $mTypes->mContactType as $key => $type ) {
+foreach( $contactTypeMarkers as $key => $type ) {
 	$option = 'contact_default_'.$key;
 	$contactChecks[] = $option;
 	$contactTypeDefaults[$option] = $type;

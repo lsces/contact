@@ -31,7 +31,7 @@ $rows = $gBitDb->getArray(
 		(SELECT FIRST 1 sx.xkey FROM ".BIT_DB_PREFIX."liberty_xref sx
 		 WHERE sx.content_id=lc.content_id AND sx.item='SCREF') AS scref
 	 FROM ".BIT_DB_PREFIX."liberty_content lc
-	 WHERE lc.content_type_guid='contact'
+	 WHERE lc.content_type_guid IN ('contactperson','contactbusiness')
 	   AND (LOWER(lc.title) LIKE ? OR EXISTS (
 		SELECT 1 FROM ".BIT_DB_PREFIX."liberty_xref sx
 		WHERE sx.content_id=lc.content_id AND sx.item='SCREF' AND LOWER(sx.xkey) LIKE ?

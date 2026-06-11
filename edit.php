@@ -73,15 +73,28 @@ if( empty( $formInfo ) ) {
 	$formInfo = &$gContent->mInfo;
 }
 
-$isPerson = !empty( $gContent->mInfo['contact_types'][0]['content_id'] );
+$isPerson = $gContent instanceof \Bitweaver\Contact\ContactPerson;
 $gContent->loadXrefInfo();
 $gBitSmarty->assign( 'gXrefInfo', $gContent->mXrefInfo );
 $gBitSmarty->assign( 'isPerson', $isPerson );
 
-$allTypes = $gContent->getXrefSourceList();
-$formInfo['contact_type_list'] = $isPerson
-	? []
-	: array_values( array_filter( $allTypes, fn($t) => $t['item'] > '$01' ) );
+// Build type toggle list: available options from schema (or hard-coded pre-upgrade fallback),
+// checked state from contact_types (currently set items in liberty_xref).
+$setItems = [];
+foreach ( $gContent->mInfo['contact_types'] ?? [] as $ct ) {
+	if ( !empty( $ct['content_id'] ) ) {
+		$setItems[ $ct['item'] ] = true;
+	}
+}
+$typeToggle = [];
+foreach ( $gContent->getAvailableTypeItems() as $m ) {
+	$typeToggle[] = [
+		'item'    => $m['item'],
+		'name'    => $m['name'],
+		'checked' => isset( $setItems[ $m['item'] ] ),
+	];
+}
+$gContent->mInfo['contact_type_list'] = $typeToggle;
 $gBitSmarty->assign( 'pageInfo', $formInfo );
 
 $gBitSmarty->assign( 'errors', $gContent->mErrors );

@@ -4,7 +4,7 @@
  * @subpackage functions
  */
 
-use Bitweaver\Contact\Contact;
+use Bitweaver\Contact\ContactPerson;
 use Bitweaver\KernelTools;
 
 require_once '../kernel/includes/setup_inc.php';
@@ -14,7 +14,7 @@ global $gBitSystem, $gBitSmarty, $gBitUser;
 $gBitSystem->verifyPackage( 'contact' );
 $gBitSystem->verifyPermission( 'p_contact_update' );
 
-$gContent = new Contact();
+$gContent = new ContactPerson();
 
 if( !empty( $_REQUEST['fCancel'] ) ) {
 	KernelTools::bit_redirect( CONTACT_PKG_URL );
@@ -22,7 +22,7 @@ if( !empty( $_REQUEST['fCancel'] ) ) {
 }
 
 if( !empty( $_REQUEST['fSaveContact'] ) ) {
-	$_REQUEST['contact_types'] = [ '$00' ];
+	$_REQUEST['contact_types'] = [ 'P01' ];
 	if( $gContent->store( $_REQUEST ) ) {
 		KernelTools::bit_redirect( CONTACT_PKG_URL.'edit.php?content_id='.$gContent->mContentId );
 		die;

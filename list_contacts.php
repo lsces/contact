@@ -6,19 +6,34 @@
 
 require_once '../kernel/includes/setup_inc.php';
 
-use Bitweaver\Contact\Contact;
+use Bitweaver\Contact\ContactPerson;
+use Bitweaver\Contact\ContactBusiness;
 use Bitweaver\KernelTools;
 
 $gBitSystem->verifyPackage( 'contact' );
 $gBitSystem->verifyPermission( 'p_contact_view' );
 
-$gContent = new Contact();
-$gContent->invokeServices( 'content_list_function', $_REQUEST );
+// Persons and businesses are separate types — each has its own getList().
+// The combined display is a view-layer concern: merge, sort, and let the
+// template select the row template by content_type_guid.
+$personContent   = new ContactPerson();
+$businessContent = new ContactBusiness();
 
-$listHash = $_REQUEST;
-$listcontacts = $gContent->getList( $listHash );
+$personHash   = $_REQUEST;
+$businessHash = $_REQUEST;
 
-if( $listHash['listInfo']['count'] == 1 ) {
+$persons    = $personContent->getList( $personHash );
+$businesses = $businessContent->getList( $businessHash );
+
+$listcontacts = array_merge( $persons, $businesses );
+usort( $listcontacts, fn( $a, $b ) => strcasecmp( $a['title'] ?? '', $b['title'] ?? '' ) );
+
+// listInfo: sum the two counts; use personHash's pagination metadata as base
+$listHash = $personHash;
+$listHash['cant']              = ( $personHash['cant'] ?? 0 ) + ( $businessHash['cant'] ?? 0 );
+$listHash['listInfo']['count'] = $listHash['cant'];
+
+if( $listHash['cant'] == 1 ) {
 	KernelTools::bit_redirect( CONTACT_PKG_URL."display_contact.php?content_id=".$listcontacts[0]['content_id'] );
 }
 

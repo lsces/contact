@@ -27,7 +27,7 @@ $sql = "SELECT lc.`content_id`, lc.`title`,
 		FROM `" . BIT_DB_PREFIX . "liberty_content` lc
 		LEFT JOIN `" . BIT_DB_PREFIX . "liberty_xref` x00 ON x00.`content_id` = lc.`content_id` AND x00.`item` = '\$00'
 		LEFT JOIN `" . BIT_DB_PREFIX . "liberty_xref` xsc ON xsc.`content_id` = lc.`content_id` AND xsc.`item` = 'SCREF'
-		WHERE lc.`content_type_guid` = 'contact'
+		WHERE lc.`content_type_guid` IN ('contactperson','contactbusiness')
 		ORDER BY lc.`title`";
 
 $result = $gBitDb->query( $sql );
@@ -56,7 +56,7 @@ $sql = "SELECT x.`content_id`, x.`item`, xi.`cross_ref_title`, xi.`template`,
 		x.`xkey`, x.`xkey_ext`, x.`data`, x.`xorder`,
 		ap.`add1`, ap.`add2`, ap.`add3`, ap.`add4`, ap.`town`, ap.`county`
 		FROM `" . BIT_DB_PREFIX . "liberty_xref` x
-		JOIN  `" . BIT_DB_PREFIX . "liberty_xref_item` xi ON xi.`item` = x.`item` AND xi.`content_type_guid` = 'contact'
+		JOIN  `" . BIT_DB_PREFIX . "liberty_xref_item` xi ON xi.`item` = x.`item` AND xi.`content_type_guid` IN ('contact','contactperson','contactbusiness')
 		LEFT JOIN `" . BIT_DB_PREFIX . "address_postcode` ap ON ap.`postcode` = x.`xkey`
 		WHERE ( x.`end_date` IS NULL OR x.`end_date` > CURRENT_TIMESTAMP )
 		AND x.`content_id` IN (" . implode( ',', array_keys( $contacts ) ) . ")
