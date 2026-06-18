@@ -262,15 +262,25 @@ class Contact extends LibertyContent {
 					$result = $this->mDb->associateInsert( $atable, $pParamHash['contact_store'] );
 				}
 				if( !empty( $pParamHash['contact_types'] ) ) {
-					$query = "DELETE FROM `".BIT_DB_PREFIX."liberty_xref` WHERE `content_id` = ? AND (`item` STARTING WITH 'P' OR `item` STARTING WITH 'B')";
-					$result = $this->mDb->query($query, [ $this->mContentId ] );
-					foreach ( $pParamHash['contact_types'] as $key => $source ) {
-						if ( $source === 'P01' ) {
-							$query = "INSERT INTO `".BIT_DB_PREFIX."liberty_xref` (`xref_id`, `content_id`, `item`, `xkey_ext`, `last_update_date`) VALUES ( ?, ?, ?, ?, NULL )";
-							$result = $this->mDb->query($query, [ $this->mDb->GenID('liberty_xref_seq'), $this->mContentId, $source, $pParamHash['name'] ] );
-						} else {
-							$query = "INSERT INTO `".BIT_DB_PREFIX."liberty_xref` (`xref_id`, `content_id`, `item`, `last_update_date`) VALUES ( ?, ?, ?, NULL )";
-							$result = $this->mDb->query($query, [ $this->mDb->GenID('liberty_xref_seq'), $this->mContentId, $source ] );
+					// P01 carries the pipe-encoded name — always rewrite it independently of the checkbox set
+					$this->mDb->query( "DELETE FROM `".BIT_DB_PREFIX."liberty_xref` WHERE `content_id` = ? AND `item` = 'P01'", [ $this->mContentId ] );
+					if( !empty( $pParamHash['name'] ) ) {
+						$this->mDb->query(
+							"INSERT INTO `".BIT_DB_PREFIX."liberty_xref` (`xref_id`, `content_id`, `item`, `xkey_ext`, `last_update_date`) VALUES (?, ?, 'P01', ?, NULL)",
+							[ $this->mDb->GenID('liberty_xref_seq'), $this->mContentId, $pParamHash['name'] ]
+						);
+					}
+					// Optional type tags (P02+, B01+) come from the form checkboxes
+					$this->mDb->query(
+						"DELETE FROM `".BIT_DB_PREFIX."liberty_xref` WHERE `content_id` = ? AND (`item` STARTING WITH 'P' OR `item` STARTING WITH 'B') AND `item` <> 'P01'",
+						[ $this->mContentId ]
+					);
+					foreach ( $pParamHash['contact_types'] as $source ) {
+						if ( $source !== 'P01' ) {
+							$this->mDb->query(
+								"INSERT INTO `".BIT_DB_PREFIX."liberty_xref` (`xref_id`, `content_id`, `item`, `last_update_date`) VALUES (?, ?, ?, NULL)",
+								[ $this->mDb->GenID('liberty_xref_seq'), $this->mContentId, $source ]
+							);
 						}
 					}
 				}
