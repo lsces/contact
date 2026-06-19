@@ -44,6 +44,15 @@
 			<div class="clear"></div>
 		</div>
 		{/if}
+		{if $gContent->mInfo.linked_user_login}
+		<div class="form-group">
+			{formlabel label="Registered User"}
+			{forminput}
+				{$gContent->mInfo.linked_user_name|escape} ({$gContent->mInfo.linked_user_login|escape})
+			{/forminput}
+			<div class="clear"></div>
+		</div>
+		{/if}
 		{if $gContent->mInfo.data}
 		<div class="form-group">
 			{formlabel label="Note"}

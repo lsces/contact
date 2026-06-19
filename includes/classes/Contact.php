@@ -130,11 +130,13 @@ class Contact extends LibertyContent {
  				x00.`xkey_ext` as name, lc.`title` as organisation,
  				xhL.`xkey` as x_coordinate, xhL.`xkey_ext` as y_coordinate,
  				uue.`login` AS modifier_user, uue.`real_name` AS modifier_real_name,
-				uuc.`login` AS creator_user, uuc.`real_name` AS creator_real_name
+				uuc.`login` AS creator_user, uuc.`real_name` AS creator_real_name,
+				uu.`login` AS linked_user_login, uu.`real_name` AS linked_user_name
 				FROM `".BIT_DB_PREFIX."contact` con
 				LEFT JOIN `".BIT_DB_PREFIX."liberty_content` lc ON lc.content_id = con.content_id
 				LEFT JOIN `".BIT_DB_PREFIX."users_users` uue ON (uue.`user_id` = lc.`modifier_user_id`)
 				LEFT JOIN `".BIT_DB_PREFIX."users_users` uuc ON (uuc.`user_id` = lc.`user_id`)
+				LEFT JOIN `".BIT_DB_PREFIX."users_users` uu ON uu.`user_id` = con.`role_id`
 				LEFT JOIN `".BIT_DB_PREFIX."liberty_xref` img ON img.`content_id` = con.`content_id` AND img.`item` = 'IMG'
 				LEFT JOIN `".BIT_DB_PREFIX."liberty_xref` x00 ON x00.`content_id` = con.`content_id` AND x00.`item` = 'P01'
 				LEFT JOIN `".BIT_DB_PREFIX."liberty_xref` xhA ON xhA.`content_id` = con.`content_id` AND xhA.`item` = '#S' AND ( xhA.`end_date` IS NULL OR xhA.`end_date` > CURRENT_TIMESTAMP )
@@ -222,6 +224,9 @@ class Contact extends LibertyContent {
 		}
 		$pParamHash['title'] = trim( $pParamHash['title'] );
 		$pParamHash['contact_store']['xkey'] = $pParamHash['xkey'];
+		if( array_key_exists( 'user_id', $pParamHash ) ) {
+			$pParamHash['contact_store']['role_id'] = $pParamHash['user_id'] ? (int)$pParamHash['user_id'] : null;
+		}
 		return count( $this->mErrors ) == 0;
 	}
 
@@ -378,7 +383,7 @@ class Contact extends LibertyContent {
 	/**
 	 * Return a paged list of contacts matching filter criteria.
 	 *
-	 * Recognised keys in $pParamHash: role_id, contact_type_guid, find_xref,
+	 * Recognised keys in $pParamHash: user_id (filters by linked user; stored in con.role_id), contact_type_guid, find_xref,
 	 * find_title, find_location, find_postcode, active, sort_mode, max_records, offset.
 	 * Sets $pParamHash['cant'] and $pParamHash['listInfo'] on return.
 	 *
@@ -396,11 +401,11 @@ class Contact extends LibertyContent {
 		$whereSql = '';
 		$bindVars = [];
 
-		if ( isset( $pParamHash['role_id'] ) ) {
+		if ( isset( $pParamHash['user_id'] ) ) {
 			array_push( $bindVars, $this->mContentTypeGuid );
-			if ( $pParamHash['role_id'] > 0 ) {
+			if ( $pParamHash['user_id'] > 0 ) {
 				$whereSql .= " AND con.`role_id` = ? ";
-				$bindVars[] = $pParamHash['role_id'];
+				$bindVars[] = (int)$pParamHash['user_id'];
 			}
 		}
 		elseif ( isset( $pParamHash['contact_type_guid'][0] ) ) {
@@ -417,7 +422,7 @@ class Contact extends LibertyContent {
 			$pParamHash["listInfo"]["ihash"]["find_xref"] = $find_xref;
 		}
 
-		if ( !isset( $pParamHash['role_id'] ) ) {
+		if ( !isset( $pParamHash['user_id'] ) ) {
 			array_push( $bindVars, $this->mContentTypeGuid );
 		}
 
