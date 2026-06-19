@@ -130,6 +130,19 @@
 				{/jstab}
 
 				{jstab title="Liberty Extensions"}
+					{if $gBitUser->hasPermission('p_contact_admin')}
+					<div class="form-group">
+						{formlabel label="Linked User ID" for="user_id"}
+						{forminput}
+							<input size="10" type="text" name="user_id" id="user_id" value="{$gContent->mInfo.role_id|escape}" />
+							{if $gContent->mInfo.linked_user_login}
+								<span class="help-block">{$gContent->mInfo.linked_user_name|escape} ({$gContent->mInfo.linked_user_login|escape})</span>
+							{/if}
+						{/forminput}
+						<div class="clear"></div>
+					</div>
+					{/if}
+
 					{if $serviceEditTpls.categorization }
 						{legend legend="Categorize"}
 							{include file=$serviceEditTpls.categorization}
