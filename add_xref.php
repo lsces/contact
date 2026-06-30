@@ -61,8 +61,9 @@ $xrefInfo['xref_format_list'] = $gContent->getXrefFormatList();
 $gContent->mInfo['format_guid'] = 'text';
 // Default dates for creating new record
 $xrefInfo['ignore_start_date'] = 'n';
-$xrefInfo['start_date'] = $gContent->mDate->getUTCTime();
+$xrefInfo['start_date'] = date( 'Y-m-d\TH:i' );
 $xrefInfo['ignore_end_date'] = 'y';
+$xrefInfo['end_date'] = '';
 
 $gBitSmarty->assign( 'xrefInfo', $xrefInfo );
 $gBitSmarty->assign( 'title', $gContent->mInfo['title'] );
