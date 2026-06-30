@@ -4,14 +4,10 @@
 </td>
 <td>
 	{if isset($xrefInfo.xref) && $xrefInfo.xref <> '' && $xrefInfo.xref > 100 }
-		{$xrefInfo.xref|escape}
-		{smartlink ititle="Link to" ifile="display_contact.php" biticon="edit" content_id=$xrefInfo.xref}
+		{smartlink ititle=$xrefInfo.xkey_ext|default:$xrefInfo.xkey ifile="display_contact.php" content_id=$xrefInfo.xref}
 	{else}
-		&nbsp;
+		{$xrefInfo.xkey|escape} {$xrefInfo.xkey_ext|escape}
 	{/if}
-</td>
-<td>
-	{$xrefInfo.xkey|escape} {$xrefInfo.xkey_ext|escape}
 </td>
 <td>
 	{$xrefInfo.data|escape}
@@ -19,9 +15,9 @@
 {if $xrefAllowEdit}
 <td>
 {if !$isHistory }
-	{$xrefInfo.start_date|bit_short_date}
+	{$xrefInfo.start_date|bit_short_datetime}
 {else}
-	{$xrefInfo.end_date|bit_short_date}
+	{$xrefInfo.end_date|bit_short_datetime}
 {/if}
 </td>
 {if $gBitSystem->isFeatureActive( 'contact_list_last_modified' )}

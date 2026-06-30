@@ -3,9 +3,6 @@
 	{$xrefInfo.xref_title|escape}
 </td>
 <td>
-	&nbsp;
-</td>
-<td>
 	<img class="thumb" src="/storage/attachments/21/21/thumbs/avatar.jpg" alt="" />
 </td>
 <td>
@@ -14,9 +11,9 @@
 {if $xrefAllowEdit}
 <td>
 {if !$isHistory }
-	{$xrefInfo.start_date|bit_short_date}
+	{$xrefInfo.start_date|bit_short_datetime}
 {else}
-	{$xrefInfo.end_date|bit_short_date}
+	{$xrefInfo.end_date|bit_short_datetime}
 {/if}
 </td>
 {if $gBitSystem->isFeatureActive( 'contact_list_last_modified' )}
