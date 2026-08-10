@@ -58,6 +58,22 @@ class Contact extends LibertyContent {
 	}
 
 	/**
+	 * @return bool TRUE when mContentId refers to a real liberty_content row of this
+	 *              object's own content type (Contact/ContactPerson/ContactBusiness all
+	 *              correctly distinguished via mContentTypeGuid) — not just an id that
+	 *              looks syntactically valid.
+	 */
+	public function isValid() {
+		if( !BitBase::verifyId( $this->mContentId ) ) {
+			return false;
+		}
+		return (bool)$this->mDb->getOne(
+			"SELECT 1 FROM `".BIT_DB_PREFIX."liberty_content` WHERE `content_id` = ? AND `content_type_guid` = ?",
+			[ $this->mContentId, $this->mContentTypeGuid ]
+		);
+	}
+
+	/**
 	 * Load type-tag xref rows (P01/P02/B01–B04) directly from liberty_xref.
 	 *
 	 * The schema-driven getContentTypeMarkers() requires liberty_xref_item rows to
@@ -330,7 +346,7 @@ class Contact extends LibertyContent {
 
 	/**
 	 * @param  int|null $pContentId  Defaults to $this->mContentId.
-	 * @return string   URL to display_contact.php for this contact.
+	 * @return string   URL to view.php for this contact.
 	 */
 	public function getDisplayUrl( $pContentId=NULL ) {
 		global $gBitSystem;
@@ -338,7 +354,7 @@ class Contact extends LibertyContent {
 			$pContentId = $this->mContentId;
 		}
 
-		return CONTACT_PKG_URL.'display_contact.php?content_id='.$pContentId;
+		return CONTACT_PKG_URL.'view.php?content_id='.$pContentId;
 	}
 
 	/**

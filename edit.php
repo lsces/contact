@@ -1,6 +1,7 @@
 <?php
 
 use Bitweaver\KernelTools;
+use Bitweaver\HttpStatusCodes;
 /**
  * $Header: /cvsroot/bitweaver/_bit_contact/edit.php,v 1.6 2010/02/08 21:27:22 wjames5 Exp $
  *
@@ -21,6 +22,13 @@ $gBitSystem->verifyPackage( 'contact' );
 $gBitSystem->verifyPermission( 'p_contact_update' );
 
 include_once CONTACT_PKG_INCLUDE_PATH . 'lookup_contact_inc.php';
+
+// A content_id was given but didn't resolve to a real record — that's "not found", not an
+// invitation to silently fall into create-new mode. No content_id at all is the real
+// create-new case.
+if( !empty( $_REQUEST['content_id'] ) && !$gContent->isValid() ) {
+	$gBitSystem->fatalError( KernelTools::tra( 'No contact exists with the given ID' ), null, null, HttpStatusCodes::HTTP_NOT_FOUND );
+}
 
 if (!empty( $gContent->mInfo )) {
 	$formInfo = $gContent->mInfo;

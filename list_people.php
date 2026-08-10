@@ -19,7 +19,7 @@ $listHash = $_REQUEST;
 $listcontacts = $gContent->getList( $listHash );
 
 if( $listHash['listInfo']['count'] == 1 ) {
-	KernelTools::bit_redirect( CONTACT_PKG_URL . "display_contact.php?content_id=" . $listcontacts[0]['content_id'] );
+	KernelTools::bit_redirect( CONTACT_PKG_URL . "view.php?content_id=" . $listcontacts[0]['content_id'] );
 }
 
 $gBitSmarty->assign( 'listcontacts', $listcontacts );

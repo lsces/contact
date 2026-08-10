@@ -1,6 +1,7 @@
 <?php
 /**
- * $Header: /cvsroot/bitweaver/_bit_contact/display_contact.php,v 1.7 2010/02/08 21:27:22 wjames5 Exp $
+ * Renamed from display_contact.php 2026-08-10 — no separate person/business display, so no
+ * suffix needed, matching the bare view.php/edit.php pattern used elsewhere in the codebase.
  *
  * Copyright (c) 2006 bitweaver.org
  * All Rights Reserved. See below for details and a complete list of authors.
