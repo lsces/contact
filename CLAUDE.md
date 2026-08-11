@@ -75,6 +75,9 @@ Before this, a nonexistent `content_id` read as "valid" — `view.php` fell stra
 into create-new mode. Both now show a proper "No contact exists with the given ID" 404 when a
 content_id was given but didn't resolve. A `LibertyContent`-wide version of this fix was tried
 and reverted — see `liberty/CLAUDE.md` for why; same per-package pattern used in `stock`.
+This same change also exposed a real kernel destructor bug (crashed live on srv10 until fixed
+2026-08-11, `Contact::isValid()` was the most common trigger) — see `liberty/CLAUDE.md`'s
+"Side effect found 2026-08-11" note.
 
 ## Contact::load() — raw xref joins
 Joins `liberty_xref` directly for `$00` (person name), `#S` (service address), `#L` (location),
