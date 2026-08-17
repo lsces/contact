@@ -21,7 +21,7 @@
 				{if $smarty.section.content.rownum % 2 != 0}{assign var=rowclass value="odd"}{else}{assign var=rowclass value="even"}{/if}
 				<tr class="first {$rowclass}">
 					<td class="alignleft">
-						<a href="display_contact.php?content_id={$listcontacts[content].content_id}" title="ci_{$listcontacts[content].content_id}">
+						<a href="view.php?content_id={$listcontacts[content].content_id}" title="ci_{$listcontacts[content].content_id}">
 							{$listcontacts[content].title}
 						</a>
 					</td>
