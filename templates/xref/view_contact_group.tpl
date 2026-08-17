@@ -8,7 +8,7 @@
 				<th>{tr}Type{/tr}</th>
 				<th>{tr}Value{/tr}</th>
 				<th>{tr}Note{/tr}</th>
-				{if $xrefAllowEdit}<th>{tr}Added{/tr}</th><th>{tr}Edit{/tr}</th>{/if}
+				{if $xrefAllowEdit}<th>{tr}Added{/tr}</th><th>{tr}Updated{/tr}</th><th>{tr}Edit{/tr}</th>{/if}
 			</tr>
 		</thead>
 		<tbody>
@@ -20,7 +20,7 @@
 				{/foreach}
 			{else}
 				<tr class="norecords">
-					<td colspan="{if $xrefAllowEdit}5{else}3{/if}">{tr}No {$xrefGroup->mTitle} records found{/tr}</td>
+					<td colspan="{if $xrefAllowEdit}6{else}3{/if}">{tr}No {$xrefGroup->mTitle} records found{/tr}</td>
 				</tr>
 			{/if}
 		</tbody>

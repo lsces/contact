@@ -12,40 +12,19 @@
 <td>
 	{$xrefInfo.data|escape}
 </td>
-{if $xrefAllowEdit}
-<td>
-{if !$isHistory }
-	{$xrefInfo.start_date|bit_short_datetime}
-{else}
-	{$xrefInfo.end_date|bit_short_datetime}
-{/if}
-</td>
-{if $gBitSystem->isFeatureActive( 'contact_list_last_modified' )}
+{include file="bitpackage:liberty/xref/dates_cell.tpl"}
+{if $xrefInfo.item eq 'KEY_B'}
+	{if $xrefAllowEdit|default:true}
 	<td>
-		{$gContent->mInfo.xref[xref].last_update_date|bit_long_date}
-	</td>
-{/if}
-<td>
-	<span class="actionicon">
-		{if $gBitUser->hasPermission( 'p_contact_update' ) && !$isHistory }
-			{if $xrefInfo.item eq 'KEY_B' }
+		<span class="actionicon">
+			{if $gContent->hasUpdatePermission() && !$isHistory }
 				{smartlink ititle="Callout" ifile="edit_key_break.php" biticon="edit-redo" expunge=0 content_id=$gContent->mInfo.content_id xref_id=$xrefInfo.xref_id}
 				{smartlink ititle="Reseal" ifile="edit_key_break.php" biticon="edit-undo" expunge=2 content_id=$gContent->mInfo.content_id xref_id=$xrefInfo.xref_id}
-			{else}
-				{smartlink ititle="Edit" ipackage="liberty" ifile="edit_xref.php" biticon="edit" content_id=$gContent->mInfo.content_id xref_id=$xrefInfo.xref_id}
 			{/if}
-		{/if}
-		{if $gBitUser->hasPermission( 'p_contact_update' ) && $xrefInfo.item ne 'KEY_B' }
-			{if $isHistory }
-				{smartlink ititle="Restore" ipackage="liberty" ifile="edit_xref.php" biticon="edit" content_id=$gContent->mInfo.content_id xref_id=$xrefInfo.xref_id expunge=-1}
-			{else}
-				{smartlink ititle="Archive" ipackage="liberty" ifile="edit_xref.php" biticon="archive-insert" content_id=$gContent->mInfo.content_id xref_id=$xrefInfo.xref_id expunge=1}
-			{/if}
-		{/if}
-		{if $gBitUser->hasPermission( 'p_contact_expunge' ) && $xrefInfo.item ne 'KEY_B' }
-			{smartlink ititle="Delete" ipackage="liberty" ifile="edit_xref.php" biticon="user-trash" content_id=$gContent->mInfo.content_id xref_id=$xrefInfo.xref_id expunge=3}
-		{/if}
-	</span>
-</td>
+		</span>
+	</td>
+	{/if}
+{else}
+	{include file="bitpackage:liberty/xref/action_icons.tpl"}
 {/if}
 {/strip}
