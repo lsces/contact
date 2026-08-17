@@ -57,6 +57,11 @@ if( empty( $xrefInfo ) ) {
 $xrefInfo['xref_type_list'] = $gContent->getXrefTypeList( $xrefInfo['group'] );
 $xrefInfo['xref_format_list'] = $gContent->getXrefFormatList();
 
+// 'person' format (e.g. CON: a business's list of contact-person xrefs) needs a
+// search picker of existing ContactPerson records rather than a freeform field —
+// same JS typeahead pattern as stock/add_supplier.php, scoped to people via ?type=.
+$gBitSmarty->assign( 'contactLookupUrl', CONTACT_PKG_URL.'includes/lookup_contact.php' );
+
 // Don't use ckeditor for text fields '
 $gContent->mInfo['format_guid'] = 'text';
 // Default dates for creating new record

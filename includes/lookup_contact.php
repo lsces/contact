@@ -24,6 +24,13 @@ if( strlen( $q ) < 2 ) {
 	exit;
 }
 
+// Optional ?type= narrows to a single content_type_guid (e.g. 'contactperson' for a
+// picker that should only ever offer people, not businesses) — defaults to both.
+$type = $_GET['type'] ?? '';
+$types = in_array( $type, [ 'contactperson', 'contactbusiness' ], true )
+	? [ $type ]
+	: [ 'contactperson', 'contactbusiness' ];
+
 $like = '%'.strtolower( $q ).'%';
 
 $rows = $gBitDb->getArray(
@@ -31,13 +38,13 @@ $rows = $gBitDb->getArray(
 		(SELECT FIRST 1 sx.xkey FROM ".BIT_DB_PREFIX."liberty_xref sx
 		 WHERE sx.content_id=lc.content_id AND sx.item='SCREF') AS scref
 	 FROM ".BIT_DB_PREFIX."liberty_content lc
-	 WHERE lc.content_type_guid IN ('contactperson','contactbusiness')
+	 WHERE lc.content_type_guid IN (".implode( ',', array_fill( 0, count( $types ), '?' ) ).")
 	   AND (LOWER(lc.title) LIKE ? OR EXISTS (
 		SELECT 1 FROM ".BIT_DB_PREFIX."liberty_xref sx
 		WHERE sx.content_id=lc.content_id AND sx.item='SCREF' AND LOWER(sx.xkey) LIKE ?
 	   ))
 	 ORDER BY lc.title",
-	[ $like, $like ]
+	[ ...$types, $like, $like ]
 );
 
 header( 'Content-Type: application/json' );
