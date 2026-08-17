@@ -26,12 +26,15 @@
 		{if $gBitUser->hasPermission( 'p_contact_update' ) && !$isHistory }
 			{smartlink ititle="Edit" ipackage="liberty" ifile="edit_xref.php" biticon="edit" content_id=$gContent->mInfo.content_id xref_id=$xrefInfo.xref_id}
 		{/if}
-		{if $gBitUser->hasPermission( 'p_contact_expunge' ) && $xrefInfo.item ne 'KEY_B' }
+		{if $gBitUser->hasPermission( 'p_contact_update' ) && $xrefInfo.item ne 'KEY_B' }
 			{if $isHistory }
 				{smartlink ititle="Restore" ipackage="liberty" ifile="edit_xref.php" biticon="edit" content_id=$gContent->mInfo.content_id xref_id=$xrefInfo.xref_id expunge=-1}
 			{else}
-				{smartlink ititle="Delete" ipackage="liberty" ifile="edit_xref.php" biticon="user-trash" content_id=$gContent->mInfo.content_id xref_id=$xrefInfo.xref_id expunge=1}
+				{smartlink ititle="Archive" ipackage="liberty" ifile="edit_xref.php" biticon="archive-insert" content_id=$gContent->mInfo.content_id xref_id=$xrefInfo.xref_id expunge=1}
 			{/if}
+		{/if}
+		{if $gBitUser->hasPermission( 'p_contact_expunge' ) && $xrefInfo.item ne 'KEY_B' }
+			{smartlink ititle="Delete" ipackage="liberty" ifile="edit_xref.php" biticon="user-trash" content_id=$gContent->mInfo.content_id xref_id=$xrefInfo.xref_id expunge=3}
 		{/if}
 	</span>
 </td>
