@@ -4,8 +4,9 @@
  *
  * CSV column layout (0-based, header row skipped by loader):
  *   0  title        Contact name — match key (lc.title)
- *   1  type         xref item code: $00 (person), $01–$05 (business types)
- *   2  person_name  Pipe-separated name for $00: prefix|forename|surname|suffix
+ *   1  type         xref item code: P01/P02 (person types), B01–B04 (business types) —
+ *                   see contact/admin/schema_inc.php's 'type' group for the current list
+ *   2  person_name  Pipe-separated name for a person row: prefix|forename|surname|suffix
  *   3  scref        SCREF xkey (stock source reference / short code)
  *   4  phone        #P xkey
  *   5  address      #C xkey_ext (full address text)
@@ -98,7 +99,7 @@ function contactCsvImportRow( array $row, int $rowNum ): array {
 	}
 
 	// --- Find existing or create new via Contact subclass ---
-	$isPerson = ( $type === '$00' );
+	$isPerson = ( $type !== '' && $type[0] === 'P' );
 
 	$contentId = $gBitDb->getOne(
 		"SELECT `content_id` FROM `" . BIT_DB_PREFIX . "liberty_content`
@@ -120,7 +121,7 @@ function contactCsvImportRow( array $row, int $rowNum ): array {
 		$pHash['content_id'] = $contentId;
 	}
 
-	if( !empty( $type ) && $type[0] === '$' ) {
+	if( !empty( $type ) && ( $type[0] === 'P' || $type[0] === 'B' ) ) {
 		$pHash['contact_types'] = [ $type ];
 		if( $isPerson ) {
 			$pHash['name'] = $personName;
