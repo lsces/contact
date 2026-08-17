@@ -23,17 +23,14 @@
 {/if}
 <td>
 	<span class="actionicon">
-		{if $gBitUser->hasPermission( 'p_contact_view_detail' )}
-			{smartlink ititle="View" ifile="view_xref.php" biticon="view-fullscreen" content_id=$gContent->mInfo.content_id xref_id=$xrefInfo.xref_id}
-		{/if}
 		{if $gBitUser->hasPermission( 'p_contact_update' ) && !$isHistory }
-			{smartlink ititle="Edit" ifile="edit_xref.php" biticon="edit" content_id=$gContent->mInfo.content_id xref_id=$xrefInfo.xref_id}
+			{smartlink ititle="Edit" ipackage="liberty" ifile="edit_xref.php" biticon="edit" content_id=$gContent->mInfo.content_id xref_id=$xrefInfo.xref_id}
 		{/if}
 		{if $gBitUser->hasPermission( 'p_contact_expunge' ) && $xrefInfo.item ne 'KEY_B' }
 			{if $isHistory }
-				{smartlink ititle="Restore" ifile="edit_xref.php" biticon="edit" content_id=$gContent->mInfo.content_id xref_id=$xrefInfo.xref_id expunge=-1}
+				{smartlink ititle="Restore" ipackage="liberty" ifile="edit_xref.php" biticon="edit" content_id=$gContent->mInfo.content_id xref_id=$xrefInfo.xref_id expunge=-1}
 			{else}
-				{smartlink ititle="Delete" ifile="edit_xref.php" biticon="user-trash" content_id=$gContent->mInfo.content_id xref_id=$xrefInfo.xref_id expunge=1}
+				{smartlink ititle="Delete" ipackage="liberty" ifile="edit_xref.php" biticon="user-trash" content_id=$gContent->mInfo.content_id xref_id=$xrefInfo.xref_id expunge=1}
 			{/if}
 		{/if}
 	</span>

@@ -32,14 +32,14 @@
 				{smartlink ititle="Callout" ifile="edit_key_break.php" biticon="edit-redo" expunge=0 content_id=$gContent->mInfo.content_id xref_id=$xrefInfo.xref_id}
 				{smartlink ititle="Reseal" ifile="edit_key_break.php" biticon="edit-undo" expunge=2 content_id=$gContent->mInfo.content_id xref_id=$xrefInfo.xref_id}
 			{else}
-				{smartlink ititle="Edit" ifile="edit_xref.php" biticon="edit" content_id=$gContent->mInfo.content_id xref_id=$xrefInfo.xref_id}
+				{smartlink ititle="Edit" ipackage="liberty" ifile="edit_xref.php" biticon="edit" content_id=$gContent->mInfo.content_id xref_id=$xrefInfo.xref_id}
 			{/if}
 		{/if}
 		{if $gBitUser->hasPermission( 'p_contact_expunge' ) && $xrefInfo.item ne 'KEY_B' }
 			{if $isHistory }
-				{smartlink ititle="Restore" ifile="edit_xref.php" biticon="edit" content_id=$gContent->mInfo.content_id xref_id=$xrefInfo.xref_id expunge=-1}
+				{smartlink ititle="Restore" ipackage="liberty" ifile="edit_xref.php" biticon="edit" content_id=$gContent->mInfo.content_id xref_id=$xrefInfo.xref_id expunge=-1}
 			{else}
-				{smartlink ititle="Delete" ifile="edit_xref.php" biticon="user-trash" content_id=$gContent->mInfo.content_id xref_id=$xrefInfo.xref_id expunge=1}
+				{smartlink ititle="Delete" ipackage="liberty" ifile="edit_xref.php" biticon="user-trash" content_id=$gContent->mInfo.content_id xref_id=$xrefInfo.xref_id expunge=1}
 			{/if}
 		{/if}
 	</span>
