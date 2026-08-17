@@ -9,5 +9,5 @@
 	{$xrefInfo.data|escape}
 </td>
 {include file="bitpackage:liberty/xref/dates_cell.tpl"}
-{include file="bitpackage:liberty/xref/action_icons.tpl" xrefProtected=($xrefInfo.item eq 'KEY_B')}
+{include file="bitpackage:liberty/xref/action_icons.tpl"}
 {/strip}
