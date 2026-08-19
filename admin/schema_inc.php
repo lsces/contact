@@ -80,9 +80,12 @@ $gBitInstaller->registerSchemaSequences( CONTACT_PKG_NAME, [] );
 // contactperson: 'type' group + $00 item. contactbusiness: 'type' group + $02-$05 items.
 $gBitInstaller->registerSchemaDefault( CONTACT_PKG_NAME, [
 
-	// --- liberty_content_types — sub-type handlers for person and business ---
-	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_content_types` (`content_type_guid`,`content_name`,`content_name_plural`,`handler_class`,`handler_package`,`handler_file`,`maintainer_url`) VALUES ('contactperson','Person Contact','Person Contacts','ContactPerson','contact','ContactPerson.php','http://lsces.co.uk')",
-	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_content_types` (`content_type_guid`,`content_name`,`content_name_plural`,`handler_class`,`handler_package`,`handler_file`,`maintainer_url`) VALUES ('contactbusiness','Business Contact','Business Contacts','ContactBusiness','contact','ContactBusiness.php','http://lsces.co.uk')",
+	// liberty_content_types rows for contactperson/contactbusiness are NOT declared here - that
+	// table predates liberty_xref entirely and already has its own original, idempotent
+	// registration path: bit_setup_inc.php's registerContentType() calls (checks the DB before
+	// inserting, updates in place if the row already differs). A raw INSERT here duplicated that
+	// and wasn't idempotent, so any reinstall with 'settings' selected (which re-runs this
+	// defaults array) collided with the row registerContentType() had already put there.
 
 	// --- liberty_xref_group ---
 	// 'type' group split: one per sub-type (sort_order=0 = type-marker group, excluded from loadXrefInfo display)
