@@ -64,6 +64,17 @@ $gBitInstaller->registerPackageInfo( CONTACT_PKG_NAME, [
 	'dependencies' => 'liberty',
 ] );
 
+// ### Register content types - every other content-bearing package (stock, mapper, wiki, ...)
+// does this; contact never did, which is why the installer's own uninstall cleanup (keyed off
+// mContentClasses to derive each content_type_guid - see install_packages.php) silently found
+// nothing to clean up for contact and left liberty_content_types/liberty_xref_group/
+// liberty_xref_item rows behind on every uninstall.
+$gBitInstaller->registerContentObjects( CONTACT_PKG_NAME, [
+	'Contact'         => CONTACT_PKG_CLASS_PATH.'Contact.php',
+	'ContactPerson'   => CONTACT_PKG_CLASS_PATH.'ContactPerson.php',
+	'ContactBusiness' => CONTACT_PKG_CLASS_PATH.'ContactBusiness.php',
+] );
+
 
 // ### Indexes
 $indices = [
