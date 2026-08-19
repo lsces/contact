@@ -97,3 +97,50 @@ Will need addressing when more than one record is needed per xref group.
 redirects to `list_contacts.php`. `contact_date_bar.tpl` uses
 `{smartlink ... ifile="edit.php" expunge=1}`. `Contact::expunge()` deletes liberty_xref rows
 then calls `LibertyContent::expunge()`.
+
+## Install/reinstall/uninstall saga — 2026-08-19
+`contact` was the first package put through a genuine fatal-mid-cycle install test this session
+(rebuilding rdmcloud from scratch via `install/install.php`), surfacing both real installer bugs
+(fixed in `install/CLAUDE.md`-equivalent detail, see the top-level `bitweaver/CLAUDE.md` entry -
+`install` has no `CLAUDE.md` of its own) and several bugs specific to this package's own schema:
+
+- **Duplicate `liberty_content_types` registration.** That table predates `liberty_xref` entirely
+  and already has its own original, idempotent registration path -
+  `LibertySystem::registerContentType()`, called from `bit_setup_inc.php`, checks the DB before
+  inserting and updates in place if the row differs. `schema_inc.php`'s own `defaults` array
+  *also* declared raw `INSERT INTO liberty_content_types` statements for `contactperson`/
+  `contactbusiness` - non-idempotent, so any reinstall with 'settings' selected (which re-runs
+  `defaults`) collided with the row `registerContentType()` had already put there. Removed the
+  duplicate declarations from `schema_inc.php` entirely.
+- **No `registerContentObjects()` call at all** - every other content-bearing package (stock,
+  mapper, wiki, blogs, boards, articles, fisheye, food) calls this in its `schema_inc.php`;
+  `contact` never did. The installer's own uninstall cleanup derives each `content_type_guid` by
+  instantiating classes off `$gBitInstaller->mContentClasses[$package]` (`BIT_INSTALL` blocks the
+  normal `$gLibertySystem->mContentTypes` lookup entirely during install) - with nothing
+  registered there for `contact`, that cleanup silently found nothing to do, leaving
+  `liberty_content_types`/`liberty_xref_group`/`liberty_xref_item` rows behind on *every single
+  uninstall*, ready to collide with the next reinstall's own defaults. Added the missing
+  `registerContentObjects()` call (`Contact`, `ContactPerson`, `ContactBusiness`).
+- **Three "development upgrade" files deleted** (`admin/upgrades/5.0.1.php`/`5.0.2.php`/
+  `5.0.3.php`) - pure legacy migrations for tables/xref-item-codes (`contact_xref_type`, old `$0x`
+  style xref items) that only ever existed on one real pre-existing production site, never on a
+  fresh install. Picked up by the installer's own upgrade-file loader regardless (once landed on
+  the separate, session-only "Upgrade" step, reachable via a direct `?step=5` link) and fataled
+  referencing tables that don't exist in the current `schema_inc.php` at all. Package version
+  rolled back from `5.0.3` (the deleted files' own latest version tag) to `5.0.1` (the base
+  schema's now-single baseline) on all three machines; `food`/`stock`'s own declared `contact`
+  dependency dropped from `5.0.2` to `5.0.1` to match.
+
+**Runtime self-heal caveat found along the way**: `BitSystem.php`'s package-status bootstrap
+(runs on every page load, not just install) will auto-demote a package's `package_X` config from
+`y` (active) back to `i` (installed-not-active) if it ever detects `installed=true` but
+`isFeatureActive('package_X')` isn't exactly `y` at that instant - happened at least twice this
+session with no fully-confirmed trigger, taking `package_contact_version` down to nothing at the
+same time. Fix is just re-setting both directly (`package_contact`→`y`,
+`package_contact_version`→whatever the current baseline is) - didn't recur once contact settled
+into a genuinely stable installed state, but worth checking first if a package "goes disabled"
+with no obvious cause.
+
+Full 10-supermarket-supplier CSV rebuild (needed after this same testing wiped the real
+`contactbusiness` records as a side effect of table drop/recreate cycles) - detail in
+`food/CLAUDE.md`.
