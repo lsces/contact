@@ -10,7 +10,7 @@
     {/if}
     <a title="{tr}print{/tr}" href="print.php?content_id={$gContent->mInfo.content_id}">{biticon ipackage="icons" iname="document-print" iexplain="print"}</a>
       {if $gBitUser->hasPermission('p_contact_expunge')}
-        {smartlink ititle="Delete Contact" ifile="edit.php" biticon="user-trash" content_id=$gContent->mInfo.content_id expunge=1}
+        {smartlink ititle="Delete Contact" ifile="edit.php" biticon="user-trash" content_id=$gContent->mInfo.content_id expunge=1 ionclick="return confirm('{tr}Are you sure you want to delete this contact?{/tr}')"}
       {/if}
   {/if} {* end print_page *}
 </div> {*end .floaticon *}
