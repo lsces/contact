@@ -1,6 +1,6 @@
 <?php
 /**
- * @author   lsces <lester@lsces.uk>
+ * @author   lsces <lester@lsces.co.uk>
  * @version  $Revision$
  * @package  Contact
  * @subpackage functions
