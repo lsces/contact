@@ -282,27 +282,76 @@ class Contact extends LibertyContent {
 					unset($pParamHash['contact_store']['xkey']);
 					$result = $this->mDb->associateInsert( $atable, $pParamHash['contact_store'] );
 				}
-				if( !empty( $pParamHash['contact_types'] ) ) {
-					// P01 carries the pipe-encoded name — always rewrite it independently of the checkbox set
-					$this->mDb->query( "DELETE FROM `".BIT_DB_PREFIX."liberty_xref` WHERE `content_id` = ? AND `item` = 'P01'", [ $this->mContentId ] );
+				// fContactTypesSubmitted (a hidden field alongside the checkboxes, see
+				// edit_type_header.tpl) marks that this section was genuinely on the form -
+				// an all-unchecked checkbox group sends no contact_types[] key at all, which
+				// is otherwise indistinguishable from a caller (an import script, say) that
+				// doesn't touch type tags at all and must leave existing ones alone. Confirmed
+				// live 2026-08-29 via xdebug: the old `!empty($pParamHash['contact_types'])`
+				// guard meant unchecking someone's only type tag silently did nothing at all.
+				if( !empty( $pParamHash['fContactTypesSubmitted'] ) ) {
+					$wantedTypes = $pParamHash['contact_types'] ?? [];
+
+					// P01/P02/B01-B04 are type-marker items (sort_order=0 group) - deliberately
+					// excluded from loadContent()'s normal group loading (sort_order > 0 only),
+					// so they never appear in $this->mXrefInfo no matter how freshly it's loaded
+					// - not a bug, the documented type-marker convention. getTypeMarkerXrefs()
+					// is the xref class's own equivalent for this case (what's actually stored,
+					// not what's schema-possible - that's getTypeMarkers(), already used by
+					// getAvailableTypeItems() above) - one call covers both P01 and the P02+/
+					// B01+ set below, since it returns everything actually stored for this
+					// content item's type markers.
+					$existingTypeXrefs = $this->xrefType()->getTypeMarkerXrefs( $this->mContentId );
+
+					// P01 carries the pipe-encoded name - an unchanged name shouldn't be deleted
+					// and recreated, resetting entry_date, the same bug just fixed below for the
+					// P02+/B01+ set.
+					$existingP01Id = $existingTypeXrefs['P01'] ?? null;
 					if( !empty( $pParamHash['name'] ) ) {
-						$this->mDb->query(
-							"INSERT INTO `".BIT_DB_PREFIX."liberty_xref` (`xref_id`, `content_id`, `item`, `xkey_ext`, `last_update_date`) VALUES (?, ?, 'P01', ?, NULL)",
-							[ $this->mDb->GenID('liberty_xref_seq'), $this->mContentId, $pParamHash['name'] ]
-						);
-					}
-					// Optional type tags (P02+, B01+) come from the form checkboxes
-					$this->mDb->query(
-						"DELETE FROM `".BIT_DB_PREFIX."liberty_xref` WHERE `content_id` = ? AND (`item` STARTING WITH 'P' OR `item` STARTING WITH 'B') AND `item` <> 'P01'",
-						[ $this->mContentId ]
-					);
-					foreach ( $pParamHash['contact_types'] as $source ) {
-						if ( $source !== 'P01' ) {
-							$this->mDb->query(
-								"INSERT INTO `".BIT_DB_PREFIX."liberty_xref` (`xref_id`, `content_id`, `item`, `last_update_date`) VALUES (?, ?, ?, NULL)",
-								[ $this->mDb->GenID('liberty_xref_seq'), $this->mContentId, $source ]
-							);
+						$xrefHash = [
+							'content_id' => $this->mContentId,
+							'item'       => 'P01',
+							'xkey_ext'   => $pParamHash['name'],
+						];
+						if( $existingP01Id ) {
+							$xrefHash['xref_id'] = $existingP01Id;
+						} else {
+							$xrefHash['fAddXref'] = 1;
 						}
+						$this->storeXref( $xrefHash );
+					} elseif( $existingP01Id ) {
+						// stepXref() takes &$pParamHash by reference - a literal array here is a
+						// fatal error, must be a named variable (same footgun storeXref()'s own
+						// docblock already warns about).
+						$stepHash = [ 'xref_id' => $existingP01Id, 'expunge' => 3 ];
+						$this->stepXref( $stepHash );
+					}
+
+					// Optional type tags (P02+, B01+) come from the form checkboxes — diff against
+					// what's already stored rather than blanket delete-all-then-reinsert, so an
+					// unrelated add/remove elsewhere in the set doesn't reset an unchanged tag's
+					// entry_date (confirmed live 2026-08-29: adding a second B0x tag was resetting
+					// the first one's entry_date, because the old delete-all wiped and recreated
+					// every row in the set on every save, not just the ones actually changing).
+					// Deletion goes through the xref class too, via stepXref(expunge:3). Existing
+					// items come from the same $existingTypeXrefs fetched above (still correct
+					// here - P01's own write above doesn't change what P02+/B01+ items exist).
+					$existingItemMap = array_diff_key( $existingTypeXrefs, [ 'P01' => true ] );
+					$existingItems = array_keys( $existingItemMap );
+					$wantedItems = array_diff( $wantedTypes, [ 'P01' ] );
+					foreach ( $existingItemMap as $item => $xrefId ) {
+						if ( !in_array( $item, $wantedItems, true ) ) {
+							$stepHash = [ 'xref_id' => $xrefId, 'expunge' => 3 ];
+							$this->stepXref( $stepHash );
+						}
+					}
+					foreach ( array_diff( $wantedItems, $existingItems ) as $addedItem ) {
+						$xrefHash = [
+							'content_id' => $this->mContentId,
+							'item'       => $addedItem,
+							'fAddXref'   => 1,
+						];
+						$this->storeXref( $xrefHash );
 					}
 				}
 				// load before completing transaction as firebird isolates results
