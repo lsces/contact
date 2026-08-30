@@ -6,43 +6,38 @@
 
 require_once '../kernel/includes/setup_inc.php';
 
+use Bitweaver\Contact\Contact;
 use Bitweaver\Contact\ContactPerson;
-use Bitweaver\Contact\ContactBusiness;
 use Bitweaver\KernelTools;
 
 $gBitSystem->verifyPackage( 'contact' );
 $gBitSystem->verifyPermission( 'p_contact_view' );
 
-// Persons and businesses are separate types — each has its own getList().
-// The combined display is a view-layer concern: merge, sort, and let the
-// template select the row template by content_type_guid.
-$personContent   = new ContactPerson();
-$businessContent = new ContactBusiness();
+// One combined query across both types, via Contact::getList()'s array
+// content_type_guid override (see Contact.php) - a single real LIMIT/offset
+// and a single genuine postGetList(), instead of the old approach of running
+// ContactPerson::getList() and ContactBusiness::getList() separately and
+// merging the two page-slices afterward. That merge is what broke pagination:
+// the combined page never had a correct total_pages/current_page of its own,
+// only whichever side's listInfo happened to be reused as the base.
+$listContent = new Contact();
+$listHash = $_REQUEST;
+$listHash['content_type_guid'] = [ CONTACTPERSON_CONTENT_TYPE_GUID, CONTACTBUSINESS_CONTENT_TYPE_GUID ];
+$listcontacts = $listContent->getList( $listHash );
 
-$personHash   = $_REQUEST;
-$businessHash = $_REQUEST;
-
-$persons    = $personContent->getList( $personHash );
-$businesses = $businessContent->getList( $businessHash );
-
-// title is the pipe-encoded prefix|forename|surname|suffix for a person record —
-// reformat to the surname-led form so the merged listing sorts/displays correctly.
-foreach( $persons as &$personRow ) {
-	if( !empty( $personRow['title'] ) ) {
-		$personRow['title'] = ContactPerson::formatListName( $personRow['title'] );
+// title is the pipe-encoded prefix|forename|surname|suffix for a person record -
+// reformat to the surname-led display form. Businesses already store a plain
+// title, untouched. Same as list_people.php: sort order (SQL-level, on the raw
+// title column) is by the unformatted pipe-encoded value, not this display
+// form - matches list_people.php's own existing behaviour, not a new quirk.
+foreach( $listcontacts as &$row ) {
+	if( $row['content_type_guid'] === CONTACTPERSON_CONTENT_TYPE_GUID && !empty( $row['title'] ) ) {
+		$row['title'] = ContactPerson::formatListName( $row['title'] );
 	}
 }
-unset( $personRow );
+unset( $row );
 
-$listcontacts = array_merge( $persons, $businesses );
-usort( $listcontacts, fn( $a, $b ) => strcasecmp( $a['title'] ?? '', $b['title'] ?? '' ) );
-
-// listInfo: sum the two counts; use personHash's pagination metadata as base
-$listHash = $personHash;
-$listHash['cant']              = ( $personHash['cant'] ?? 0 ) + ( $businessHash['cant'] ?? 0 );
-$listHash['listInfo']['count'] = $listHash['cant'];
-
-if( $listHash['cant'] == 1 ) {
+if( $listHash['listInfo']['count'] == 1 ) {
 	KernelTools::bit_redirect( CONTACT_PKG_URL."view.php?content_id=".$listcontacts[0]['content_id'] );
 }
 

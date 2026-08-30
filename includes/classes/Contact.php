@@ -375,8 +375,24 @@ class Contact extends LibertyContent {
 		$whereSql = '';
 		$bindVars = [];
 
+		// content_type_guid filter: single value by default (this class's own
+		// type, same as always), or $pParamHash['content_type_guid'] to override -
+		// scalar for a single type, array for several (e.g. list_contacts.php
+		// combining contactperson+contactbusiness in one query instead of merging
+		// two separately-paginated getList() calls after the fact). $typeSql goes
+		// in $query/$query_cant's fixed WHERE position (both must stay identical -
+		// they share $bindVars); $typeGuids is always an array from here on so the
+		// two array_push() call sites below don't need to care which case it is.
+		$typeGuids = $pParamHash['content_type_guid'] ?? $this->mContentTypeGuid;
+		if( is_array( $typeGuids ) ) {
+			$typeSql = "lc.`content_type_guid` IN (" . implode( ',', array_fill( 0, count( $typeGuids ), '?' ) ) . ")";
+		} else {
+			$typeSql = "lc.`content_type_guid` = ?";
+			$typeGuids = [ $typeGuids ];
+		}
+
 		if ( isset( $pParamHash['user_id'] ) ) {
-			array_push( $bindVars, $this->mContentTypeGuid );
+			array_push( $bindVars, ...$typeGuids );
 			if ( $pParamHash['user_id'] > 0 ) {
 				$whereSql .= " AND con.`role_id` = ? ";
 				$bindVars[] = (int)$pParamHash['user_id'];
@@ -394,7 +410,7 @@ class Contact extends LibertyContent {
 		}
 
 		if ( !isset( $pParamHash['user_id'] ) ) {
-			array_push( $bindVars, $this->mContentTypeGuid );
+			array_push( $bindVars, ...$typeGuids );
 		}
 
 		$this->getServicesSql( 'content_list_sql_function', $selectSql, $joinSql, $whereSql, $bindVars, NULL, $pParamHash );
@@ -423,13 +439,13 @@ class Contact extends LibertyContent {
 			FROM `".BIT_DB_PREFIX."contact` con
 			LEFT JOIN `".BIT_DB_PREFIX."liberty_content` lc ON lc.`content_id` = con.`content_id`
 			$joinSql
-			WHERE lc.`content_type_guid` = ? $whereSql
+			WHERE $typeSql $whereSql
 			ORDER BY ".$this->mDb->convertSortmode( $sort_mode );
 
 		$query_cant = "SELECT COUNT( * )
 			FROM `".BIT_DB_PREFIX."contact` con
 			LEFT JOIN `".BIT_DB_PREFIX."liberty_content` lc ON lc.content_id = con.content_id
-			$joinSql WHERE lc.`content_type_guid` = ? $whereSql ";
+			$joinSql WHERE $typeSql $whereSql ";
 		$result = $this->mDb->query( $query, $bindVars, $max_records, $offset );
 
 		$ret = [];
@@ -441,7 +457,16 @@ class Contact extends LibertyContent {
 			// rebuild this is standing in for.
 			$address = LibertyContent::lookupXrefByTemplate( $res['content_id'], 'address', 'contact' );
 			$res['house'] = $address['xkey_ext'] ?? null;
-			$res['refs'] = LibertyContent::countXrefEntries( $res['content_id'], $this->mContentTypeGuid, $this->mPackageGuid );
+			// Per-row content_type_guid, not $this->mContentTypeGuid — a combined
+			// multi-type call (content_type_guid passed as an array, see above)
+			// returns rows of more than one type in the same result set, and
+			// countXrefEntries() needs the row's own type to find the right
+			// xref_item/xref_group definitions - by convention Bxx items are only
+			// registered under 'contactbusiness', Pxx only under 'contactperson',
+			// and the two sets don't overlap. Correct for the single-type case too,
+			// since $res['content_type_guid'] just equals $this->mContentTypeGuid
+			// there.
+			$res['refs'] = LibertyContent::countXrefEntries( $res['content_id'], $res['content_type_guid'], $this->mPackageGuid );
 			$ret[] = $res;
 		}
 		$pParamHash["cant"] = $this->mDb->getOne( $query_cant, $bindVars );
