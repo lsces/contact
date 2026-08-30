@@ -107,8 +107,7 @@ $gBitInstaller->registerSchemaDefault( CONTACT_PKG_NAME, [
 	// getContentTypeMarkers()/getTypeMarkerXrefs() are scoped to x_group='type'
 	// specifically (not just any sort_order=0 group), precisely so a non-toggleable
 	// data-storage item like NAME doesn't leak into the type-tag picker/display
-	// alongside P01/P02. Confirmed live 2026-08-30 that sharing 'type' does exactly
-	// that.
+	// alongside P01/P02.
 	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_group` (`x_group`,`content_type_guid`,`title`,`sort_order`,`role_id`,`type_href`) VALUES ('name','contactperson', 'Person Name Parts', 0,3,'')",
 	// shared groups stay at 'contact' level (loaded via dual-guid IN filter)
 	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_group` (`x_group`,`content_type_guid`,`title`,`sort_order`,`role_id`,`type_href`) VALUES ('contact','contact','General Contact Details',1,3,'')",
