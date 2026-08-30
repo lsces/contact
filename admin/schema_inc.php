@@ -67,8 +67,8 @@ $gBitInstaller->registerPackageInfo( CONTACT_PKG_NAME, [
 // ### Register content types - every other content-bearing package (stock, mapper, wiki, ...)
 // does this; contact never did, which is why the installer's own uninstall cleanup (keyed off
 // mContentClasses to derive each content_type_guid - see install_packages.php) silently found
-// nothing to clean up for contact and left liberty_content_types/liberty_xref_group/
-// liberty_xref_item rows behind on every uninstall.
+// nothing to clean up for contact and left liberty_content_types/Xref group/
+// item rows behind on every uninstall.
 $gBitInstaller->registerContentObjects( CONTACT_PKG_NAME, [
 	'Contact'         => CONTACT_PKG_CLASS_PATH.'Contact.php',
 	'ContactPerson'   => CONTACT_PKG_CLASS_PATH.'ContactPerson.php',
@@ -92,13 +92,13 @@ $gBitInstaller->registerSchemaSequences( CONTACT_PKG_NAME, [] );
 $gBitInstaller->registerSchemaDefault( CONTACT_PKG_NAME, [
 
 	// liberty_content_types rows for contactperson/contactbusiness are NOT declared here - that
-	// table predates liberty_xref entirely and already has its own original, idempotent
+	// table predates Xref entirely and already has its own original, idempotent
 	// registration path: bit_setup_inc.php's registerContentType() calls (checks the DB before
 	// inserting, updates in place if the row already differs). A raw INSERT here duplicated that
 	// and wasn't idempotent, so any reinstall with 'settings' selected (which re-runs this
 	// defaults array) collided with the row registerContentType() had already put there.
 
-	// --- liberty_xref_group ---
+	// --- Xref group ---
 	// 'type' group split: one per sub-type (sort_order=0 = type-marker group, excluded from loadXrefInfo display)
 	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_group` (`x_group`,`content_type_guid`,`title`,`sort_order`,`role_id`,`type_href`) VALUES ('type','contactperson', 'Person Type',       0,3,'')",
 	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_group` (`x_group`,`content_type_guid`,`title`,`sort_order`,`role_id`,`type_href`) VALUES ('type','contactbusiness','Business Type List',0,3,'')",
@@ -107,20 +107,15 @@ $gBitInstaller->registerSchemaDefault( CONTACT_PKG_NAME, [
 	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_group` (`x_group`,`content_type_guid`,`title`,`sort_order`,`role_id`,`type_href`) VALUES ('links',  'contact','Linked Contact Items',  2,3,'')",
 	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_group` (`x_group`,`content_type_guid`,`title`,`sort_order`,`role_id`,`type_href`) VALUES ('account','contact','Account Details',         3,3,'')",
 
-	// --- liberty_xref_item ---
-	// group: type — person types. sort_order orders the type picker/badges (see
-	// liberty/MANUAL.md's sort_order section) - P01 first, P02 second. Both are
-	// normal, visible, toggleable type options (no code-level special-casing) - P01
-	// is a pure type marker, no longer a name-storage side channel, since a person's
-	// name lives directly in lc.title (see ContactPerson). 'Business' here is this
-	// fresh-install default's generic label - existing sites may have their own
-	// customised wording (e.g. merg's 'MERG Kit Elf'), which schema_inc.php only
-	// seeds on first install and never overwrites afterward.
+	// --- Xref item ---
+	// group: type — person types, sort_order orders the picker (P01 first, P02
+	// second). 'Business' is just this fresh-install default's generic label -
+	// an existing site may have its own wording (e.g. merg's 'MERG Kit Elf'),
+	// which this file only seeds on first install and never overwrites.
 	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_item` (`item`,`content_type_guid`,`x_group`,`cross_ref_title`,`multiple`,`sort_order`,`role_id`,`cross_ref_href`,`template`) VALUES ('P01','contactperson','type','Personal', 0,1,3,'',NULL)",
 	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_item` (`item`,`content_type_guid`,`x_group`,`cross_ref_title`,`multiple`,`sort_order`,`role_id`,`cross_ref_href`,`template`) VALUES ('P02','contactperson','type','Business', 0,2,3,'',NULL)",
-	// group: type — business subtypes, sort_order preserves the B01-B04 code order
-	// rather than falling out alphabetically by title (Distributor/Manufacturer/
-	// Service/Supplier), which is what happened before sort_order was wired in.
+	// group: type — business subtypes, sort_order keeps the B01-B04 code order
+	// instead of falling out alphabetically by title.
 	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_item` (`item`,`content_type_guid`,`x_group`,`cross_ref_title`,`multiple`,`sort_order`,`role_id`,`cross_ref_href`,`template`) VALUES ('B01','contactbusiness','type','Service',      0,1,3,'',NULL)",
 	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_item` (`item`,`content_type_guid`,`x_group`,`cross_ref_title`,`multiple`,`sort_order`,`role_id`,`cross_ref_href`,`template`) VALUES ('B02','contactbusiness','type','Manufacturer', 0,2,3,'',NULL)",
 	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_item` (`item`,`content_type_guid`,`x_group`,`cross_ref_title`,`multiple`,`sort_order`,`role_id`,`cross_ref_href`,`template`) VALUES ('B03','contactbusiness','type','Distributor',  0,3,3,'',NULL)",

@@ -3,6 +3,10 @@
  * Export all contacts to CSV.
  * One row per contact; up to 3 phones, 2 emails.
  * Address: xkey_ext = full address text, xkey = postcode; postcode lookup adds add1-county where available.
+ *
+ * TODO: crude — hand-rolled per-item liberty_xref subqueries rather than the loaded
+ * xref array (mXrefInfo), hardcoded to fixed slot counts (3 phones, 2 emails). Part
+ * of the general xref list-filtering gap — see Contact::getList()'s own TODO.
  */
 
 namespace Bitweaver\Liberty;

@@ -32,32 +32,29 @@ use Bitweaver\Contact\ContactPerson;
 use Bitweaver\Contact\ContactBusiness;
 
 /**
- * Delete any existing xref for ($contentId, $item) then re-insert if either $xkey or
- * $xkeyExt is non-empty.  Values are silently truncated to column limits (xkey C(32),
- * xkey_ext C(250)).
+ * Replace any existing xref row(s) for ($contact, $item) with a single fresh one if
+ * either $xkey or $xkeyExt is non-empty. Goes through LibertyXref::store()/stepXref()
+ * (via Contact::storeXref()/stepXref()) rather than hitting Xref directly.
  *
- * @param int    $contentId  liberty_content.content_id.
- * @param string $item       xref item code (e.g. '#P', 'SCREF').
- * @param string $xkey       Short key value (≤ 32 chars after truncation).
- * @param string $xkeyExt    Extended value (≤ 250 chars after truncation).
- * @param int    $xorder     Row order within multiple-valued items (0 for singletons).
+ * @param \Bitweaver\Contact\Contact $contact  Already loaded (mXrefInfo populated).
+ * @param string                     $item     xref item code (e.g. '#P', 'SCREF').
+ * @param string                     $xkey     Short key value (truncated to 32 chars).
+ * @param string                     $xkeyExt  Extended value (truncated to 250 chars).
  */
-function contactCsvUpsertXref( int $contentId, string $item, string $xkey = '', string $xkeyExt = '', int $xorder = 0 ): void {
-	global $gBitDb;
-	$gBitDb->query(
-		"DELETE FROM `" . BIT_DB_PREFIX . "liberty_xref` WHERE `content_id` = ? AND `item` = ?",
-		[ $contentId, $item ]
-	);
+function contactCsvUpsertXref( \Bitweaver\Contact\Contact $contact, string $item, string $xkey = '', string $xkeyExt = '' ): void {
+	foreach( $contact->mXrefInfo->findByItem( $item ) as $xrefId ) {
+		$stepHash = [ 'xref_id' => $xrefId, 'expunge' => 3 ];
+		$contact->stepXref( $stepHash );
+	}
 	if( $xkey !== '' || $xkeyExt !== '' ) {
-		$gBitDb->associateInsert( BIT_DB_PREFIX . 'liberty_xref', [
-			'xref_id'          => $gBitDb->GenID( 'liberty_xref_seq' ),
-			'content_id'       => $contentId,
-			'item'             => $item,
-			'xorder'           => $xorder,
-			'xkey'             => $xkey    !== '' ? substr( $xkey,    0, 32  ) : null,
-			'xkey_ext'         => $xkeyExt !== '' ? substr( $xkeyExt, 0, 250 ) : null,
-			'last_update_date' => $gBitDb->NOW(),
-		] );
+		$xrefHash = [
+			'content_id' => $contact->mContentId,
+			'item'       => $item,
+			'xkey'       => $xkey    !== '' ? substr( $xkey,    0, 32  ) : '',
+			'xkey_ext'   => $xkeyExt !== '' ? substr( $xkeyExt, 0, 250 ) : '',
+			'fAddXref'   => 1,
+		];
+		$contact->storeXref( $xrefHash );
 	}
 }
 
@@ -104,11 +101,9 @@ function contactCsvImportRow( array $row, int $rowNum ): array {
 	// --- Find existing or create new via Contact subclass ---
 	$isPerson = ( $type !== '' && $type[0] === 'P' );
 
-	// Business/generic title is stored plain, so an exact match works directly. A
-	// person's stored title is the pipe-encoded prefix|forename|surname|suffix, while
-	// the CSV's own title column (matching export_contacts.php's output) is the
-	// reassembled display name — compare against the reassembled form instead of a
-	// raw match, small full-scan is fine for a bounded CSV import.
+	// A person's stored title is pipe-encoded, but the CSV's title column is the
+	// reassembled display name — compare against that, not a raw match. Small
+	// full-scan is fine for a bounded CSV import.
 	if( $isPerson ) {
 		$contentId = null;
 		$candidates = $gBitDb->query(
@@ -162,13 +157,13 @@ function contactCsvImportRow( array $row, int $rowNum ): array {
 	$contentId = $contact->mContentId;
 
 	// --- Remaining xref items ---
-	contactCsvUpsertXref( $contentId, 'SCREF', $scref );
-	contactCsvUpsertXref( $contentId, '#P',    $phone, '', 1 );
-	contactCsvUpsertXref( $contentId, '#C',    $postcode, $address );
-	contactCsvUpsertXref( $contentId, '#F',    $fax, '', 1 );
-	contactCsvUpsertXref( $contentId, '#W',    '', $website );
-	contactCsvUpsertXref( $contentId, '#E',    '', $email );
-	contactCsvUpsertXref( $contentId, 'ACCNO', $accno );
+	contactCsvUpsertXref( $contact, 'SCREF', $scref );
+	contactCsvUpsertXref( $contact, '#P',    $phone );
+	contactCsvUpsertXref( $contact, '#C',    $postcode, $address );
+	contactCsvUpsertXref( $contact, '#F',    $fax );
+	contactCsvUpsertXref( $contact, '#W',    '', $website );
+	contactCsvUpsertXref( $contact, '#E',    '', $email );
+	contactCsvUpsertXref( $contact, 'ACCNO', $accno );
 
 	return $result;
 }

@@ -7,9 +7,11 @@
 
 namespace Bitweaver\Contact;
 
+use Bitweaver\Liberty\LibertyContent;
+
 require_once '../../kernel/includes/setup_inc.php';
 
-global $gBitDb, $gBitUser;
+global $gBitUser;
 
 if( !$gBitUser->hasPermission( 'p_contact_view' ) ) {
 	header( 'Content-Type: application/json' );
@@ -31,22 +33,22 @@ $types = in_array( $type, [ 'contactperson', 'contactbusiness' ], true )
 	? [ $type ]
 	: [ 'contactperson', 'contactbusiness' ];
 
-$like = '%'.strtolower( $q ).'%';
-
-$rows = $gBitDb->getArray(
-	"SELECT FIRST 30 lc.content_id, lc.title,
-		(SELECT FIRST 1 sx.xkey FROM ".BIT_DB_PREFIX."liberty_xref sx
-		 WHERE sx.content_id=lc.content_id AND sx.item='SCREF') AS scref
-	 FROM ".BIT_DB_PREFIX."liberty_content lc
-	 WHERE lc.content_type_guid IN (".implode( ',', array_fill( 0, count( $types ), '?' ) ).")
-	   AND (LOWER(lc.title) LIKE ? OR EXISTS (
-		SELECT 1 FROM ".BIT_DB_PREFIX."liberty_xref sx
-		WHERE sx.content_id=lc.content_id AND sx.item='SCREF' AND LOWER(sx.xkey) LIKE ?
-	   ))
-	 ORDER BY lc.title",
-	[ ...$types, $like, $like ]
-);
+// Queried per type (rather than one combined IN() call) so a person's raw
+// pipe-encoded title can be reformatted before merging with business results.
+$rows = [];
+foreach( $types as $searchType ) {
+	foreach( LibertyContent::lookupTitles( [ $searchType ], $q, 'SCREF' ) as $row ) {
+		if( $searchType === 'contactperson' ) {
+			$row['title'] = ContactPerson::formatDisplayName( $row['title'] );
+		}
+		$row['scref'] = $row['xkey'];
+		unset( $row['xkey'] );
+		$rows[] = $row;
+	}
+}
+usort( $rows, fn( $a, $b ) => strcasecmp( $a['title'], $b['title'] ) );
+$rows = array_slice( $rows, 0, 30 );
 
 header( 'Content-Type: application/json' );
-echo json_encode( array_values( $rows ?? [] ) );
+echo json_encode( $rows );
 exit;

@@ -2,11 +2,9 @@
 /**
  * Contact content class — person or business contact stored in liberty_content.
  *
- * Business contacts store the organisation name directly in lc.title. Person contacts
- * do the same (see ContactPerson) — title holds the pipe-encoded
- * prefix|forename|surname|suffix directly, with ContactPerson::getTitle() overriding
- * the generic display hook to reassemble it for anywhere bitweaver shows this
- * content's title generically (breadcrumbs, search, listings).
+ * Both store their name directly in lc.title — organisation name for a business,
+ * pipe-encoded prefix|forename|surname|suffix for a person (see ContactPerson,
+ * whose load() normalises mInfo['title'] to a display-ready form).
  *
  * @package contact
  */
@@ -76,23 +74,14 @@ class Contact extends LibertyContent {
 		);
 	}
 
-	/**
-	 * Load this content item's type-tag markers (P01/P02/B01–B04) from the
-	 * schema-driven xref framework — LibertyXrefType::getContentTypeMarkers(), not
-	 * a raw liberty_xref query. Returns the full possible-marker set (content_id
-	 * null when not set for this item), matching what edit.php and
-	 * display_type_header.tpl already expect.
-	 */
+	/** Load this content item's type-tag markers (P01/P02/B01–B04) into mInfo. */
 	public function loadXrefTypeList(): void {
 		if ( !$this->isValid() || !empty( $this->mInfo[$this->mXrefTypeKey] ) ) return;
 		$this->mInfo[$this->mXrefTypeKey] = $this->xrefType()->getContentTypeMarkers( $this->mContentId );
 	}
 
 	/**
-	 * Return all available type-tag options for this contact's edit form, from the
-	 * schema (LibertyXrefType::getTypeMarkers()) — no hard-coded fallback list, and
-	 * no P01 exclusion: it's a normal type option now (first by sort_order), not a
-	 * name-storage side channel that needed hiding from the picker.
+	 * Return all available type-tag options for this contact's edit form.
 	 *
 	 * @return array[]  Each element: ['item' => string, 'name' => string]
 	 */
@@ -130,10 +119,6 @@ class Contact extends LibertyContent {
 				$this->mInfo['display_url'] = $this->getDisplayUrl();
 				$this->mInfo['organisation'] = trim( $this->mInfo['title'] ?? '' );
 
-				// Load the xref set first — IMG/#S/#L below all read from it rather than
-				// hand-rolled JOINs against liberty_xref, per liberty/MANUAL.md's access
-				// boundaries (structure/data belongs to LibertyXrefType/LibertyXref; content
-				// classes read the already-loaded mXrefInfo, they don't re-query the table).
 				$this->loadXrefInfo();
 
 				if ( $imgXref = $this->mXrefInfo->findRowByItem( 'IMG' ) ) {
@@ -254,36 +239,20 @@ class Contact extends LibertyContent {
 				if( !empty( $pParamHash['fContactTypesSubmitted'] ) ) {
 					$wantedTypes = $pParamHash['contact_types'] ?? [];
 
-					// P01/P02/B01-B04 are type-marker items (sort_order=0 group) - deliberately
-					// excluded from loadContent()'s normal group loading (sort_order > 0 only),
-					// so they never appear in $this->mXrefInfo no matter how freshly it's loaded
-					// - not a bug, the documented type-marker convention. getTypeMarkerXrefs()
-					// is the xref class's own equivalent for this case (what's actually stored,
-					// not what's schema-possible - that's getTypeMarkers(), already used by
-					// getAvailableTypeItems() above) - one call covers everything actually
-					// stored for this content item's type markers.
+					// Type markers (sort_order=0) are excluded from mXrefInfo by design, so
+					// read what's actually stored via getTypeMarkerXrefs() instead. P01 needs
+					// no special-casing any more - it's a normal toggleable type like the rest.
+					// Diff against existing rather than delete-all-then-reinsert, so an
+					// unrelated add/remove doesn't reset an unchanged tag's entry_date.
 					$existingTypeXrefs = $this->xrefType()->getTypeMarkerXrefs( $this->mContentId );
-
-					// P01 is a pure type marker now (no data payload — a person's name lives in
-					// lc.title, see ContactPerson::verify()/load()) with nothing left to special-
-					// case: it's a normal, visible, toggleable type like P02/B01-B04, just first
-					// in sort_order. Diff against what's already stored rather than blanket
-					// delete-all-then-reinsert, so an unrelated add/remove elsewhere in the set
-					// doesn't reset an unchanged tag's entry_date (confirmed live 2026-08-29:
-					// adding a second B0x tag was resetting the first one's entry_date, because
-					// the old delete-all wiped and recreated every row in the set on every save,
-					// not just the ones actually changing). Deletion goes through the xref class
-					// too, via stepXref(expunge:3).
-					$existingItemMap = $existingTypeXrefs;
-					$existingItems = array_keys( $existingItemMap );
-					$wantedItems = $wantedTypes;
-					foreach ( $existingItemMap as $item => $xrefId ) {
-						if ( !in_array( $item, $wantedItems, true ) ) {
+					$existingItems = array_keys( $existingTypeXrefs );
+					foreach ( $existingTypeXrefs as $item => $xrefId ) {
+						if ( !in_array( $item, $wantedTypes, true ) ) {
 							$stepHash = [ 'xref_id' => $xrefId, 'expunge' => 3 ];
 							$this->stepXref( $stepHash );
 						}
 					}
-					foreach ( array_diff( $wantedItems, $existingItems ) as $addedItem ) {
+					foreach ( array_diff( $wantedTypes, $existingItems ) as $addedItem ) {
 						$xrefHash = [
 							'content_id' => $this->mContentId,
 							'item'       => $addedItem,
@@ -304,25 +273,14 @@ class Contact extends LibertyContent {
 	}
 
 	/**
-	 * Delete this contact and all its liberty_xref rows inside a transaction.
+	 * Delete this contact. Xref cleanup is LibertyContent::expunge()'s own job,
+	 * not this method's — it already deletes every xref row for this content_id.
 	 *
 	 * @return bool TRUE on success; FALSE if the contact is not valid or the delete fails.
 	 */
 	public function expunge(): bool
 	{
-		$ret = FALSE;
-		if ($this->isValid() ) {
-			$this->mDb->StartTrans();
-			$query = "DELETE FROM `".BIT_DB_PREFIX."liberty_xref` WHERE `content_id` = ?";
-			$result = $this->mDb->query($query, [$this->mContentId ] );
-			if (LibertyContent::expunge() ) {
-			$ret = TRUE;
-				$this->mDb->CompleteTrans();
-			} else {
-				$this->mDb->RollbackTrans();
-			}
-		}
-		return $ret;
+		return $this->isValid() && LibertyContent::expunge();
 	}
 
 	/** @return bool Always TRUE — contacts support comments. */
@@ -386,9 +344,23 @@ class Contact extends LibertyContent {
 	/**
 	 * Return a paged list of contacts matching filter criteria.
 	 *
-	 * Recognised keys in $pParamHash: user_id (filters by linked user; stored in con.role_id), contact_type_guid, find_xref,
-	 * find_title, find_location, find_postcode, active, sort_mode, max_records, offset.
+	 * Recognised keys in $pParamHash: user_id (filters by linked user; stored in con.role_id), find_xref,
+	 * find_title, active, sort_mode, max_records, offset.
 	 * Sets $pParamHash['cant'] and $pParamHash['listInfo'] on return.
+	 *
+	 * find_location/find_postcode aren't handled here — they depended on
+	 * address_postcode, which no real site populates any more (postcode lookup is
+	 * moving to mapper/OSM instead). The search UI still shows those fields; they
+	 * currently do nothing.
+	 *
+	 * TODO: "filter/search a content list by an xref attribute" needs one proper,
+	 * generic mechanism — not another one-off patch per attribute. find_xref below
+	 * (unscoped LIKE on any item's xkey), the removed type-tag filter (P01/B0x),
+	 * find_location/find_postcode's future postcode/address replacement, and
+	 * export_contacts.php's hand-rolled per-item subqueries are all the same
+	 * underlying gap, not four separate ones. The lookup*() family on
+	 * LibertyContent (lookupTitles/lookupByXref/lookupXrefByTemplate) covers
+	 * finding a single value; this would be its list-filtering sibling.
 	 *
 	 * @param  array $pParamHash  Filter and pagination params; modified in place.
 	 * @return array              Flat array of result row hashes.
@@ -398,7 +370,6 @@ class Contact extends LibertyContent {
 
 		LibertyContent::prepGetList( $pParamHash );
 
-		$findSql = '';
 		$selectSql = '';
 		$joinSql = '';
 		$whereSql = '';
@@ -411,14 +382,11 @@ class Contact extends LibertyContent {
 				$bindVars[] = (int)$pParamHash['user_id'];
 			}
 		}
-		elseif ( isset( $pParamHash['contact_type_guid'][0] ) ) {
-			$joinSql .= "JOIN `".BIT_DB_PREFIX."liberty_xref` cx ON cx.`content_id` = con.`content_id` AND cx.`item` = ? ";
-			$bindVars[] = $pParamHash['contact_type_guid'][0];
-		}
 
-		// this will set $find, $sort_mode, $max_records and $offset
+		// this will set $sort_mode, $max_records and $offset
 		extract( $pParamHash );
 
+		// Unscoped LIKE on any item's xkey — see getList()'s own TODO.
 		if( isset( $find_xref ) and is_string( $find_xref ) and $find_xref <> '' ) {
 			$joinSql .= "JOIN `".BIT_DB_PREFIX."liberty_xref` cy ON cy.`content_id` = con.`content_id` AND cy.`xkey` like ? ";
 			$bindVars[] = '%' . strtoupper( $find_xref ). '%';
@@ -430,8 +398,6 @@ class Contact extends LibertyContent {
 		}
 
 		$this->getServicesSql( 'content_list_sql_function', $selectSql, $joinSql, $whereSql, $bindVars, NULL, $pParamHash );
-
-//		$pParamHash["listInfo"]["ihash"]['contact_type_guid'] = $contact_type_guid;
 
 		$t = $gBitSystem->getUTCTime();
 		if ( isset( $active ) ) {
@@ -453,62 +419,29 @@ class Contact extends LibertyContent {
 			$pParamHash["listInfo"]["ihash"]["find_title"] = $find_title;
 		}
 
-/*		if( isset( $find_name ) and is_string( $find_name ) and $find_name <> '' ) {
-			$split = preg_split('|[,. ]|', $find_name, 2);
-			$whereSql .= " AND UPPER( ci.`surname` ) STARTING ? ";
-			$bindVars[] = strtoupper( $split[0] );
-			if ( array_key_exists( 1, $split ) ) {
-				$split[1] = trim( $split[1] );
-				$whereSql .= " AND UPPER( ci.`forename` ) STARTING ? ";
-				$bindVars[] = strtoupper( $split[1] );
-			}
-			$pParamHash["listInfo"]["ihash"]["find_name"] = $find_name;
-		}
-*/
-		if( isset( $find_location ) and is_string( $find_location ) and $find_location <> '' ) {
-			$whereSql .= " AND ( UPPER( ap.`add2` ) like ? OR UPPER( ap.`add3` ) like ? OR UPPER( ap.`add4` ) like ? OR UPPER( ap.`town` ) like ? )";
-			$uploc = '%' . strtoupper( $find_location ). '%';;
-			$bindVars[] = $uploc;
-			$bindVars[] = $uploc;
-			$bindVars[] = $uploc;
-			$bindVars[] = $uploc;
-			$pParamHash["listInfo"]["ihash"]["find_location"] = $find_location;
-		}
-
-		if( isset( $find_postcode ) and is_string( $find_postcode ) and $find_postcode <> '' ) {
-			$whereSql .= " AND UPPER( `ap.postcode` ) LIKE ? ";
-			$bindVars[] = '%' . strtoupper( $find_postcode ). '%';
-			$pParamHash["listInfo"]["ihash"]["find_postcode"] = $find_postcode;
-		}
-
-		$query = "SELECT con.`content_id` as content_id, con.*, lc.*,
-			ap.*, xhA.`xkey_ext` AS house,
-			xhL.`xkey` as x_coordinate, xhL.`xkey_ext` as y_coordinate,
- 			(SELECT COUNT(*) FROM `".BIT_DB_PREFIX."liberty_xref` x WHERE x.`content_id` = con.`content_id` AND x.`item` NOT STARTING WITH '$' ) AS refs
+		$query = "SELECT con.`content_id` as content_id, con.*, lc.*
 			FROM `".BIT_DB_PREFIX."contact` con
 			LEFT JOIN `".BIT_DB_PREFIX."liberty_content` lc ON lc.`content_id` = con.`content_id`
-			LEFT JOIN `".BIT_DB_PREFIX."liberty_xref` xhA ON xhA.`content_id` = con.`content_id` AND ( xhA.`item` IN ( SELECT `item` FROM `".BIT_DB_PREFIX."liberty_xref_item` WHERE `template` = 'address' AND `content_type_guid` = 'contact' ) ) AND ( xhA.`end_date` IS NULL OR xhA.`end_date` > CURRENT_TIMESTAMP )
-			LEFT JOIN `".BIT_DB_PREFIX."liberty_xref` xhL ON xhL.`content_id` = con.`content_id` AND xhL.`item` = '#L' AND ( xhL.`end_date` IS NULL OR xhL.`end_date` > CURRENT_TIMESTAMP )
-			LEFT JOIN `".BIT_DB_PREFIX."address_postcode` ap ON ap.`postcode` = xhA.`xkey`
-			$findSql
 			$joinSql
 			WHERE lc.`content_type_guid` = ? $whereSql
 			ORDER BY ".$this->mDb->convertSortmode( $sort_mode );
 
-//			(SELECT COUNT(*) FROM `".BIT_DB_PREFIX."task_ticket` e WHERE e.usn = ci.usn ) AS enquiries $selectSql
 		$query_cant = "SELECT COUNT( * )
 			FROM `".BIT_DB_PREFIX."contact` con
 			LEFT JOIN `".BIT_DB_PREFIX."liberty_content` lc ON lc.content_id = con.content_id
-			LEFT JOIN `".BIT_DB_PREFIX."liberty_xref` xhA ON xhA.`content_id` = con.`content_id` AND xhA.`item` = '#S' AND ( xhA.`end_date` IS NULL OR xhA.`end_date` > CURRENT_TIMESTAMP )
-			LEFT JOIN `".BIT_DB_PREFIX."address_postcode` ap ON ap.`postcode` = xhA.`xkey`
 			$joinSql WHERE lc.`content_type_guid` = ? $whereSql ";
 		$result = $this->mDb->query( $query, $bindVars, $max_records, $offset );
 
 		$ret = [];
 		while( $res = $result->fetchRow() ) {
-			if (!empty($parse_split)) {
-				$res = array_merge($this->parseSplit($res), $res);
-			}
+			// Per-row xref lookup rather than a JOIN in the main query — cheap at
+			// list-page scale (max_records already caps this), and lets further
+			// enrichment fields be added here the same way instead of growing the
+			// query itself. See getList()'s own docblock re: the postcode/address
+			// rebuild this is standing in for.
+			$address = LibertyContent::lookupXrefByTemplate( $res['content_id'], 'address', 'contact' );
+			$res['house'] = $address['xkey_ext'] ?? null;
+			$res['refs'] = LibertyContent::countXrefEntries( $res['content_id'], $this->mContentTypeGuid, $this->mPackageGuid );
 			$ret[] = $res;
 		}
 		$pParamHash["cant"] = $this->mDb->getOne( $query_cant, $bindVars );
@@ -516,92 +449,5 @@ class Contact extends LibertyContent {
 
 		LibertyContent::postGetList( $pParamHash );
 		return $ret;
-	}
-
-/**
-	 * Load contacts that reference this one via the '#A' xref item into $this->mInfo['client_list'].
-	 *
-	 * Used for contacts handled by a third party (e.g. alarm maintainer, call centre).
-	 */
-	public function loadClientList() {
-		if( $this->isValid() ) {
-			global $gBitUser;
-
-			$roles = array_keys($gBitUser->mRoles);
-			$bindVars = [];
-			array_push( $bindVars, $this->mDb->NOW() );
-			array_push( $bindVars, $this->mContentId );
-//			$bindVars = array_merge( $bindVars, $roles, array( $gBitUser->mUserId ) );
-
-			$sql = "SELECT r.`xref_id`, r.`content_id`, r.`last_update_date`, c.`title`,
-					CASE
-					WHEN r.`end_date` < ? THEN 'history'
-					ELSE r.`item` END as type_source,
-					r.`xkey`, r.`xkey_ext`, r.`data`,
-					r.`start_date`, r.`end_date`
-					FROM `".BIT_DB_PREFIX."liberty_xref` r
-					JOIN `".BIT_DB_PREFIX."liberty_content` c ON c.`content_id` = r.`content_id`
-					WHERE r.`xref` = ? AND r.`item` = '#A'
-					ORDER BY c.`title`";
-//					LEFT OUTER JOIN `".BIT_DB_PREFIX."users_roles_map` purm ON ( purm.`user_id`=".$gBitUser->mUserId." ) AND ( purm.`role_id` = s.`role_id` )
-//					AND (s.`role_id` IN(". implode(',', array_fill(0, count($roles), '?')) ." ) OR purm.`user_id`=?)
-
-			$result = $this->mDb->query( $sql, $bindVars );
-
-			while( $res = $result->fetchRow() ) {
-				$this->mInfo['client_list'][] = $res;
-			}
-		}
-	}
-
-	/**
-	 * Load address xref rows (template='address') into $this->mInfo['address'].
-	 *
-	 * Each row is joined to address_postcode and has grid-reference coordinates
-	 * converted to lat/lng when available.
-	 */
-	public function loadAddressList() {
-		if( $this->isValid() && empty( $this->mInfo['xref'] ) ) {
-			global $gBitUser;
-
-			$roles = array_keys($gBitUser->mRoles);
-			$bindVars = [];
-			array_push( $bindVars, $this->mDb->NOW() );
-			array_push( $bindVars, $this->mContentId );
-			$bindVars = array_merge( $bindVars, $roles, [ $gBitUser->mUserId ] );
-
-			$sql = "SELECT s.`x_group`, x.`xref_id`, x.`last_update_date`, x.`item`, t.`title` AS type_title,
-					CASE
-					WHEN x.`end_date` < ? THEN 'history'
-					ELSE t.`x_group` END as type_source,
-					CASE
-					WHEN x.`xorder` = 0 THEN s.`cross_ref_title`
-					ELSE s.`cross_ref_title` || '-' || x.`xorder` END
-					AS source_title,
-					x.`xkey_ext` AS house, ap.`add1`, ap.`add2`, ap.`add3`, ap.`add4`, ap.`town`, ap.`county`, x.`xkey` AS postcode, ap.`grideast`, ap.`gridnorth`, x.`data`,
-					x.`start_date`, x.`end_date`
-					FROM `".BIT_DB_PREFIX."liberty_xref` x
-					JOIN `".BIT_DB_PREFIX."liberty_xref_item` s ON s.`item` = x.`item` AND s.`content_type_guid` = 'contact'
-					JOIN `".BIT_DB_PREFIX."liberty_xref_group` t ON t.`x_group` = s.`x_group` AND t.`content_type_guid` = 'contact'
-					LEFT JOIN `".BIT_DB_PREFIX."address_postcode` ap ON ap.`postcode` = x.`xkey`
-					LEFT OUTER JOIN `".BIT_DB_PREFIX."users_roles_map` purm ON ( purm.`user_id`=".(int)($gBitUser->mUserId ?? 0)." ) AND ( purm.`role_id`=s.`role_id` )
-					WHERE x.content_id = ? AND s.`template` = 'address' AND (s.`role_id` IN(". implode(',', array_fill(0, count($roles), '?')) ." ) OR purm.`user_id`=?)
-					ORDER BY x.`item`, x.`xorder`";
-
-			$result = $this->mDb->query( $sql, $bindVars );
-
-			while( $res = $result->fetchRow() ) {
-				if ( $res['grideast'] and $res['grideast'] <> '00000' ) {
-					$os1 = new \OSRef( $res['grideast']*10, $res['gridnorth']*10 );
-					$ll1 = $os1->toLatLng();
-					$res['x_coordinate'] = $ll1->lng;
-					$res['y_coordinate'] = $ll1->lat;
-				} else {
-					$res['house'] = $res['house'].' - '.$res['data'];
-				}
-
-				$this->mInfo['address'][] = $res;
-			}
-		}
 	}
 }

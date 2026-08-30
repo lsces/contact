@@ -15,6 +15,7 @@
  */
 require_once '../kernel/includes/setup_inc.php';
 use Bitweaver\Liberty\LibertyComment;
+use Bitweaver\Liberty\LibertyContent;
 
 global $commentsLib, $gBitSmarty, $gBitSystem;
 
@@ -142,11 +143,10 @@ for ( $n = 0; $n < $mbox->size(); $n++ ) {
 
 		$from_emails = ( !empty( $to_emails[0] ) ) ? array_unique( $to_emails[0] ) : array_unique( $emails[0] );
 
-		$sql = "SELECT e.content_id FROM `" . BIT_DB_PREFIX . "liberty_xref` e WHERE e.`xkey_ext` = ?";
-		$result = $storeComment->mDb->getRow( $sql, $from_emails );
+		$matches = LibertyContent::lookupByXref( '#E', $from_emails[0] );
 
-		if ($result) {
-			$email['comments_parent_id'] = $result['content_id'];
+		if ( !empty( $matches ) ) {
+			$email['comments_parent_id'] = $matches[0];
 
 		} else {
 			$sql = "SELECT e.* FROM `" . BIT_DB_PREFIX . "contact_email` e WHERE e.`email` = ?";

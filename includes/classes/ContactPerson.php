@@ -2,14 +2,8 @@
 /**
  * Person contact — extends Contact with content_type_guid='contactperson'.
  *
- * Name storage mirrors ContactBusiness: liberty_content.title is the single
- * source of truth (pipe-encoded prefix|forename|surname|suffix here, rather than
- * a plain organisation string), not a separate xref row — P01 is a pure type
- * marker only (see Contact::store()), it carries no data.
- *
- * Person-specific xref items are registered at the 'contactperson' level; shared
- * contact fields (addresses, SCREF etc.) live at the 'contact' package level and
- * are picked up via the dual-guid xref pattern.
+ * Name storage mirrors ContactBusiness: liberty_content.title is the source of
+ * truth (pipe-encoded prefix|forename|surname|suffix), not a separate xref row.
  *
  * @package contact
  */
@@ -32,13 +26,7 @@ class ContactPerson extends Contact {
 		// because handler_package('contact') != content_type_guid('contactperson').
 	}
 
-	/**
-	 * Reassemble a pipe-encoded prefix|forename|surname|suffix string into a
-	 * plain reading-order display name — "Prefix Forename Surname Suffix".
-	 * Shared by getTitle() (object already loaded) and any raw-row caller that
-	 * only has the stored title string (e.g. list_contacts.php/list_people.php's
-	 * getList() rows, which are plain arrays, not ContactPerson instances).
-	 */
+	/** Reassemble a pipe-encoded title into "Prefix Forename Surname Suffix". */
 	public static function formatDisplayName( string $pRawTitle ): string {
 		$parts = explode( '|', $pRawTitle );
 		$name = trim( $parts[0] ?? '' );
@@ -48,12 +36,7 @@ class ContactPerson extends Contact {
 		return $name;
 	}
 
-	/**
-	 * Reassemble a pipe-encoded title into "Surname, Prefix Forename" — the
-	 * sort/list-friendly form used by list_contacts.php/list_people.php so
-	 * contacts still group and sort by surname, not by raw title or prefix.
-	 * Suffix isn't included, matching the format this replaces exactly.
-	 */
+	/** Reassemble a pipe-encoded title into "Surname, Prefix Forename" for sorting/listing. */
 	public static function formatListName( string $pRawTitle ): string {
 		$parts    = explode( '|', $pRawTitle );
 		$prefix   = $parts[0] ?? '';
@@ -72,15 +55,9 @@ class ContactPerson extends Contact {
 	}
 
 	/**
-	 * Explode the stored title (prefix|forename|surname|suffix) into separate
-	 * mInfo fields for the edit form, build mInfo['name'] — the reassembled display
-	 * form display_contact.tpl already reads directly — and then normalise
-	 * mInfo['title'] itself to that same display form. Several templates
-	 * (contact_header.tpl, edit.tpl, edit_contact.tpl, page_display.tpl) read
-	 * mInfo.title straight from Smarty with no way to route through getTitle()'s
-	 * override, so title has to already be display-ready after load(). Safe to
-	 * overwrite in place — verify() rebuilds title fresh from the submitted form's
-	 * prefix/forename/surname/suffix fields, it never reads mInfo['title'] back.
+	 * Explode the stored title into separate mInfo fields for the edit form, and
+	 * normalise mInfo['title'] itself to the display form — several templates read
+	 * mInfo.title directly, with no route through getTitle()'s override.
 	 */
 	public function load( $pContentId = NULL, $pPluginParams = NULL ) {
 		parent::load( $pContentId, $pPluginParams );

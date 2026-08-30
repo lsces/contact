@@ -61,45 +61,4 @@ class ContactType extends BitBase {
 		}
 	}
 
-	/**
-	 * Return liberty_xref_group rows for the contact content type.
-	 *
-	 * @param  array|null $pOptionHash  Optional filters: active_role (int), title (string).
-	 * @return array                    Rows with num_types appended.
-	 */
-	public static function getContactTypeList( $pOptionHash=NULL ) {
-		global $gBitSystem;
-
-		$where = '';
-		$bindVars = [];
-		if( !empty( $pOptionHash['active_role'] ) ) {
-			$where = " WHERE cxt.`role_id` = ? ";
-			$bindVars[] = $pOptionHash['active_role'];
-		}
-		if ( !empty(  $pOptionHash['title'] ) ) {
-			$where = " WHERE cxt.`title` = ? ";
-			$bindVars[] = $pOptionHash['title'];
-		}
-
-		$guidWhere = " cxt.`content_type_guid` IN ('contact','contactperson','contactbusiness') ";
-		$where     = $where ? $where . " AND $guidWhere" : " WHERE $guidWhere";
-
-		$query = "SELECT cxt.*
-				 FROM `".BIT_DB_PREFIX."liberty_xref_group` cxt
-				 $where ORDER BY cxt.`sort_order`";
-
-		$result = $gBitSystem->mDb->query( $query, $bindVars );
-
-		$ret = [];
-
-		while( $res = $result->fetchRow() ) {
-			$res["num_types"] = $gBitSystem->mDb->getOne(
-				"SELECT COUNT(*) FROM `".BIT_DB_PREFIX."liberty_xref_item` WHERE `x_group` = ? AND `content_type_guid` IN ('contact','contactperson','contactbusiness')",
-				[ $res["x_group"] ]
-			);
-			$ret[] = $res;
-		}
-
-		return $ret;
-	}
 }
