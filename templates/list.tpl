@@ -9,7 +9,11 @@
 
 	<div class="body">
 
-		{include file="bitpackage:contact/display_list_header.tpl"}
+		{if $listFindTpl}
+			{include file="bitpackage:contact/`$listFindTpl`"}
+		{else}
+			{include file="bitpackage:contact/display_list_header.tpl"}
+		{/if}
 	<div class="table-responsive">
 		<table class="col-xs-12">
 			<caption>{tr}Available Content{/tr} <span class="total">[ {$listInfo.total_records} ]</span></caption>

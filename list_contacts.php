@@ -36,6 +36,12 @@ if( $listHash['listInfo']['count'] == 1 ) {
 
 $gBitSmarty->assign( 'listcontacts', $listcontacts );
 $gBitSmarty->assign( 'listInfo', $listHash['listInfo'] );
+// Location/Postcode search boxes here never did anything - find_location/
+// find_postcode depended on address_postcode, which no real site populates
+// (see Contact::getList()'s own docblock). Own template rather than editing
+// display_list_header.tpl itself, which list_people.php/list_businesses.php
+// also use unchanged.
+$gBitSmarty->assign( 'listFindTpl', 'display_list_header_find.tpl' );
 
 $gBitSystem->setBrowserTitle( "View Contacts List" );
 $gBitSystem->display( 'bitpackage:contact/list.tpl', NULL, [ 'display_mode' => 'list' ] );
