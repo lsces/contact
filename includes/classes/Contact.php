@@ -274,27 +274,16 @@ class Contact extends LibertyContent {
 				// the only place the individual parts survive for the edit form to
 				// reload. Gated on 'surname' being present, same signal
 				// ContactPerson::verify() uses to detect a person save (ContactBusiness
-				// never sends it). Looked up via lookupXrefByItem() rather than
-				// getTypeMarkerXrefs(), since NAME is no longer in the 'type' group
-				// that method is scoped to.
+				// never sends it). upsertXref() does the existing-or-add lookup.
 				if( isset( $pParamHash['surname'] ) ) {
-					$existingNameXref = LibertyContent::lookupXrefByItem( $this->mContentId, 'NAME', $this->mContentTypeGuid )['xref_id'] ?? null;
-					$nameHash = [
-						'content_id' => $this->mContentId,
-						'item'       => 'NAME',
-						'edit'       => json_encode( [
+					$this->upsertXref( $this->mContentId, 'NAME', [
+						'edit' => json_encode( [
 							trim( $pParamHash['prefix'] ?? '' ),
 							trim( $pParamHash['forename'] ?? '' ),
 							trim( $pParamHash['surname'] ?? '' ),
 							trim( $pParamHash['suffix'] ?? '' ),
 						] ),
-					];
-					if( $existingNameXref ) {
-						$nameHash['xref_id'] = $existingNameXref;
-					} else {
-						$nameHash['fAddXref'] = 1;
-					}
-					$this->storeXref( $nameHash );
+					] );
 				}
 				// load before completing transaction as firebird isolates results
 				$this->load();
