@@ -33,14 +33,14 @@ $types = in_array( $type, [ 'contactperson', 'contactbusiness' ], true )
 	? [ $type ]
 	: [ 'contactperson', 'contactbusiness' ];
 
-// Queried per type (rather than one combined IN() call) so a person's raw
-// pipe-encoded title can be reformatted before merging with business results.
+// title is already the plain surname-led display form straight from the DB
+// for a person record (see ContactPerson.php's own docblock), same as a
+// business's own plain title — no reformatting needed. Still queried per
+// type rather than one combined IN() call, in case a caller-specific tweak
+// (e.g. a person-only vs business-only label difference) is ever needed here.
 $rows = [];
 foreach( $types as $searchType ) {
 	foreach( LibertyContent::lookupTitles( [ $searchType ], $q, 'SCREF' ) as $row ) {
-		if( $searchType === 'contactperson' ) {
-			$row['title'] = ContactPerson::formatDisplayName( $row['title'] );
-		}
 		$row['scref'] = $row['xkey'];
 		unset( $row['xkey'] );
 		$rows[] = $row;

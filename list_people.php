@@ -18,14 +18,8 @@ $gContent->mTypes->processRequestHash( $_REQUEST, $_SESSION['contact'] );
 $listHash = $_REQUEST;
 $listcontacts = $gContent->getList( $listHash );
 
-// title is the pipe-encoded prefix|forename|surname|suffix for a person record —
-// reformat to the surname-led display/sort form, same as list_contacts.php.
-foreach( $listcontacts as &$personRow ) {
-	if( !empty( $personRow['title'] ) ) {
-		$personRow['title'] = ContactPerson::formatListName( $personRow['title'] );
-	}
-}
-unset( $personRow );
+// title is already the plain surname-led sort/display form straight from the
+// DB (see ContactPerson.php's own docblock) — no reformatting needed here.
 
 if( $listHash['listInfo']['count'] == 1 ) {
 	KernelTools::bit_redirect( CONTACT_PKG_URL . "view.php?content_id=" . $listcontacts[0]['content_id'] );

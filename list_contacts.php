@@ -7,7 +7,6 @@
 require_once '../kernel/includes/setup_inc.php';
 
 use Bitweaver\Contact\Contact;
-use Bitweaver\Contact\ContactPerson;
 use Bitweaver\KernelTools;
 
 $gBitSystem->verifyPackage( 'contact' );
@@ -25,17 +24,11 @@ $listHash = $_REQUEST;
 $listHash['content_type_guid'] = [ CONTACTPERSON_CONTENT_TYPE_GUID, CONTACTBUSINESS_CONTENT_TYPE_GUID ];
 $listcontacts = $listContent->getList( $listHash );
 
-// title is the pipe-encoded prefix|forename|surname|suffix for a person record -
-// reformat to the surname-led display form. Businesses already store a plain
-// title, untouched. Same as list_people.php: sort order (SQL-level, on the raw
-// title column) is by the unformatted pipe-encoded value, not this display
-// form - matches list_people.php's own existing behaviour, not a new quirk.
-foreach( $listcontacts as &$row ) {
-	if( $row['content_type_guid'] === CONTACTPERSON_CONTENT_TYPE_GUID && !empty( $row['title'] ) ) {
-		$row['title'] = ContactPerson::formatListName( $row['title'] );
-	}
-}
-unset( $row );
+// title is already the plain surname-led sort/display form straight from the
+// DB for a person record, same as a business's own plain title — no
+// reformatting needed here (see ContactPerson.php's own docblock). This is
+// also what makes the combined SQL ORDER BY above sort correctly across both
+// types now, not just paginate correctly.
 
 if( $listHash['listInfo']['count'] == 1 ) {
 	KernelTools::bit_redirect( CONTACT_PKG_URL."view.php?content_id=".$listcontacts[0]['content_id'] );

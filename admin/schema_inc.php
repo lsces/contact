@@ -102,6 +102,14 @@ $gBitInstaller->registerSchemaDefault( CONTACT_PKG_NAME, [
 	// 'type' group split: one per sub-type (sort_order=0 = type-marker group, excluded from loadXrefInfo display)
 	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_group` (`x_group`,`content_type_guid`,`title`,`sort_order`,`role_id`,`type_href`) VALUES ('type','contactperson', 'Person Type',       0,3,'')",
 	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_group` (`x_group`,`content_type_guid`,`title`,`sort_order`,`role_id`,`type_href`) VALUES ('type','contactbusiness','Business Type List',0,3,'')",
+	// 'name' group: also sort_order=0 (hidden from loadXrefInfo, same as 'type'),
+	// but deliberately its OWN group, not 'type' - LibertyXrefType::getTypeMarkers()/
+	// getContentTypeMarkers()/getTypeMarkerXrefs() are scoped to x_group='type'
+	// specifically (not just any sort_order=0 group), precisely so a non-toggleable
+	// data-storage item like NAME doesn't leak into the type-tag picker/display
+	// alongside P01/P02. Confirmed live 2026-08-30 that sharing 'type' does exactly
+	// that.
+	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_group` (`x_group`,`content_type_guid`,`title`,`sort_order`,`role_id`,`type_href`) VALUES ('name','contactperson', 'Person Name Parts', 0,3,'')",
 	// shared groups stay at 'contact' level (loaded via dual-guid IN filter)
 	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_group` (`x_group`,`content_type_guid`,`title`,`sort_order`,`role_id`,`type_href`) VALUES ('contact','contact','General Contact Details',1,3,'')",
 	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_group` (`x_group`,`content_type_guid`,`title`,`sort_order`,`role_id`,`type_href`) VALUES ('links',  'contact','Linked Contact Items',  2,3,'')",
@@ -114,6 +122,13 @@ $gBitInstaller->registerSchemaDefault( CONTACT_PKG_NAME, [
 	// which this file only seeds on first install and never overwrites.
 	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_item` (`item`,`content_type_guid`,`x_group`,`cross_ref_title`,`multiple`,`sort_order`,`role_id`,`cross_ref_href`,`template`) VALUES ('P01','contactperson','type','Personal', 0,1,3,'',NULL)",
 	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_item` (`item`,`content_type_guid`,`x_group`,`cross_ref_title`,`multiple`,`sort_order`,`role_id`,`cross_ref_href`,`template`) VALUES ('P02','contactperson','type','Business', 0,2,3,'',NULL)",
+	// NAME: not a real type toggle - its own 'name' group (see the group INSERT
+	// above for why it's not 'type'), single-row storage for the structured
+	// [prefix,forename,surname,suffix] JSON array (x.data). lc.title holds the
+	// plain surname-led sort/display form directly; this is the only place the
+	// individual parts survive for the edit form to reload from. See
+	// ContactPerson.php's own docblock.
+	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_item` (`item`,`content_type_guid`,`x_group`,`cross_ref_title`,`multiple`,`sort_order`,`role_id`,`cross_ref_href`,`template`) VALUES ('NAME','contactperson','name','Name Parts', 0,1,3,'',NULL)",
 	// group: type — business subtypes, sort_order keeps the B01-B04 code order
 	// instead of falling out alphabetically by title.
 	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_item` (`item`,`content_type_guid`,`x_group`,`cross_ref_title`,`multiple`,`sort_order`,`role_id`,`cross_ref_href`,`template`) VALUES ('B01','contactbusiness','type','Service',      0,1,3,'',NULL)",

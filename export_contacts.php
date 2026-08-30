@@ -26,8 +26,9 @@ if( !$gBitUser->hasPermission( 'p_contact_view' ) ) {
 ob_clean();
 
 // --- Query 1: basic contact info ---
-// person_name comes straight from lc.title (pipe-encoded prefix|forename|surname|suffix
-// for a contactperson row) — title IS the name for a person, not a separate xref lookup.
+// lc.title is the plain surname-led sort/display form for a contactperson row
+// (e.g. "Caine, Mr Lester") - the individual prefix/forename/surname/suffix
+// parts come from the NAME xref item instead, picked up in query 2 below.
 $sql = "SELECT lc.`content_id`, lc.`title`, lc.`content_type_guid`,
 		xsc.`xkey`       AS scref
 		FROM `" . BIT_DB_PREFIX . "liberty_content` lc
@@ -91,6 +92,8 @@ while( $row = $result->fetchRow() ) {
 		$contacts[$cid]['vat_no'] = $row['xkey'] ?? '';
 	} elseif( $item === 'SAGEID' ) {
 		$contacts[$cid]['sage_id'] = $row['xkey'] ?? '';
+	} elseif( $item === 'NAME' ) {
+		$contacts[$cid]['name_parts'] = !empty( $row['data'] ) ? ( json_decode( $row['data'], true ) ?: [] ) : [];
 	} elseif( $row['template'] === 'address' && $contacts[$cid]['address'] === null ) {
 		// take first active address only
 		$contacts[$cid]['address'] = [
@@ -128,12 +131,12 @@ fputcsv( $out, [
 
 foreach( $contacts as $cid => $c ) {
 	$isPerson = $c['content_type_guid'] === 'contactperson';
-	$name     = $isPerson ? explode( '|', $c['title'], 4 ) : [];
+	$name     = $isPerson ? ( $c['name_parts'] ?? [] ) : [];
 	$addr     = $c['address'] ?? [];
 
 	fputcsv( $out, [
 		$cid,
-		$isPerson ? ContactPerson::formatDisplayName( $c['title'] ) : $c['title'],
+		$isPerson ? ContactPerson::formatDisplayName( $name ) : $c['title'],
 		implode( ', ', $c['types'] ),
 		$c['scref'] ?? '',
 		$name[0] ?? '', $name[1] ?? '', $name[2] ?? '', $name[3] ?? '',

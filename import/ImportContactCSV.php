@@ -3,13 +3,16 @@
  * Contact CSV importer — matches the export_contacts.php column layout.
  *
  * CSV column layout (0-based, header row skipped by loader):
- *   0  title        Contact name — match key. For a business this is lc.title directly;
- *                   for a person this is the reassembled display name ("Surname, Prefix
- *                   Forename", matching export_contacts.php's output), not the raw
- *                   pipe-encoded lc.title itself.
+ *   0  title        Contact name — informational for a business row (also lc.title
+ *                   directly, matching export_contacts.php's own title column) and for a
+ *                   person row too, but a person is actually matched via person_name
+ *                   below, not this column — lc.title itself stores the plain "Surname,
+ *                   Prefix Forename" sort form, not the "Prefix Forename Surname" form
+ *                   this column and export_contacts.php's title column both carry.
  *   1  type         xref item code: P01/P02 (person types), B01–B04 (business types) —
  *                   see contact/admin/schema_inc.php's 'type' group for the current list
- *   2  person_name  Pipe-separated name for a person row: prefix|forename|surname|suffix
+ *   2  person_name  Pipe-separated name for a person row: prefix|forename|surname|suffix —
+ *                   also the match key (via ContactPerson::buildSortTitle()), not title.
  *   3  scref        SCREF xkey (stock source reference / short code)
  *   4  phone        #P xkey
  *   5  address      #C xkey_ext (full address text)
@@ -19,8 +22,9 @@
  *   9  email        #E xkey_ext (addresses exceed xkey C(32))
  *  10  accno        ACCNO xkey
  *
- * Existing contacts (matched by title) are updated in place.
- * New contacts are created via Contact::store() — liberty handles all required fields.
+ * Existing contacts are matched by title (business) or person_name (person), then
+ * updated in place. New contacts are created via Contact::store() — liberty handles all
+ * required fields.
  *
  * @package contact
  */
@@ -101,20 +105,18 @@ function contactCsvImportRow( array $row, int $rowNum ): array {
 	// --- Find existing or create new via Contact subclass ---
 	$isPerson = ( $type !== '' && $type[0] === 'P' );
 
-	// A person's stored title is pipe-encoded, but the CSV's title column is the
-	// reassembled display name — compare against that, not a raw match. Small
-	// full-scan is fine for a bounded CSV import.
+	// A person row's title column is the reassembled display name, but lc.title
+	// itself stores the plain "Surname, Prefix Forename" sort form (see
+	// ContactPerson.php's own docblock) — parse person_name up front and build
+	// the same sort title ContactPerson::verify() would, then match on that
+	// directly instead of a full-table-scan reformatting every candidate.
 	if( $isPerson ) {
-		$contentId = null;
-		$candidates = $gBitDb->query(
-			"SELECT `content_id`, `title` FROM `" . BIT_DB_PREFIX . "liberty_content` WHERE `content_type_guid` = 'contactperson'"
+		[ $prefix, $forename, $surname, $suffix ] = array_pad( explode( '|', $personName, 4 ), 4, '' );
+		$contentId = $gBitDb->getOne(
+			"SELECT `content_id` FROM `" . BIT_DB_PREFIX . "liberty_content`
+			 WHERE `content_type_guid` = 'contactperson' AND `title` = ?",
+			[ ContactPerson::buildSortTitle( $prefix, $forename, $surname, $suffix ) ]
 		);
-		while( $candidate = $candidates->fetchRow() ) {
-			if( ContactPerson::formatDisplayName( $candidate['title'] ) === $title ) {
-				$contentId = $candidate['content_id'];
-				break;
-			}
-		}
 	} else {
 		$contentId = $gBitDb->getOne(
 			"SELECT `content_id` FROM `" . BIT_DB_PREFIX . "liberty_content`
@@ -140,10 +142,10 @@ function contactCsvImportRow( array $row, int $rowNum ): array {
 	if( !empty( $type ) && ( $type[0] === 'P' || $type[0] === 'B' ) ) {
 		$pHash['contact_types'] = [ $type ];
 		if( $isPerson ) {
-			// ContactPerson::verify() builds title from these parts, matching the edit
-			// form's own fields — 'name' alone is no longer read anywhere downstream.
-			[ $pHash['prefix'], $pHash['forename'], $pHash['surname'], $pHash['suffix'] ] =
-				array_pad( explode( '|', $personName, 4 ), 4, '' );
+			// Already parsed above, for the by-title match. ContactPerson::verify()
+			// rebuilds title from these; Contact::store() persists them as JSON on
+			// the NAME xref item.
+			[ $pHash['prefix'], $pHash['forename'], $pHash['surname'], $pHash['suffix'] ] = [ $prefix, $forename, $surname, $suffix ];
 		}
 	}
 
