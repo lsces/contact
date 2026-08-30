@@ -25,6 +25,17 @@ $businessHash = $_REQUEST;
 $persons    = $personContent->getList( $personHash );
 $businesses = $businessContent->getList( $businessHash );
 
+// getList() returns raw liberty_content.title — for persons that's the pipe-encoded
+// prefix|forename|surname|suffix, not display-ready. Reformat to the surname-led form
+// so the merged listing still sorts and displays by surname, same as before title
+// moved out of a P01 xref row and into lc.title itself.
+foreach( $persons as &$personRow ) {
+	if( !empty( $personRow['title'] ) ) {
+		$personRow['title'] = ContactPerson::formatListName( $personRow['title'] );
+	}
+}
+unset( $personRow );
+
 $listcontacts = array_merge( $persons, $businesses );
 usort( $listcontacts, fn( $a, $b ) => strcasecmp( $a['title'] ?? '', $b['title'] ?? '' ) );
 

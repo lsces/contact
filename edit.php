@@ -86,7 +86,7 @@ $gContent->loadXrefInfo();
 $gBitSmarty->assign( 'gXrefInfo', $gContent->mXrefInfo );
 $gBitSmarty->assign( 'isPerson', $isPerson );
 
-// Build type toggle list: available options from schema (or hard-coded pre-upgrade fallback),
+// Build type toggle list: available options from schema (getAvailableTypeItems()),
 // checked state from contact_types (currently set items in liberty_xref).
 $setItems = [];
 foreach ( $gContent->mInfo['contact_types'] ?? [] as $ct ) {

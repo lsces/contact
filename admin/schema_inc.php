@@ -108,14 +108,23 @@ $gBitInstaller->registerSchemaDefault( CONTACT_PKG_NAME, [
 	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_group` (`x_group`,`content_type_guid`,`title`,`sort_order`,`role_id`,`type_href`) VALUES ('account','contact','Account Details',         3,3,'')",
 
 	// --- liberty_xref_item ---
-	// group: type — person types
-	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_item` (`item`,`content_type_guid`,`x_group`,`cross_ref_title`,`multiple`,`role_id`,`cross_ref_href`,`template`) VALUES ('P01','contactperson','type','Personal',       0,3,'',NULL)",
-	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_item` (`item`,`content_type_guid`,`x_group`,`cross_ref_title`,`multiple`,`role_id`,`cross_ref_href`,`template`) VALUES ('P02','contactperson','type','MERG Kit Elf',  0,3,'',NULL)",
-	// group: type — business subtypes
-	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_item` (`item`,`content_type_guid`,`x_group`,`cross_ref_title`,`multiple`,`role_id`,`cross_ref_href`,`template`) VALUES ('B01','contactbusiness','type','Service',      0,3,'',NULL)",
-	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_item` (`item`,`content_type_guid`,`x_group`,`cross_ref_title`,`multiple`,`role_id`,`cross_ref_href`,`template`) VALUES ('B02','contactbusiness','type','Manufacturer', 0,3,'',NULL)",
-	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_item` (`item`,`content_type_guid`,`x_group`,`cross_ref_title`,`multiple`,`role_id`,`cross_ref_href`,`template`) VALUES ('B03','contactbusiness','type','Distributor',  0,3,'',NULL)",
-	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_item` (`item`,`content_type_guid`,`x_group`,`cross_ref_title`,`multiple`,`role_id`,`cross_ref_href`,`template`) VALUES ('B04','contactbusiness','type','Supplier',     0,3,'',NULL)",
+	// group: type — person types. sort_order orders the type picker/badges (see
+	// liberty/MANUAL.md's sort_order section) - P01 first, P02 second. Both are
+	// normal, visible, toggleable type options (no code-level special-casing) - P01
+	// is a pure type marker, no longer a name-storage side channel, since a person's
+	// name lives directly in lc.title (see ContactPerson). 'Business' here is this
+	// fresh-install default's generic label - existing sites may have their own
+	// customised wording (e.g. merg's 'MERG Kit Elf'), which schema_inc.php only
+	// seeds on first install and never overwrites afterward.
+	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_item` (`item`,`content_type_guid`,`x_group`,`cross_ref_title`,`multiple`,`sort_order`,`role_id`,`cross_ref_href`,`template`) VALUES ('P01','contactperson','type','Personal', 0,1,3,'',NULL)",
+	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_item` (`item`,`content_type_guid`,`x_group`,`cross_ref_title`,`multiple`,`sort_order`,`role_id`,`cross_ref_href`,`template`) VALUES ('P02','contactperson','type','Business', 0,2,3,'',NULL)",
+	// group: type — business subtypes, sort_order preserves the B01-B04 code order
+	// rather than falling out alphabetically by title (Distributor/Manufacturer/
+	// Service/Supplier), which is what happened before sort_order was wired in.
+	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_item` (`item`,`content_type_guid`,`x_group`,`cross_ref_title`,`multiple`,`sort_order`,`role_id`,`cross_ref_href`,`template`) VALUES ('B01','contactbusiness','type','Service',      0,1,3,'',NULL)",
+	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_item` (`item`,`content_type_guid`,`x_group`,`cross_ref_title`,`multiple`,`sort_order`,`role_id`,`cross_ref_href`,`template`) VALUES ('B02','contactbusiness','type','Manufacturer', 0,2,3,'',NULL)",
+	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_item` (`item`,`content_type_guid`,`x_group`,`cross_ref_title`,`multiple`,`sort_order`,`role_id`,`cross_ref_href`,`template`) VALUES ('B03','contactbusiness','type','Distributor',  0,3,3,'',NULL)",
+	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_item` (`item`,`content_type_guid`,`x_group`,`cross_ref_title`,`multiple`,`sort_order`,`role_id`,`cross_ref_href`,`template`) VALUES ('B04','contactbusiness','type','Supplier',     0,4,3,'',NULL)",
 	// group: contact
 	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_item` (`item`,`content_type_guid`,`x_group`,`cross_ref_title`,`multiple`,`role_id`,`cross_ref_href`,`template`) VALUES ('#C','contact','contact','Contact Address',          0,3,'../nlpg/?uprn=',         'address')",
 	"INSERT INTO `" . BIT_DB_PREFIX . "liberty_xref_item` (`item`,`content_type_guid`,`x_group`,`cross_ref_title`,`multiple`,`role_id`,`cross_ref_href`,`template`) VALUES ('#E','contact','contact','eMail Address',             1,3,'../contact/?contact_id=','text'   )",

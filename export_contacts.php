@@ -8,6 +8,7 @@
 namespace Bitweaver\Liberty;
 
 use Bitweaver\KernelTools;
+use Bitweaver\Contact\ContactPerson;
 
 ob_start();
 require_once '../kernel/includes/setup_inc.php';
@@ -21,11 +22,11 @@ if( !$gBitUser->hasPermission( 'p_contact_view' ) ) {
 ob_clean();
 
 // --- Query 1: basic contact info ---
-$sql = "SELECT lc.`content_id`, lc.`title`,
-		x00.`xkey_ext`   AS person_name,
+// person_name comes straight from lc.title (pipe-encoded prefix|forename|surname|suffix
+// for a contactperson row) — title IS the name for a person, not a separate xref lookup.
+$sql = "SELECT lc.`content_id`, lc.`title`, lc.`content_type_guid`,
 		xsc.`xkey`       AS scref
 		FROM `" . BIT_DB_PREFIX . "liberty_content` lc
-		LEFT JOIN `" . BIT_DB_PREFIX . "liberty_xref` x00 ON x00.`content_id` = lc.`content_id` AND x00.`item` = '\$00'
 		LEFT JOIN `" . BIT_DB_PREFIX . "liberty_xref` xsc ON xsc.`content_id` = lc.`content_id` AND xsc.`item` = 'SCREF'
 		WHERE lc.`content_type_guid` IN ('contactperson','contactbusiness')
 		ORDER BY lc.`title`";
@@ -122,12 +123,13 @@ fputcsv( $out, [
 ], ',', '"', '' );
 
 foreach( $contacts as $cid => $c ) {
-	$name  = $c['person_name'] ? explode( '|', $c['person_name'], 4 ) : [];
-	$addr  = $c['address'] ?? [];
+	$isPerson = $c['content_type_guid'] === 'contactperson';
+	$name     = $isPerson ? explode( '|', $c['title'], 4 ) : [];
+	$addr     = $c['address'] ?? [];
 
 	fputcsv( $out, [
 		$cid,
-		$c['title'],
+		$isPerson ? ContactPerson::formatDisplayName( $c['title'] ) : $c['title'],
 		implode( ', ', $c['types'] ),
 		$c['scref'] ?? '',
 		$name[0] ?? '', $name[1] ?? '', $name[2] ?? '', $name[3] ?? '',

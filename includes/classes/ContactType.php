@@ -28,7 +28,10 @@ class ContactType extends BitBase {
 	public static function getTypeMarkerList(): array {
 		$ret = [];
 		foreach ( [ 'contactperson', 'contactbusiness' ] as $guid ) {
-			foreach ( ( new LibertyXrefType( $guid ) )->getTypeMarkers() as $m ) {
+			// packageGuid='contact' matters here: a site whose 'type' group was never
+			// split per content type (item rows split, group still shared at package
+			// level — confirmed on a real site 2026-08-30) needs it to find anything.
+			foreach ( ( new LibertyXrefType( $guid, CONTACT_CONTENT_TYPE_GUID ) )->getTypeMarkers() as $m ) {
 				$ret[ $m['item'] ] = $m['name'];
 			}
 		}

@@ -3,7 +3,10 @@
  * Contact CSV importer — matches the export_contacts.php column layout.
  *
  * CSV column layout (0-based, header row skipped by loader):
- *   0  title        Contact name — match key (lc.title)
+ *   0  title        Contact name — match key. For a business this is lc.title directly;
+ *                   for a person this is the reassembled display name ("Surname, Prefix
+ *                   Forename", matching export_contacts.php's output), not the raw
+ *                   pipe-encoded lc.title itself.
  *   1  type         xref item code: P01/P02 (person types), B01–B04 (business types) —
  *                   see contact/admin/schema_inc.php's 'type' group for the current list
  *   2  person_name  Pipe-separated name for a person row: prefix|forename|surname|suffix
@@ -101,11 +104,29 @@ function contactCsvImportRow( array $row, int $rowNum ): array {
 	// --- Find existing or create new via Contact subclass ---
 	$isPerson = ( $type !== '' && $type[0] === 'P' );
 
-	$contentId = $gBitDb->getOne(
-		"SELECT `content_id` FROM `" . BIT_DB_PREFIX . "liberty_content`
-		 WHERE `content_type_guid` IN ('contactperson','contactbusiness','contact') AND `title` = ?",
-		[ $title ]
-	);
+	// Business/generic title is stored plain, so an exact match works directly. A
+	// person's stored title is the pipe-encoded prefix|forename|surname|suffix, while
+	// the CSV's own title column (matching export_contacts.php's output) is the
+	// reassembled display name — compare against the reassembled form instead of a
+	// raw match, small full-scan is fine for a bounded CSV import.
+	if( $isPerson ) {
+		$contentId = null;
+		$candidates = $gBitDb->query(
+			"SELECT `content_id`, `title` FROM `" . BIT_DB_PREFIX . "liberty_content` WHERE `content_type_guid` = 'contactperson'"
+		);
+		while( $candidate = $candidates->fetchRow() ) {
+			if( ContactPerson::formatDisplayName( $candidate['title'] ) === $title ) {
+				$contentId = $candidate['content_id'];
+				break;
+			}
+		}
+	} else {
+		$contentId = $gBitDb->getOne(
+			"SELECT `content_id` FROM `" . BIT_DB_PREFIX . "liberty_content`
+			 WHERE `content_type_guid` IN ('contactbusiness','contact') AND `title` = ?",
+			[ $title ]
+		);
+	}
 
 	$contact = $isPerson ? new ContactPerson( null, $contentId ?: null ) : new ContactBusiness( null, $contentId ?: null );
 	if( $contentId ) {
@@ -124,7 +145,10 @@ function contactCsvImportRow( array $row, int $rowNum ): array {
 	if( !empty( $type ) && ( $type[0] === 'P' || $type[0] === 'B' ) ) {
 		$pHash['contact_types'] = [ $type ];
 		if( $isPerson ) {
-			$pHash['name'] = $personName;
+			// ContactPerson::verify() builds title from these parts, matching the edit
+			// form's own fields — 'name' alone is no longer read anywhere downstream.
+			[ $pHash['prefix'], $pHash['forename'], $pHash['surname'], $pHash['suffix'] ] =
+				array_pad( explode( '|', $personName, 4 ), 4, '' );
 		}
 	}
 

@@ -2,8 +2,11 @@
 /**
  * Contact content class — person or business contact stored in liberty_content.
  *
- * Person contacts carry name parts in a $00 xref (xkey_ext = prefix|forename|surname|suffix).
- * Business contacts store the organisation name directly in lc.title.
+ * Business contacts store the organisation name directly in lc.title. Person contacts
+ * do the same (see ContactPerson) — title holds the pipe-encoded
+ * prefix|forename|surname|suffix directly, with ContactPerson::getTitle() overriding
+ * the generic display hook to reassemble it for anywhere bitweaver shows this
+ * content's title generically (breadcrumbs, search, listings).
  *
  * @package contact
  */
@@ -74,61 +77,27 @@ class Contact extends LibertyContent {
 	}
 
 	/**
-	 * Load type-tag xref rows (P01/P02/B01–B04) directly from liberty_xref.
-	 *
-	 * The schema-driven getContentTypeMarkers() requires liberty_xref_item rows to
-	 * exist at the contactperson/contactbusiness level — they don't exist until the
-	 * 5.0.3 upgrade runs. Reading liberty_xref directly makes type tags visible in
-	 * both pre- and post-upgrade states. Schema labels are enriched where available.
+	 * Load this content item's type-tag markers (P01/P02/B01–B04) from the
+	 * schema-driven xref framework — LibertyXrefType::getContentTypeMarkers(), not
+	 * a raw liberty_xref query. Returns the full possible-marker set (content_id
+	 * null when not set for this item), matching what edit.php and
+	 * display_type_header.tpl already expect.
 	 */
 	public function loadXrefTypeList(): void {
 		if ( !$this->isValid() || !empty( $this->mInfo[$this->mXrefTypeKey] ) ) return;
-
-		$result = $this->mDb->query(
-			"SELECT x.`item`, x.`xkey_ext`, x.`content_id`,
-			        COALESCE( (SELECT FIRST 1 i2.`cross_ref_title`
-			                   FROM `".BIT_DB_PREFIX."liberty_xref_item` i2
-			                   WHERE i2.`item` = x.`item`),
-			                  x.`item` ) AS `cross_ref_title`
-			 FROM `".BIT_DB_PREFIX."liberty_xref` x
-			 WHERE x.`content_id` = ?
-			   AND ( x.`item` STARTING WITH 'P'
-			      OR x.`item` STARTING WITH 'B'
-			      OR x.`item` STARTING WITH '\$' )
-			 ORDER BY x.`item`",
-			[ $this->mContentId ]
-		);
-
-		$this->mInfo[$this->mXrefTypeKey] = [];
-		while ( $row = $result->fetchRow() ) {
-			$this->mInfo[$this->mXrefTypeKey][] = $row;
-		}
+		$this->mInfo[$this->mXrefTypeKey] = $this->xrefType()->getContentTypeMarkers( $this->mContentId );
 	}
 
 	/**
-	 * Return all available type-tag options for this contact's edit form.
-	 *
-	 * Uses the schema (liberty_xref_item via getTypeMarkers) post-upgrade.
-	 * Falls back to a hard-coded list pre-upgrade so edit checkboxes always appear.
-	 * P01 is always excluded — it is implied for every person and is not a user choice.
+	 * Return all available type-tag options for this contact's edit form, from the
+	 * schema (LibertyXrefType::getTypeMarkers()) — no hard-coded fallback list, and
+	 * no P01 exclusion: it's a normal type option now (first by sort_order), not a
+	 * name-storage side channel that needed hiding from the picker.
 	 *
 	 * @return array[]  Each element: ['item' => string, 'name' => string]
 	 */
 	public function getAvailableTypeItems(): array {
-		$markers = $this->xrefType()->getTypeMarkers();
-		if ( !empty( $markers ) ) {
-			return array_values( array_filter( $markers, fn( $m ) => $m['item'] !== 'P01' ) );
-		}
-		// Pre-upgrade fallback — schema rows not yet migrated
-		if ( $this->mContentTypeGuid === CONTACTPERSON_CONTENT_TYPE_GUID ) {
-			return [ [ 'item' => 'P02', 'name' => 'MERG Kit Elf' ] ];
-		}
-		return [
-			[ 'item' => 'B01', 'name' => 'Service' ],
-			[ 'item' => 'B02', 'name' => 'Manufacturer' ],
-			[ 'item' => 'B03', 'name' => 'Distributor' ],
-			[ 'item' => 'B04', 'name' => 'Supplier' ],
-		];
+		return $this->xrefType()->getTypeMarkers();
 	}
 
 	/**
@@ -141,11 +110,7 @@ class Contact extends LibertyContent {
 		if ( $pContentId ) $this->mContentId = (int)$pContentId;
 		if( $this->verifyId( $this->mContentId ) ) {
 			$query = "select con.*, lc.*,
- 				ap.*, xhA.`xkey_ext` AS house,
- 				img.`xkey` AS client_gallery,
- 				x00.`xkey_ext` as name, lc.`title` as organisation,
- 				xhL.`xkey` as x_coordinate, xhL.`xkey_ext` as y_coordinate,
- 				uue.`login` AS modifier_user, uue.`real_name` AS modifier_real_name,
+				uue.`login` AS modifier_user, uue.`real_name` AS modifier_real_name,
 				uuc.`login` AS creator_user, uuc.`real_name` AS creator_real_name,
 				uu.`login` AS linked_user_login, uu.`real_name` AS linked_user_name
 				FROM `".BIT_DB_PREFIX."contact` con
@@ -153,38 +118,45 @@ class Contact extends LibertyContent {
 				LEFT JOIN `".BIT_DB_PREFIX."users_users` uue ON (uue.`user_id` = lc.`modifier_user_id`)
 				LEFT JOIN `".BIT_DB_PREFIX."users_users` uuc ON (uuc.`user_id` = lc.`user_id`)
 				LEFT JOIN `".BIT_DB_PREFIX."users_users` uu ON uu.`user_id` = con.`role_id`
-				LEFT JOIN `".BIT_DB_PREFIX."liberty_xref` img ON img.`content_id` = con.`content_id` AND img.`item` = 'IMG'
-				LEFT JOIN `".BIT_DB_PREFIX."liberty_xref` x00 ON x00.`content_id` = con.`content_id` AND x00.`item` = 'P01'
-				LEFT JOIN `".BIT_DB_PREFIX."liberty_xref` xhA ON xhA.`content_id` = con.`content_id` AND xhA.`item` = '#S' AND ( xhA.`end_date` IS NULL OR xhA.`end_date` > CURRENT_TIMESTAMP )
-				LEFT JOIN `".BIT_DB_PREFIX."liberty_xref` xhL ON xhL.`content_id` = con.`content_id` AND xhL.`item` = '#L' AND ( xhL.`end_date` IS NULL OR xhL.`end_date` > CURRENT_TIMESTAMP )
-				LEFT JOIN `".BIT_DB_PREFIX."address_postcode` ap ON ap.`postcode` = xhA.`xkey`
 				WHERE con.`content_id`=?";
 			$result = $this->mDb->query( $query, [ $this->mContentId ] );
-//				LEFT JOIN `".BIT_DB_PREFIX."contact` ci ON ci.contact_id = pro.owner_id
-//				LEFT JOIN `".BIT_DB_PREFIX."contact_address` a ON a.contact_id = pro.address_id
-//				LEFT JOIN `".BIT_DB_PREFIX."postcode` p ON p.`postcode` = a.`postcode`
 
 			if ( $result && $result->numRows() ) {
 				$this->mInfo = $result->fields;
 				$this->mContentId = (int)$result->fields['content_id'];
-//				$this->mParentId = (int)$result->fields['usn'];
 				$this->mContactName = $result->fields['title'];
 				$this->mInfo['creator'] = $result->fields['creator_real_name'] ?? $result->fields['creator_user'];
 				$this->mInfo['editor'] = $result->fields['modifier_real_name'] ?? $result->fields['modifier_user'];
 				$this->mInfo['display_url'] = $this->getDisplayUrl();
-				$this->mInfo['organisation'] = trim($this->mInfo['organisation'] ?? '');
-				$name = explode( '|', $this->mInfo['name'] ?? '' );
-				$this->mInfo['prefix'] = $name[0] ?? '';
-				$this->mInfo['forename'] = $name[1] ?? '';
-				$this->mInfo['surname'] = $name[2] ?? '';
-				$this->mInfo['suffix'] = $name[3] ?? '';
-				$this->mInfo['name'] = $this->mInfo['prefix'];
-				$this->mInfo['name'] = trim($this->mInfo['name']).' '.$this->mInfo['forename'];
-				$this->mInfo['name'] = trim($this->mInfo['name']).' '.$this->mInfo['surname'];
-				$this->mInfo['name'] = trim($this->mInfo['name']).' '.$this->mInfo['suffix'];
-				$this->mInfo['name'] = trim($this->mInfo['name']);
+				$this->mInfo['organisation'] = trim( $this->mInfo['title'] ?? '' );
 
-				if ( !$this->mInfo['x_coordinate'] and $this->mInfo['postcode'] and $this->mInfo['grideast'] <> '00000' ) {
+				// Load the xref set first — IMG/#S/#L below all read from it rather than
+				// hand-rolled JOINs against liberty_xref, per liberty/MANUAL.md's access
+				// boundaries (structure/data belongs to LibertyXrefType/LibertyXref; content
+				// classes read the already-loaded mXrefInfo, they don't re-query the table).
+				$this->loadXrefInfo();
+
+				if ( $imgXref = $this->mXrefInfo->findRowByItem( 'IMG' ) ) {
+					$this->mInfo['client_gallery'] = $imgXref['xkey'];
+				}
+				if ( $addressXref = $this->mXrefInfo->findRowByItem( '#S' ) ) {
+					$this->mInfo['house'] = $addressXref['xkey_ext'];
+					if ( !empty( $addressXref['xkey'] ) ) {
+						$postcodeRow = $this->mDb->getRow(
+							"SELECT * FROM `".BIT_DB_PREFIX."address_postcode` WHERE `postcode` = ?",
+							[ $addressXref['xkey'] ]
+						);
+						if ( $postcodeRow ) {
+							$this->mInfo = array_merge( $this->mInfo, $postcodeRow );
+						}
+					}
+				}
+				if ( $linkedXref = $this->mXrefInfo->findRowByItem( '#L' ) ) {
+					$this->mInfo['x_coordinate'] = $linkedXref['xkey'];
+					$this->mInfo['y_coordinate'] = $linkedXref['xkey_ext'];
+				}
+
+				if ( empty( $this->mInfo['x_coordinate'] ) && !empty( $this->mInfo['postcode'] ) && ( $this->mInfo['grideast'] ?? '00000' ) <> '00000' ) {
 					$os1 = new \OSRef( $this->mInfo['grideast']*10, $this->mInfo['gridnorth']*10 );
 					$ll1 = $os1->toLatLng();
 					$this->mInfo['y_coordinate'] = $ll1->lat;
@@ -192,7 +164,6 @@ class Contact extends LibertyContent {
 				}
 
 				$this->loadXrefTypeList();
-				$this->loadXrefInfo();
 			}
 		}
 		LibertyContent::load();
@@ -202,8 +173,8 @@ class Contact extends LibertyContent {
 	/**
 	 * Validate and normalise $pParamHash before storing.
 	 *
-	 * Builds lc.title from surname (person) or organisation (business).
-	 * Pipe-encodes name parts into $pParamHash['name'] for the $00 xref.
+	 * Builds lc.title from organisation (business) — ContactPerson overrides this
+	 * to build title from name parts instead, the same way, before delegating here.
 	 *
 	 * @param  array $pParamHash  Data to store; modified in place.
 	 * @return bool  TRUE if valid; FALSE with $this->mErrors set on failure.
@@ -226,15 +197,6 @@ class Contact extends LibertyContent {
 			unset( $pParamHash['content_id'] );
 		}
 
-		if( isset( $pParamHash['surname'] ) ) {
-			$pParamHash['name'] = $pParamHash['prefix'].'|'.$pParamHash['forename'].'|'.$pParamHash['surname'].'|'.$pParamHash['suffix'];
-
-			if ( strlen($pParamHash['surname']) > 0 ) {
-				$pParamHash['title'] = $pParamHash['surname'];
-				if ( strlen($pParamHash['prefix']) > 0 ) $pParamHash['title'] .= ', '.$pParamHash['prefix'].' '.$pParamHash['forename'];
-				else if ( strlen($pParamHash['forename']) > 0 ) $pParamHash['title'] .= ', '.$pParamHash['forename'];
-			}
-		}
 		if( empty( $pParamHash['title'] ) ) {
 			$pParamHash['title'] = $pParamHash['organisation'] ?? '';
 		}
@@ -298,47 +260,23 @@ class Contact extends LibertyContent {
 					// - not a bug, the documented type-marker convention. getTypeMarkerXrefs()
 					// is the xref class's own equivalent for this case (what's actually stored,
 					// not what's schema-possible - that's getTypeMarkers(), already used by
-					// getAvailableTypeItems() above) - one call covers both P01 and the P02+/
-					// B01+ set below, since it returns everything actually stored for this
-					// content item's type markers.
+					// getAvailableTypeItems() above) - one call covers everything actually
+					// stored for this content item's type markers.
 					$existingTypeXrefs = $this->xrefType()->getTypeMarkerXrefs( $this->mContentId );
 
-					// P01 carries the pipe-encoded name - an unchanged name shouldn't be deleted
-					// and recreated, resetting entry_date, the same bug just fixed below for the
-					// P02+/B01+ set.
-					$existingP01Id = $existingTypeXrefs['P01'] ?? null;
-					if( !empty( $pParamHash['name'] ) ) {
-						$xrefHash = [
-							'content_id' => $this->mContentId,
-							'item'       => 'P01',
-							'xkey_ext'   => $pParamHash['name'],
-						];
-						if( $existingP01Id ) {
-							$xrefHash['xref_id'] = $existingP01Id;
-						} else {
-							$xrefHash['fAddXref'] = 1;
-						}
-						$this->storeXref( $xrefHash );
-					} elseif( $existingP01Id ) {
-						// stepXref() takes &$pParamHash by reference - a literal array here is a
-						// fatal error, must be a named variable (same footgun storeXref()'s own
-						// docblock already warns about).
-						$stepHash = [ 'xref_id' => $existingP01Id, 'expunge' => 3 ];
-						$this->stepXref( $stepHash );
-					}
-
-					// Optional type tags (P02+, B01+) come from the form checkboxes — diff against
-					// what's already stored rather than blanket delete-all-then-reinsert, so an
-					// unrelated add/remove elsewhere in the set doesn't reset an unchanged tag's
-					// entry_date (confirmed live 2026-08-29: adding a second B0x tag was resetting
-					// the first one's entry_date, because the old delete-all wiped and recreated
-					// every row in the set on every save, not just the ones actually changing).
-					// Deletion goes through the xref class too, via stepXref(expunge:3). Existing
-					// items come from the same $existingTypeXrefs fetched above (still correct
-					// here - P01's own write above doesn't change what P02+/B01+ items exist).
-					$existingItemMap = array_diff_key( $existingTypeXrefs, [ 'P01' => true ] );
+					// P01 is a pure type marker now (no data payload — a person's name lives in
+					// lc.title, see ContactPerson::verify()/load()) with nothing left to special-
+					// case: it's a normal, visible, toggleable type like P02/B01-B04, just first
+					// in sort_order. Diff against what's already stored rather than blanket
+					// delete-all-then-reinsert, so an unrelated add/remove elsewhere in the set
+					// doesn't reset an unchanged tag's entry_date (confirmed live 2026-08-29:
+					// adding a second B0x tag was resetting the first one's entry_date, because
+					// the old delete-all wiped and recreated every row in the set on every save,
+					// not just the ones actually changing). Deletion goes through the xref class
+					// too, via stepXref(expunge:3).
+					$existingItemMap = $existingTypeXrefs;
 					$existingItems = array_keys( $existingItemMap );
-					$wantedItems = array_diff( $wantedTypes, [ 'P01' ] );
+					$wantedItems = $wantedTypes;
 					foreach ( $existingItemMap as $item => $xrefId ) {
 						if ( !in_array( $item, $wantedItems, true ) ) {
 							$stepHash = [ 'xref_id' => $xrefId, 'expunge' => 3 ];
