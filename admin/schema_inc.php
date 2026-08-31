@@ -28,27 +28,6 @@ $tables = [
   cltype I2
 ",
 
-	'address_postcode' => "
-  postcode C(10) NOTNULL PRIMARY,
-  add1 C(32) DEFAULT '',
-  add2 C(32) DEFAULT '',
-  add3 C(32) DEFAULT '',
-  add4 C(32) DEFAULT '',
-  town C(20) DEFAULT '',
-  county C(20) DEFAULT '',
-  grideast C(6) DEFAULT '00000',
-  gridnorth C(6) DEFAULT '00000',
-  wcd C(6) DEFAULT '',
-  nhs C(3) DEFAULT '',
-  pcg C(5) DEFAULT '',
-  wnw C(32) DEFAULT '',
-  wna C(32) DEFAULT '',
-  pnp C(32) DEFAULT '',
-  pnh C(32) DEFAULT '',
-  nnh C(32) DEFAULT '',
-  nnr C(32) DEFAULT ''
-",
-
 ];
 
 global $gBitInstaller;
