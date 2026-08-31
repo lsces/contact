@@ -63,11 +63,11 @@ $sql = "SELECT x.`content_id`, x.`item`, xi.`cross_ref_title`, xi.`template`,
 		x.`xkey`, x.`xkey_ext`, x.`data`, x.`xorder`
 		FROM `" . BIT_DB_PREFIX . "liberty_xref` x
 		JOIN  `" . BIT_DB_PREFIX . "liberty_xref_item` xi ON xi.`item` = x.`item` AND xi.`content_type_guid` IN ('contact','contactperson','contactbusiness')
-		WHERE ( x.`end_date` IS NULL OR x.`end_date` > CURRENT_TIMESTAMP )
+		WHERE ( x.`end_date` IS NULL OR x.`end_date` > ? )
 		AND x.`content_id` IN (" . implode( ',', array_keys( $contacts ) ) . ")
 		ORDER BY x.`content_id`, x.`item`, x.`xorder`";
 
-$result = $gBitDb->query( $sql );
+$result = $gBitDb->query( $sql, [ time() ] );
 while( $row = $result->fetchRow() ) {
 	$cid  = $row['content_id'];
 	$item = $row['item'];
