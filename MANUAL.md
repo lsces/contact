@@ -76,16 +76,24 @@ so a nonexistent `content_id` correctly 404s ("No contact exists with the given 
 mode. A `LibertyContent`-wide version of this fix was tried and reverted — see `liberty/CLAUDE.md`
 for why; `stock` uses the same per-package pattern.
 
-## `Contact::load()` — raw xref joins
+## `Contact::load()` — xref-derived mInfo fields
 
-Joins `liberty_xref` directly for `$00` (person name), `#S` (service address), `#L` (location),
-`IMG` (gallery). `IMG`, `#S`, `#L` have no live data.
+After `loadXrefInfo()`, pulls a few fields from the already-loaded `$this->mXrefInfo` straight
+onto the flat `$this->mInfo` array for templates: `IMG` (gallery, `client_gallery`), `#L`
+(location, `x_coordinate`/`y_coordinate`), and the contact's own address (`house` +
+`add1`..`county`/`grideast`/`gridnorth` merged in from `address_postcode`).
 
-**Known gap, not yet cleaned up**: three dead joins (`IMG`/`#S`/`#L`) are commented out rather
-than removed; the active raw xref joins should really go through the proper path instead — `$00`
-name via `loadXrefTypeList()` with `xkey_ext` added, `#S`/`#L`/`ap` via `loadXrefInfo()`'s address
-group (postcode join already present in `LibertyXrefGroup::loadXrefs()`). Gallery association
-needs rethinking separately, not just a mechanical move.
+**Address lookup is template-driven, not a fixed item code** (fixed 2026-08-31 — see
+`CLAUDE.md`'s dated entry): `findAddressXref()` scans the loaded xref rows for whichever item(s)
+have `liberty_xref_item.template = 'address'` (`#C`/`#I`/`#R`/`#S`/`#T` today, but a site could
+register others), preferring the first one with a real postcode. The previous version hardcoded
+`#S` (Service Address), which has no live data anywhere — real address data is almost always
+under `#C` (Contact Address), occasionally `#R` (Residential); a contact can have more than one
+populated at once. `export_contacts.php` already used this same `template === 'address'` filter
+independently — `Contact::load()` was the one place still hardcoding a single item code.
+
+`IMG`/`#L` stay as direct `findRowByItem()` lookups — genuinely fixed single-purpose item codes,
+not subject to the same per-site variability as address items.
 
 ## CSV import xorder
 

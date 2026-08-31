@@ -126,7 +126,7 @@ class Contact extends LibertyContent {
 				if ( $imgXref = $this->mXrefInfo->findRowByItem( 'IMG' ) ) {
 					$this->mInfo['client_gallery'] = $imgXref['xkey'];
 				}
-				if ( $addressXref = $this->mXrefInfo->findRowByItem( '#S' ) ) {
+				if ( $addressXref = $this->findAddressXref() ) {
 					$this->mInfo['house'] = $addressXref['xkey_ext'];
 					if ( !empty( $addressXref['xkey'] ) ) {
 						$postcodeRow = $this->mDb->getRow(
@@ -155,6 +155,40 @@ class Contact extends LibertyContent {
 		}
 		LibertyContent::load();
 
+	}
+
+	/**
+	 * Find this contact's own address xref row, wherever it actually is.
+	 *
+	 * Address data can land under any of several item codes registered in
+	 * schema_inc.php ('#C' Contact, '#I' Invoice, '#R' Residential, '#S' Service,
+	 * '#T' Tenant Address) — a site could add its own via the generic xref admin
+	 * pages too, so the specific codes aren't a safe fixed list to check against.
+	 * What every one of them shares is `liberty_xref_item.template = 'address'`,
+	 * already loaded onto each row by loadXrefInfo() — filter on that instead of
+	 * a hardcoded item tag. Scans already-loaded groups, no fresh query.
+	 *
+	 * A contact can have more than one address item populated at once (seen live
+	 * — a contact with both '#C' and '#R'); prefers the first one that actually
+	 * has a postcode (`xkey`), falling back to the first address-template row
+	 * found at all so at least the free-text address (`xkey_ext`) still shows.
+	 *
+	 * @return \Bitweaver\Liberty\LibertyXref|null
+	 */
+	private function findAddressXref(): ?\Bitweaver\Liberty\LibertyXref {
+		$fallback = null;
+		foreach( $this->mXrefInfo->mGroups as $group ) {
+			foreach( $group->mXrefs as $xref ) {
+				if( ( $xref['template'] ?? '' ) !== 'address' ) {
+					continue;
+				}
+				$fallback ??= $xref;
+				if( !empty( $xref['xkey'] ) ) {
+					return $xref;
+				}
+			}
+		}
+		return $fallback;
 	}
 
 	/**
