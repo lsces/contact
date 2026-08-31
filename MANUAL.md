@@ -80,8 +80,8 @@ for why; `stock` uses the same per-package pattern.
 
 After `loadXrefInfo()`, pulls a few fields from the already-loaded `$this->mXrefInfo` straight
 onto the flat `$this->mInfo` array for templates: `IMG` (gallery, `client_gallery`), `#L`
-(location, `x_coordinate`/`y_coordinate`), and the contact's own address (`house` +
-`add1`..`county`/`grideast`/`gridnorth` merged in from `address_postcode`).
+(location, `x_coordinate`/`y_coordinate` — hand-entered directly, see below), and the contact's
+own address (`house` = `xkey_ext`, `postcode` = `xkey` — raw hand-entered values, no lookup).
 
 **Address lookup is template-driven, not a fixed item code** (fixed 2026-08-31 — see
 `CLAUDE.md`'s dated entry): `findAddressXref()` scans the loaded xref rows for whichever item(s)
@@ -91,6 +91,28 @@ register others), preferring the first one with a real postcode. The previous ve
 under `#C` (Contact Address), occasionally `#R` (Residential); a contact can have more than one
 populated at once. `export_contacts.php` already used this same `template === 'address'` filter
 independently — `Contact::load()` was the one place still hardcoding a single item code.
+
+**`address_postcode` (the OS-style postcode→area-code reference table) dropped entirely from
+contact, same session** — was previously joined in three independent places (`Contact::load()`,
+`Contact::getList()`, `export_contacts.php`) to enrich the raw address with `add1`-`county`
+and, for `load()` only, a `grideast`/`gridnorth`-derived map pin (`phpcoord`'s `OSRef` class,
+`contact/lib/phpcoord-2.3.php`) as a fallback when `#L` had no hand-entered coordinates. Also
+turned out to be joined *blindly* at the liberty level — `LibertyXrefType::loadContent()` LEFT
+JOINed `address_postcode` on every xref row of any content type, not just contact's, purely on
+the chance an `xkey` matched a postcode string (feeding `view_address_item.tpl`'s `.address`
+display, the only real consumer) — a package-agnostic core file depending on a table owned by
+one specific package (contact), something liberty can't assume is even installed. All of it
+removed: the liberty-level join, `Contact::load()`/`getList()`'s postcode enrichment (raw
+`xkey`/`xkey_ext` only now — the "backup address details" already always stored on the xref row
+itself), `export_contacts.php`'s CSV columns, `list.tpl`'s add1-4/town columns,
+`view_address_item.tpl`'s `.address` display. `contact/lib/phpcoord-2.3.php` relocated to
+`mapper/lib/` (unwired, parked for whenever mapper grows real coordinate-conversion needs) rather
+than deleted outright — `#L`'s hand-entered `x_coordinate`/`y_coordinate` path is untouched and
+still the only way to get a map pin on a contact. `address_postcode` itself stays in
+`admin/schema_inc.php` for now (not dropped) — pending resolving a version-tracking mismatch
+found while looking at how to do that properly (contact has no `admin/upgrades/` directory despite
+`MANUAL.md` describing an already-run "5.0.3" upgrade; the DB's tracked
+`package_contact_version` is still `5.0.1`).
 
 `IMG`/`#L` stay as direct `findRowByItem()` lookups — genuinely fixed single-purpose item codes,
 not subject to the same per-site variability as address items.

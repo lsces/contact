@@ -15,7 +15,6 @@ namespace Bitweaver\Contact;
 use Bitweaver\BitBase;
 use Bitweaver\BitDate;
 use Bitweaver\Liberty\LibertyContent;		// Contact base class
-require_once CONTACT_PKG_PATH.'lib/phpcoord-2.3.php';
 
 define( 'CONTACT_CONTENT_TYPE_GUID', 'contact' );
 defined( 'CONTACTPERSON_CONTENT_TYPE_GUID' )   || define( 'CONTACTPERSON_CONTENT_TYPE_GUID',   'contactperson' );
@@ -128,26 +127,11 @@ class Contact extends LibertyContent {
 				}
 				if ( $addressXref = $this->findAddressXref() ) {
 					$this->mInfo['house'] = $addressXref['xkey_ext'];
-					if ( !empty( $addressXref['xkey'] ) ) {
-						$postcodeRow = $this->mDb->getRow(
-							"SELECT * FROM `".BIT_DB_PREFIX."address_postcode` WHERE `postcode` = ?",
-							[ $addressXref['xkey'] ]
-						);
-						if ( $postcodeRow ) {
-							$this->mInfo = array_merge( $this->mInfo, $postcodeRow );
-						}
-					}
+					$this->mInfo['postcode'] = $addressXref['xkey'];
 				}
 				if ( $linkedXref = $this->mXrefInfo->findRowByItem( '#L' ) ) {
 					$this->mInfo['x_coordinate'] = $linkedXref['xkey'];
 					$this->mInfo['y_coordinate'] = $linkedXref['xkey_ext'];
-				}
-
-				if ( empty( $this->mInfo['x_coordinate'] ) && !empty( $this->mInfo['postcode'] ) && ( $this->mInfo['grideast'] ?? '00000' ) <> '00000' ) {
-					$os1 = new \OSRef( $this->mInfo['grideast']*10, $this->mInfo['gridnorth']*10 );
-					$ll1 = $os1->toLatLng();
-					$this->mInfo['y_coordinate'] = $ll1->lat;
-					$this->mInfo['x_coordinate'] = $ll1->lng;
 				}
 
 				$this->loadXrefTypeList();
@@ -515,6 +499,7 @@ class Contact extends LibertyContent {
 			// rebuild this is standing in for.
 			$address = LibertyContent::lookupXrefByTemplate( $res['content_id'], 'address', 'contact' );
 			$res['house'] = $address['xkey_ext'] ?? null;
+			$res['postcode'] = $address['xkey'] ?? null;
 			// Per-row content_type_guid, not $this->mContentTypeGuid — a combined
 			// multi-type call (content_type_guid passed as an array, see above)
 			// returns rows of more than one type in the same result set, and

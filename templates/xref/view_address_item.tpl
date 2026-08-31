@@ -3,7 +3,7 @@
 	{$xrefInfo.xref_title|escape}
 </td>
 <td>
-	{$xrefInfo.xkey_ext|escape}{if $xrefInfo.address}, {$xrefInfo.address|escape}{/if}{if $xrefInfo.xkey}, {$xrefInfo.xkey|escape}{/if}
+	{$xrefInfo.xkey_ext|escape}{if $xrefInfo.xkey}, {$xrefInfo.xkey|escape}{/if}
 </td>
 <td>
 	{$xrefInfo.data|escape}

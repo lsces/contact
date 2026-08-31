@@ -31,16 +31,6 @@
 					</td>
 					<td>{if isset($listcontacts[content].house) && ($listcontacts[content].house <> '') }
 						{$listcontacts[content].house},&nbsp;{/if}
-						{if isset($listcontacts[content].add1) && ($listcontacts[content].add1 <> '') }
-							{$listcontacts[content].add1},&nbsp;{/if}
-						{if isset($listcontacts[content].add2) && ($listcontacts[content].add2 <> '') }
-							{$listcontacts[content].add2},&nbsp;{/if}
-						{if isset($listcontacts[content].add3) && ($listcontacts[content].add3 <> '') }
-							{$listcontacts[content].add3},&nbsp;{/if}
-						{if isset($listcontacts[content].add4) && ($listcontacts[content].add4 <> '') }
-							{$listcontacts[content].add4},&nbsp;{/if}
-						{if isset($listcontacts[content].town) && ($listcontacts[content].town <> '') }
-							{$listcontacts[content].town},&nbsp;{/if}
 						{$listcontacts[content].postcode}</td>
 				</tr>
 				<tr class="second {$rowclass}">

@@ -2,7 +2,8 @@
 /**
  * Export all contacts to CSV.
  * One row per contact; up to 3 phones, 2 emails.
- * Address: xkey_ext = full address text, xkey = postcode; postcode lookup adds add1-county where available.
+ * Address: xkey_ext = full address text, xkey = postcode - raw hand-entered values only, no
+ * address_postcode lookup (dropped package-wide 2026-08-31, see CLAUDE.md's dated entry).
  *
  * TODO: crude — hand-rolled per-item liberty_xref subqueries rather than the loaded
  * xref array (mXrefInfo), hardcoded to fixed slot counts (3 phones, 2 emails). Part
@@ -59,11 +60,9 @@ if( empty( $contacts ) ) {
 
 // --- Query 2: all active xref items for these contacts ---
 $sql = "SELECT x.`content_id`, x.`item`, xi.`cross_ref_title`, xi.`template`,
-		x.`xkey`, x.`xkey_ext`, x.`data`, x.`xorder`,
-		ap.`add1`, ap.`add2`, ap.`add3`, ap.`add4`, ap.`town`, ap.`county`
+		x.`xkey`, x.`xkey_ext`, x.`data`, x.`xorder`
 		FROM `" . BIT_DB_PREFIX . "liberty_xref` x
 		JOIN  `" . BIT_DB_PREFIX . "liberty_xref_item` xi ON xi.`item` = x.`item` AND xi.`content_type_guid` IN ('contact','contactperson','contactbusiness')
-		LEFT JOIN `" . BIT_DB_PREFIX . "address_postcode` ap ON ap.`postcode` = x.`xkey`
 		WHERE ( x.`end_date` IS NULL OR x.`end_date` > CURRENT_TIMESTAMP )
 		AND x.`content_id` IN (" . implode( ',', array_keys( $contacts ) ) . ")
 		ORDER BY x.`content_id`, x.`item`, x.`xorder`";
@@ -100,12 +99,6 @@ while( $row = $result->fetchRow() ) {
 			'type'     => $row['cross_ref_title'],
 			'address'  => $row['xkey_ext'] ?? '',   // full address text or house name
 			'postcode' => $row['xkey']     ?? '',
-			'add1'     => $row['add1']     ?? '',    // from postcode lookup
-			'add2'     => $row['add2']     ?? '',
-			'add3'     => $row['add3']     ?? '',
-			'add4'     => $row['add4']     ?? '',
-			'town'     => $row['town']     ?? '',
-			'county'   => $row['county']   ?? '',
 			'notes'    => $row['data']     ?? '',
 		];
 	}
@@ -125,7 +118,7 @@ fputcsv( $out, [
 	'email1', 'email2',
 	'website',
 	'notes', 'contact_person',
-	'address_type', 'address', 'postcode', 'add1', 'add2', 'add3', 'add4', 'town', 'county', 'address_notes',
+	'address_type', 'address', 'postcode', 'address_notes',
 	'vat_no', 'sage_id',
 ], ',', '"', '' );
 
@@ -150,9 +143,6 @@ foreach( $contacts as $cid => $c ) {
 		$c['con'],
 		$addr['type']     ?? '', $addr['address']  ?? '',
 		$addr['postcode'] ?? '',
-		$addr['add1']     ?? '', $addr['add2']     ?? '',
-		$addr['add3']     ?? '', $addr['add4']     ?? '',
-		$addr['town']     ?? '', $addr['county']   ?? '',
 		$addr['notes']    ?? '',
 		$c['vat_no'],
 		$c['sage_id'],
