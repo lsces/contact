@@ -47,7 +47,6 @@ class Contact extends LibertyContent {
 
 		// Date object to handle date and time display
 		$this->mDate = new BitDate();
-		$offset = $this->mDate->get_display_offset();
 
 		// Permission setup
 		$this->mViewContentPerm  = 'p_contact_view';
