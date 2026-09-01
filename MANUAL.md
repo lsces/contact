@@ -5,59 +5,66 @@ turns — see `CLAUDE.md`'s dated session log instead; this file only tracks cur
 
 See also: `liberty/MANUAL.md` for the xref machinery underpinning this package.
 
-## Person vs Business model
+## Person vs Business subclasses
 
-Two distinct contact types, entered via separate pages:
-- `add_person.php` — auto-injects `$00` type; name stored pipe-separated
-  (`prefix|forename|surname|suffix`) in `liberty_xref.xkey_ext` of the `$00` record;
-  `lc.title` = surname; redirects to `edit.php` for further detail
-- `add_business.php` — no `$00`; user picks from `$02`+ subtypes (Supplier, Manufacturer
-  etc., expandable via DB); `lc.title` = organisation name; redirects to `edit.php`
+Two distinct content types, each its own `LibertyContent` subclass:
+- `ContactPerson extends Contact` — `mContentTypeGuid = 'contactperson'`
+- `ContactBusiness extends Contact` — `mContentTypeGuid = 'contactbusiness'`
 
-Type codes in `liberty_xref_item` (`content_type_guid='contact'`, `x_group='type'`, `sort_order=0`):
-- `$00` Person — triggers name fields in edit/display; never shown as a checkbox in UI
-- `$01` Organisation — deprecated, not used in new UI
-- `$02`+ Business subtypes — shown as checkboxes in `add_business.php` and `edit.php`
+Both share `Contact`'s common schema (addresses, SCREF, etc., registered at the bare
+`content_type_guid='contact'` package level). The class itself *is* the person/business
+distinction — `edit.php` detects which one it's rendering via `$gContent instanceof
+\Bitweaver\Contact\ContactPerson`, not by inspecting any stored data.
 
-`edit.php` detects person via `contact_types[0].content_id` → `$isPerson` flag:
-- Person: name fields shown, Contact Types section hidden, Organisation hidden
-- Business: org field shown, Contact Types (`$02`+) shown, name fields hidden
+- `add_person.php` — creates a `ContactPerson`, tags it with the `P01` type marker.
+- `add_business.php` — creates a `ContactBusiness`; the user picks one or more subtype markers
+  from `getXrefSourceList()` (Supplier, Manufacturer, etc. — expandable via the DB).
 
-`display_contact.tpl` heading = "Personal Contact" / "Business Contact" from `contact_types.0.content_id`.
-Name loaded from `$00` xref `xkey_ext` via SQL join in `Contact::load()` (`x00.xkey_ext AS name`).
+Type-tag markers live in `liberty_xref_item` at `sort_order=0` (Liberty's type-marker
+convention — see `liberty/MANUAL.md` — excluded from the normal tabbed xref display,
+loaded separately via `getTypeMarkers()`/`getContentTypeMarkers()`):
+- `contactperson`'s `type` group: `P01` (Personal), `P02` (Business — a person acting in a
+  business capacity, not a business record itself)
+- `contactbusiness`'s `type` group: `B01`-`B04` (Service/Manufacturer/Distributor/Supplier)
+
+`Contact::loadXrefTypeList()` loads these markers into `$this->mInfo['contact_types']`
+(`getContentTypeMarkers()`) for display/edit-form use. Saving diffs the submitted set against
+what's actually stored (`getTypeMarkerXrefs()`) rather than delete-all-then-reinsert, so an
+unrelated add/remove doesn't reset an unchanged tag's `entry_date` — removed tags are hard-deleted
+(`expunge=3`), added tags go through the normal `storeXref()`/`fAddXref` path. A hidden
+`fContactTypesSubmitted` field distinguishes "the type-tag section was on this form with nothing
+checked" (clear all tags) from "this caller doesn't touch type tags at all" (e.g. an import
+script) — both would otherwise look identical as an absent `contact_types` key.
+
+`display_contact.tpl` heading = "Personal Contact" / "Business Contact" from the same
+`instanceof`/class check `edit.php` uses.
 
 xref item templates gate dates and edit actions on `{$xrefAllowEdit}` (pass `allow_edit=false`
 in view, `allow_edit=true` in edit).
-
-**`contact_types`** — separate from the display path. Populated by `loadXrefTypeList()` which
-queries sort_order=0 items (the 'type' group: `$00`, `$02`+). Used for `$isPerson` detection
-in `edit.php` and display templates. `loadXrefInfo()` deliberately excludes sort_order=0,
-so there is no overlap.
 
 **SCREF** — short reference code for a contact, stored in `liberty_xref.xkey` where `item='SCREF'`.
 Used as the `from` value in stock movement CSVs to identify the supplier/source contact.
 `contact/includes/lookup_contact.php` provides JSON autocomplete searching by `lc.title` or SCREF `xkey`.
 
-## ContactPerson / ContactBusiness subclasses
+## Name storage (`ContactPerson` only)
 
-Replaces the old `$isPerson` hack (`$00` xref presence) with proper subclasses following the
-dual-guid xref pattern (as per stock):
+`liberty_content.title` holds the plain, sortable "Surname, Prefix Forename Suffix" form directly
+(a real column, not derived at query time) — needed so a real SQL `ORDER BY lc.title` sorts
+correctly for listing/pagination. The individual `prefix`/`forename`/`surname`/`suffix` parts
+(needed to repopulate the edit form) live separately as a JSON array on a dedicated `NAME` xref
+item, its own `name` group at `sort_order=0` — deliberately not sharing the `type` group's
+sort_order=0 slot, since `NAME` isn't a togglable type marker and would otherwise leak into the
+`P01`/`P02` type-tag picker.
 
-- `ContactPerson extends Contact` — `mContentTypeGuid = 'contactperson'`, `mPackageGuid = 'contact'`
-- `ContactBusiness extends Contact` — `mContentTypeGuid = 'contactbusiness'`, `mPackageGuid = 'contact'`
+`ContactPerson::load()` reads the `NAME` xref's JSON and overwrites `mInfo['title']`/`mInfo['name']`
+with the fuller "Prefix Forename Surname Suffix" display form for templates — the DB's own
+surname-led `lc.title` (used for listing/sorting) is intentionally overridden here for display
+purposes only. `ContactPerson::verify()` builds the surname-led sort form from the edit form's
+separate name fields before delegating to `Contact::verify()`, the same way `ContactBusiness`
+passes its organisation string through as `title`.
 
-Shared schema (addresses, SCREF etc.) stays at `content_type_guid='contact'`.
-Person-specific types (`$00` default, kitelf, committee member etc.) at `contactperson` level.
-Business subtypes (`$02`+: Supplier, Manufacturer etc.) at `contactbusiness` level.
-`$isPerson` flag disappears — the class IS the distinction.
-Template resolution works via `mContentTypeGuid` path lookup in LibertyContent.
-`lookup_contact_inc.php` returns the correctly-typed subclass via `getLibertyObject()`.
-
-Live on every real site as of 2026-08-10 (not all sites separately re-confirmed since). Migrated
-via upgrade script `contact/admin/upgrades/5.0.3.php`:
-1. Registers `contactperson` and `contactbusiness` content types
-2. `UPDATE liberty_content SET content_type_guid = 'contactperson'` for records with a `$00` xref
-3. Remaining `content_type_guid='contact'` records become `contactbusiness`
+`ContactBusiness` has no equivalent — `liberty_content.title` is just the organisation name
+directly, no separate xref item involved.
 
 ## Entry points
 
@@ -70,49 +77,29 @@ types. Listing is split three ways: `list_people.php`/`list_businesses.php`/`lis
 ## `isValid()` — checks for a real record, not just a valid-looking id
 
 `Contact::isValid()` (inherited by `ContactPerson`/`ContactBusiness`) queries `liberty_content`
-directly for a matching `content_id` + `content_type_guid`, not just `verifyId($mContentId)` —
-so a nonexistent `content_id` correctly 404s ("No contact exists with the given ID") rather than
+directly for a matching `content_id` + `content_type_guid`, not just a bare id-format check — so a
+nonexistent `content_id` correctly 404s ("No contact exists with the given ID") rather than
 `view.php` falling through to a bare list redirect or `edit.php` silently switching to create-new
-mode. A `LibertyContent`-wide version of this fix was tried and reverted — see `liberty/CLAUDE.md`
-for why; `stock` uses the same per-package pattern.
+mode. `stock` uses the same per-package pattern.
 
 ## `Contact::load()` — xref-derived mInfo fields
 
 After `loadXrefInfo()`, pulls a few fields from the already-loaded `$this->mXrefInfo` straight
 onto the flat `$this->mInfo` array for templates: `IMG` (gallery, `client_gallery`), `#L`
-(location, `x_coordinate`/`y_coordinate` — hand-entered directly, see below), and the contact's
-own address (`house` = `xkey_ext`, `postcode` = `xkey` — raw hand-entered values, no lookup).
+(location, `x_coordinate`/`y_coordinate` — hand-entered directly), and the contact's own address
+(`house` = `xkey_ext`, `postcode` = `xkey` — raw hand-entered values, no lookup).
 
-**Address lookup is template-driven, not a fixed item code** (fixed 2026-08-31 — see
-`CLAUDE.md`'s dated entry): `findAddressXref()` scans the loaded xref rows for whichever item(s)
-have `liberty_xref_item.template = 'address'` (`#C`/`#I`/`#R`/`#S`/`#T` today, but a site could
-register others), preferring the first one with a real postcode. The previous version hardcoded
-`#S` (Service Address), which has no live data anywhere — real address data is almost always
-under `#C` (Contact Address), occasionally `#R` (Residential); a contact can have more than one
-populated at once. `export_contacts.php` already used this same `template === 'address'` filter
-independently — `Contact::load()` was the one place still hardcoding a single item code.
+**Address lookup is template-driven, not a fixed item code**: `findAddressXref()` scans the loaded
+xref rows for whichever item(s) have `liberty_xref_item.template = 'address'` (`#C`/`#I`/`#R`/`#S`/
+`#T` today, but a site could register others), preferring the first one with a real postcode, since
+a contact can have more than one address item populated at once. `export_contacts.php` uses the
+same `template === 'address'` filter independently.
 
-**`address_postcode` (the OS-style postcode→area-code reference table) dropped entirely from
-contact, same session** — was previously joined in three independent places (`Contact::load()`,
-`Contact::getList()`, `export_contacts.php`) to enrich the raw address with `add1`-`county`
-and, for `load()` only, a `grideast`/`gridnorth`-derived map pin (`phpcoord`'s `OSRef` class,
-`contact/lib/phpcoord-2.3.php`) as a fallback when `#L` had no hand-entered coordinates. Also
-turned out to be joined *blindly* at the liberty level — `LibertyXrefType::loadContent()` LEFT
-JOINed `address_postcode` on every xref row of any content type, not just contact's, purely on
-the chance an `xkey` matched a postcode string (feeding `view_address_item.tpl`'s `.address`
-display, the only real consumer) — a package-agnostic core file depending on a table owned by
-one specific package (contact), something liberty can't assume is even installed. All of it
-removed: the liberty-level join, `Contact::load()`/`getList()`'s postcode enrichment (raw
-`xkey`/`xkey_ext` only now — the "backup address details" already always stored on the xref row
-itself), `export_contacts.php`'s CSV columns, `list.tpl`'s add1-4/town columns,
-`view_address_item.tpl`'s `.address` display. `contact/lib/phpcoord-2.3.php` relocated to
-`mapper/lib/` (unwired, parked for whenever mapper grows real coordinate-conversion needs) rather
-than deleted outright — `#L`'s hand-entered `x_coordinate`/`y_coordinate` path is untouched and
-still the only way to get a map pin on a contact. `address_postcode` itself stays in
-`admin/schema_inc.php` for now (not dropped) — pending resolving a version-tracking mismatch
-found while looking at how to do that properly (contact has no `admin/upgrades/` directory despite
-`MANUAL.md` describing an already-run "5.0.3" upgrade; the DB's tracked
-`package_contact_version` is still `5.0.1`).
+`address_postcode` (an OS-style postcode→area-code reference table) is no longer used anywhere in
+this package or in Liberty core — address enrichment relies purely on whatever's hand-entered on
+the address xref rows themselves (`xkey`/`xkey_ext`), with `#L`'s hand-entered
+`x_coordinate`/`y_coordinate` as the only source of a map pin. Postcode/coordinate lookup belongs
+to `mapper` (OSM-based) going forward, not this package.
 
 `IMG`/`#L` stay as direct `findRowByItem()` lookups — genuinely fixed single-purpose item codes,
 not subject to the same per-site variability as address items.
