@@ -26,6 +26,7 @@
 			<input type="hidden" name="wikidata_qid" value="{$wikiQid|escape}" />
 			<input type="hidden" name="wikidata_raw" value="{$wikiRawJson|escape}" />
 			<input type="hidden" name="dob" value="{$wikiDob|escape}" />
+			<input type="hidden" name="dod" value="{$wikiDod|escape}" />
 			{foreach from=$wikiExternalIds key=item item=value}
 				<input type="hidden" name="ext_{$item}" value="{$value|escape}" />
 			{/foreach}
@@ -43,6 +44,11 @@
 			{if $wikiDob}
 				<div class="form-group">
 					<p>{tr}Date of birth{/tr}: {$wikiDob|escape}</p>
+				</div>
+			{/if}
+			{if $wikiDod}
+				<div class="form-group">
+					<p>{tr}Date of death{/tr}: {$wikiDod|escape}</p>
 				</div>
 			{/if}
 

@@ -1,22 +1,26 @@
 <?php
 /**
- * Add a ContactPerson seeded from a Wikidata entity - name, WPxx role-tag suggestions (from a
- * curated occupation lookup, not a raw mirror of Wikidata's own broader occupation list), and the
- * external-identity links documented at contact/MANUAL-WIKI.md. Two-step flow: fetch shows an
- * editable, pre-filled version of the normal add_person.php form (nothing is written until Save),
- * Save stores the contact exactly like add_person.php does, then layers the xrefs on top.
+ * Add a ContactWikiIndividual seeded from a Wikidata entity - name, WPxx role-tag suggestions (from
+ * a curated occupation lookup, not a raw mirror of Wikidata's own broader occupation list), the
+ * external-identity links, and dob/dod, all documented at contact/MANUAL-WIKI.md. Two-step flow:
+ * fetch shows an editable, pre-filled version of the normal add_person.php form (nothing is written
+ * until Save), Save stores the contact exactly like add_person.php does, then layers the xrefs on
+ * top - dob/dod as real xref items, not a direct event_time set, so
+ * ContactWikiIndividual::storeXref()'s own mirroring keeps liberty_content.event_time in sync
+ * automatically.
  *
  * Deliberately scoped: does not attempt a thumbnail (Contact's own IMG/client_gallery mechanism
  * has no real liberty_xref_item behind it at all right now, so there's nothing safe to wire a
- * fetched image into yet) and does not attempt a bio fetch (Wikidata's own sitelinks.enwiki gives
- * the Wikipedia article directly, but turning that into fetched prose is its own follow-up, not
- * bundled into this first pass).
+ * fetched image into yet), does not attempt a bio fetch (Wikidata's own sitelinks.enwiki gives
+ * the Wikipedia article directly, but turning that into fetched prose is its own follow-up), and
+ * does not fetch place-of-birth/place-of-death (P19/P20 are Wikidata items, not plain strings -
+ * resolving them to a readable place name needs a further lookup, not added here).
  *
  * @package contact
  * @subpackage functions
  */
 
-use Bitweaver\Contact\ContactPerson;
+use Bitweaver\Contact\ContactWikiIndividual;
 use Bitweaver\KernelTools;
 
 require_once '../kernel/includes/setup_inc.php';
@@ -107,7 +111,7 @@ function wiki_person_date_claim( array $pEntity, string $pProperty ): ?string {
 	return null;
 }
 
-$gContent = new ContactPerson();
+$gContent = new ContactWikiIndividual();
 $wikiEntity = null;
 $wikiQid = null;
 
@@ -130,16 +134,13 @@ if( !empty( $_REQUEST['fFetchWikidata'] ) ) {
 }
 
 if( !empty( $_REQUEST['fSaveContact'] ) ) {
-	$_REQUEST['contact_types'] = array_unique( array_merge( [ 'P01' ], array_values( (array)( $_REQUEST['contact_types'] ?? [] ) ) ) );
+	// No 'P01' injection here - unlike add_person.php, this isn't a contactperson being tagged
+	// Personal, it's a genuinely separate content type (contactwikiindividual) that happens to
+	// extend ContactPerson for code reuse. contact_types here is purely the WPxx picker's own
+	// selections.
+	$_REQUEST['contact_types'] = array_values( (array)( $_REQUEST['contact_types'] ?? [] ) );
 	$wikiQid = trim( (string)( $_REQUEST['wikidata_qid'] ?? '' ) ) ?: null;
 	$wikiRaw = $_REQUEST['wikidata_raw'] ?? null;
-	$eventTime = null;
-	if( !empty( $_REQUEST['dob'] ) ) {
-		$eventTime = strtotime( $_REQUEST['dob'] );
-		if( $eventTime !== false ) {
-			$_REQUEST['event_time'] = $eventTime;
-		}
-	}
 
 	if( $gContent->store( $_REQUEST ) ) {
 		if( $wikiQid && $wikiRaw ) {
@@ -153,6 +154,19 @@ if( !empty( $_REQUEST['fSaveContact'] ) ) {
 				$gContent->storeXref( $xrefHash );
 			}
 		}
+		// 'dob' as a real xref, not just a raw event_time set - ContactWikiIndividual::storeXref()
+		// mirrors it into liberty_content.event_time itself, so the xref stays the one editable
+		// source of truth this needs to write.
+		$dobValue = trim( (string)( $_REQUEST['dob'] ?? '' ) );
+		if( $dobValue !== '' ) {
+			$xrefHash = [ 'content_id' => $gContent->mContentId, 'item' => 'dob', 'xkey_ext' => $dobValue ];
+			$gContent->storeXref( $xrefHash );
+		}
+		$dodValue = trim( (string)( $_REQUEST['dod'] ?? '' ) );
+		if( $dodValue !== '' ) {
+			$xrefHash = [ 'content_id' => $gContent->mContentId, 'item' => 'dod', 'xkey_ext' => $dodValue ];
+			$gContent->storeXref( $xrefHash );
+		}
 		KernelTools::bit_redirect( CONTACT_PKG_URL.'edit.php?content_id='.$gContent->mContentId );
 		die;
 	}
@@ -165,6 +179,7 @@ $wikiExternalIds = [];
 $wikiSuggestedTypes = [];
 $wikiRawJson = $_REQUEST['wikidata_raw'] ?? null;
 $wikiDob = $_REQUEST['dob'] ?? null;
+$wikiDod = $_REQUEST['dod'] ?? null;
 $wikiSitelink = null;
 
 if( $wikiEntity ) {
@@ -188,6 +203,7 @@ if( $wikiEntity ) {
 		}
 	}
 	$wikiDob = wiki_person_date_claim( $wikiEntity, 'P569' );
+	$wikiDod = wiki_person_date_claim( $wikiEntity, 'P570' );
 	$wikiSitelink = $wikiEntity['sitelinks']['enwiki']['url'] ?? null;
 	$wikiRawJson = json_encode( $wikiEntity );
 }
@@ -199,6 +215,7 @@ $gBitSmarty->assign( 'wikiRawJson', $wikiRawJson );
 $gBitSmarty->assign( 'wikiExternalIds', $wikiExternalIds );
 $gBitSmarty->assign( 'wikiSuggestedTypes', $wikiSuggestedTypes );
 $gBitSmarty->assign( 'wikiDob', $wikiDob );
+$gBitSmarty->assign( 'wikiDod', $wikiDod );
 $gBitSmarty->assign( 'wikiSitelink', $wikiSitelink );
 $gBitSmarty->assign( 'personTypes', $gContent->getAvailableTypeItems() );
 

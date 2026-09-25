@@ -19,6 +19,8 @@ use Bitweaver\Liberty\LibertyContent;		// Contact base class
 define( 'CONTACT_CONTENT_TYPE_GUID', 'contact' );
 defined( 'CONTACTPERSON_CONTENT_TYPE_GUID' )   || define( 'CONTACTPERSON_CONTENT_TYPE_GUID',   'contactperson' );
 defined( 'CONTACTBUSINESS_CONTENT_TYPE_GUID' ) || define( 'CONTACTBUSINESS_CONTENT_TYPE_GUID', 'contactbusiness' );
+defined( 'CONTACTWIKIINDIVIDUAL_CONTENT_TYPE_GUID' ) || define( 'CONTACTWIKIINDIVIDUAL_CONTENT_TYPE_GUID', 'contactwikiindividual' );
+defined( 'CONTACTWIKIGROUP_CONTENT_TYPE_GUID' )      || define( 'CONTACTWIKIGROUP_CONTENT_TYPE_GUID',      'contactwikigroup' );
 
 class Contact extends LibertyContent {
 

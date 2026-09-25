@@ -219,6 +219,15 @@ generic Liberty idea, not Contact-specific.
 
 ## Build plan
 
+0. **`ContactWikiIndividual`/`ContactWikiGroup` classes** — `ContactWikiIndividual extends
+   ContactPerson` is done (`contact/includes/classes/ContactWikiIndividual.php`), its own
+   `content_type_guid='contactwikiindividual'`, `storeXref()` overridden to mirror the editable
+   `dob` xref into `liberty_content.event_time` whenever it's written (covers both a fresh add and
+   a later edit through the normal `edit_xref.php` flow, since `upsertXref()` delegates to this
+   same `storeXref()` call). `add_wiki_person.php` now instantiates it instead of plain
+   `ContactPerson` - no `P01` injection any more, since this is a genuinely separate content type,
+   not a `contactperson` tagged Personal. `ContactWikiGroup extends ContactBusiness` (the `formed`
+   equivalent) is not yet built.
 1. **Find-or-create-Contact-by-name helper** — used both when the artist-folder scan creates a
    discography gallery, and when registering any media credit, so both call sites converge on the
    same Contact rather than each minting their own. Same dedup shape as
