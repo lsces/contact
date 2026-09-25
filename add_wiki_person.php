@@ -208,7 +208,11 @@ if( !empty( $_REQUEST['fSaveContact'] ) ) {
 			// much data through an HTML round-trip at all.
 			$wikiEntityForSave = wiki_person_fetch_entity( $wikiQid );
 			if( $wikiEntityForSave ) {
-				$xrefHash = [ 'content_id' => $gContent->mContentId, 'item' => 'wikidata', 'xkey_ext' => $wikiQid, 'data' => json_encode( $wikiEntityForSave ) ];
+				// 'edit', not 'data' - LibertyXref::verify() only ever populates xref_store['data']
+				// from a param key literally named 'edit' (same gotcha LibertyContent::store() has
+				// for its own content-level data field, just a different class); a plain 'data' key
+				// here is silently ignored, which is why this never actually saved before.
+				$xrefHash = [ 'content_id' => $gContent->mContentId, 'item' => 'wikidata', 'xkey_ext' => $wikiQid, 'edit' => json_encode( $wikiEntityForSave ) ];
 				$gContent->storeXref( $xrefHash );
 			}
 		}
