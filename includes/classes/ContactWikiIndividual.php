@@ -145,25 +145,31 @@ class ContactWikiIndividual extends ContactPerson {
 		// 'edit', not 'data' - LibertyXref::verify() only ever populates xref_store['data'] from a
 		// param key literally named 'edit' (see liberty/MANUAL.md's own "'edit', not 'data'"
 		// section) - a plain 'data' key here is silently ignored.
-		$this->storeXref( [ 'content_id' => $this->mContentId, 'item' => 'wikidata', 'xkey_ext' => $qid, 'edit' => json_encode( $entity ) ] );
+		// storeXref() takes its param by reference, so each call needs a real variable, not a
+		// literal array expression, to bind to - PHP can't pass a literal by reference.
+		$xrefHash = [ 'content_id' => $this->mContentId, 'item' => 'wikidata', 'xkey_ext' => $qid, 'edit' => json_encode( $entity ) ];
+		$this->storeXref( $xrefHash );
 		$items[] = KernelTools::tra( 'Wikidata entity data' ).' ('.$qid.')';
 
 		foreach( self::EXTERNAL_ID_PROPS as $item => $property ) {
 			$value = self::stringClaim( $entity, $property );
 			if( $value !== null ) {
-				$this->storeXref( [ 'content_id' => $this->mContentId, 'item' => $item, 'xkey_ext' => $value ] );
+				$xrefHash = [ 'content_id' => $this->mContentId, 'item' => $item, 'xkey_ext' => $value ];
+				$this->storeXref( $xrefHash );
 				$items[] = $item.': '.$value;
 			}
 		}
 
 		$dob = self::dateClaim( $entity, 'P569' );
 		if( $dob !== null ) {
-			$this->storeXref( [ 'content_id' => $this->mContentId, 'item' => 'dob', 'xkey_ext' => $dob ] );
+			$xrefHash = [ 'content_id' => $this->mContentId, 'item' => 'dob', 'xkey_ext' => $dob ];
+			$this->storeXref( $xrefHash );
 			$items[] = KernelTools::tra( 'Date of birth' ).': '.$dob;
 		}
 		$dod = self::dateClaim( $entity, 'P570' );
 		if( $dod !== null ) {
-			$this->storeXref( [ 'content_id' => $this->mContentId, 'item' => 'dod', 'xkey_ext' => $dod ] );
+			$xrefHash = [ 'content_id' => $this->mContentId, 'item' => 'dod', 'xkey_ext' => $dod ];
+			$this->storeXref( $xrefHash );
 			$items[] = KernelTools::tra( 'Date of death' ).': '.$dod;
 		}
 
@@ -174,7 +180,8 @@ class ContactWikiIndividual extends ContactPerson {
 			$storedName = 'wikidata.'.$ext;
 			KernelTools::mkdir_p( $imagesDir );
 			if( self::downloadCommonsFile( $imageFilename, $imagesDir.$storedName ) ) {
-				$this->storeXref( [ 'content_id' => $this->mContentId, 'item' => 'image', 'xkey_ext' => $storedName, 'fAddXref' => 1 ] );
+				$xrefHash = [ 'content_id' => $this->mContentId, 'item' => 'image', 'xkey_ext' => $storedName, 'fAddXref' => 1 ];
+				$this->storeXref( $xrefHash );
 				$items[] = KernelTools::tra( 'Image' ).': '.$imageFilename;
 			}
 		}
