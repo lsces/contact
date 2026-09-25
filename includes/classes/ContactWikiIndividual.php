@@ -142,34 +142,34 @@ class ContactWikiIndividual extends ContactPerson {
 
 		$items = [];
 
+		// upsertXref(), not storeXref() directly - storeXref() always inserts a fresh row unless
+		// the caller already knows the xref_id to update, which is exactly the "duplicates every
+		// item on a second Reload" bug found live: this method runs against an ALREADY-created
+		// contact just as often as a brand new one, so every item here needs the "update the
+		// existing row if there is one" lookup upsertXref() does, not a blind insert.
+		//
 		// 'edit', not 'data' - LibertyXref::verify() only ever populates xref_store['data'] from a
 		// param key literally named 'edit' (see liberty/MANUAL.md's own "'edit', not 'data'"
 		// section) - a plain 'data' key here is silently ignored.
-		// storeXref() takes its param by reference, so each call needs a real variable, not a
-		// literal array expression, to bind to - PHP can't pass a literal by reference.
-		$xrefHash = [ 'content_id' => $this->mContentId, 'item' => 'wikidata', 'xkey_ext' => $qid, 'edit' => json_encode( $entity ) ];
-		$this->storeXref( $xrefHash );
+		$this->upsertXref( $this->mContentId, 'wikidata', [ 'xkey_ext' => $qid, 'edit' => json_encode( $entity ) ] );
 		$items[] = KernelTools::tra( 'Wikidata entity data' ).' ('.$qid.')';
 
 		foreach( self::EXTERNAL_ID_PROPS as $item => $property ) {
 			$value = self::stringClaim( $entity, $property );
 			if( $value !== null ) {
-				$xrefHash = [ 'content_id' => $this->mContentId, 'item' => $item, 'xkey_ext' => $value ];
-				$this->storeXref( $xrefHash );
+				$this->upsertXref( $this->mContentId, $item, [ 'xkey_ext' => $value ] );
 				$items[] = $item.': '.$value;
 			}
 		}
 
 		$dob = self::dateClaim( $entity, 'P569' );
 		if( $dob !== null ) {
-			$xrefHash = [ 'content_id' => $this->mContentId, 'item' => 'dob', 'xkey_ext' => $dob ];
-			$this->storeXref( $xrefHash );
+			$this->upsertXref( $this->mContentId, 'dob', [ 'xkey_ext' => $dob ] );
 			$items[] = KernelTools::tra( 'Date of birth' ).': '.$dob;
 		}
 		$dod = self::dateClaim( $entity, 'P570' );
 		if( $dod !== null ) {
-			$xrefHash = [ 'content_id' => $this->mContentId, 'item' => 'dod', 'xkey_ext' => $dod ];
-			$this->storeXref( $xrefHash );
+			$this->upsertXref( $this->mContentId, 'dod', [ 'xkey_ext' => $dod ] );
 			$items[] = KernelTools::tra( 'Date of death' ).': '.$dod;
 		}
 
@@ -180,8 +180,7 @@ class ContactWikiIndividual extends ContactPerson {
 			$storedName = 'wikidata.'.$ext;
 			KernelTools::mkdir_p( $imagesDir );
 			if( self::downloadCommonsFile( $imageFilename, $imagesDir.$storedName ) ) {
-				$xrefHash = [ 'content_id' => $this->mContentId, 'item' => 'image', 'xkey_ext' => $storedName, 'fAddXref' => 1 ];
-				$this->storeXref( $xrefHash );
+				$this->upsertXref( $this->mContentId, 'image', [ 'xkey_ext' => $storedName ] );
 				$items[] = KernelTools::tra( 'Image' ).': '.$imageFilename;
 			}
 		}
