@@ -154,11 +154,33 @@ class ContactWikiIndividual extends ContactPerson {
 		$this->upsertXref( $this->mContentId, 'wikidata', [ 'xkey_ext' => $qid, 'edit' => json_encode( $entity ) ] );
 		$items[] = KernelTools::tra( 'Wikidata entity data' ).' ('.$qid.')';
 
+		$tmdbId = null;
 		foreach( self::EXTERNAL_ID_PROPS as $item => $property ) {
 			$value = self::stringClaim( $entity, $property );
 			if( $value !== null ) {
 				$this->upsertXref( $this->mContentId, $item, [ 'xkey_ext' => $value ] );
 				$items[] = $item.': '.$value;
+				if( $item === 'tmdb' ) {
+					$tmdbId = $value;
+				}
+			}
+		}
+
+		// Biography re-fetch, not just the external ids/dob/dod/image add_wiki_person.php's own
+		// initial Save already covered - a Reload should refresh everything Wikidata/TMDb can
+		// supply, same as the rest of this method. Always overwrites the existing note, same
+		// "Wikidata/TMDb wins" behaviour every other item here already has (upsertXref() replaces
+		// the stored value unconditionally) - a hand-edited note added since the last Reload would
+		// be lost, not merged; worth knowing before clicking Reload on a contact whose bio has since
+		// been touched by hand. LibertyContent::store() directly, not $this->store() (Contact's own
+		// override) - this only ever needs to touch the free-text data field, not re-run the
+		// address/contact_types/NAME logic Contact::store() layers on top for a full page save.
+		if( $tmdbId !== null ) {
+			$bio = self::fetchTmdbBiography( $tmdbId );
+			if( $bio !== null ) {
+				$bioHash = [ 'content_id' => $this->mContentId, 'edit' => self::plainTextToHtmlParagraphs( $bio ) ];
+				\Bitweaver\Liberty\LibertyContent::store( $bioHash );
+				$items[] = KernelTools::tra( 'Biography' ).' ('.KernelTools::tra( 'TMDb' ).')';
 			}
 		}
 
