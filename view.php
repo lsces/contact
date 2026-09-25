@@ -76,35 +76,15 @@ if( $isWikiIndividual ) {
 	}
 	$gBitSmarty->assign( 'roleFlags', $roleFlags );
 
-	// External identity links - same xkey-falling-back-to-xkey_ext href-building as liberty's own
-	// view_href_item.tpl (a MusicBrainz/URL-shaped value lives in xkey_ext, everything else in xkey).
-	$externalLinks = [];
-	foreach( $gContent->mXrefInfo->mGroups as $xrefGroup ) {
-		if( $xrefGroup->mXGroup !== 'external' ) {
-			continue;
-		}
-		foreach( $xrefGroup->mXrefs as $xrefInfo ) {
-			$key = $xrefInfo['xkey'] ?: $xrefInfo['xkey_ext'];
-			if( $xrefInfo['cross_ref_href'] && $key ) {
-				$externalLinks[] = [ 'title' => $xrefInfo['xref_title'], 'url' => $xrefInfo['cross_ref_href'].$key ];
-			}
-		}
-	}
-	$gBitSmarty->assign( 'externalLinks', $externalLinks );
-
 	// Large profile thumbnail - the first downloaded Wikidata image, if any (item is multiple=1,
-	// but a wiki contact only ever has the one auto-downloaded image today).
+	// but a wiki contact only ever has the one auto-downloaded image today). The 'biography' and
+	// 'external' groups (dob/dod/pob/pod, external-id links) are deliberately NOT flattened into
+	// bespoke PHP variables here any more - view_wiki_profile.tpl reads $gXrefInfo->mGroups
+	// directly and renders whatever items are actually registered/set, the same group/item-driven
+	// approach the generic xref tabs already use - so a new item added to the schema later (POB,
+	// formed/disbanded, another external source, ...) just shows up with no template change needed.
 	if( $imageXref = $gContent->mXrefInfo->findRowByItem( 'image' ) ) {
 		$gBitSmarty->assign( 'wikiThumbnailUrl', CONTACT_PKG_URL.'view_extra_image.php?xref_id='.$imageXref['xref_id'] );
-	}
-
-	// dob/dod are xref items, not mInfo columns Contact::load() populates for every contact (unlike
-	// client_gallery/x_coordinate etc.) - wiki-specific, so read here rather than in Contact.php.
-	if( $dobXref = $gContent->mXrefInfo->findRowByItem( 'dob' ) ) {
-		$gBitSmarty->assign( 'wikiDob', $dobXref['xkey_ext'] );
-	}
-	if( $dodXref = $gContent->mXrefInfo->findRowByItem( 'dod' ) ) {
-		$gBitSmarty->assign( 'wikiDod', $dodXref['xkey_ext'] );
 	}
 
 	// "Other content" - the linked FisheyeGallery (this contact's own discography), if any. Manually
