@@ -132,7 +132,10 @@
 				{jstab title="Contact Notes"}
 					{legend legend="Notes Body"}
 						<div class="form-group">
-							{textarea rows=30 noformat=1 edit=$gContent->mInfo.edit}
+							{* $gContent->mInfo.edit is never actually set anywhere (LibertyContent/Contact
+							   only ever populate mInfo['data']) - edit.php's own bootstrap computes 'edit'
+							   from that into $formInfo/pageInfo instead, which is the one this needs. *}
+							{textarea rows=30 noformat=1 edit=$pageInfo.edit}
 						</div>
 
 						{if $page ne 'SandBox'}
