@@ -232,12 +232,27 @@ generic Liberty idea, not Contact-specific.
 3. New `view_xxx_item.tpl` templates for the reference-style items (mirroring stock's
    `view_sup_item.tpl`), hyperlinking into `contact/view.php?content_id=`.
 4. Bio/identity-fetch integration: **Wikidata as the entry point, not just one source among
-   several** — its own per-person entity page (a `Qnnnn` id) carries external-identifier
-   properties for most of the sources above at once (MusicBrainz artist, IMDb, TMDb, TVDB, Discogs
-   artist, VIAF, Open Library all commonly present), so fetching one Wikidata entity populates most
-   of `contact:external` in a single call rather than searching each source individually. The one
-   confirmed gap: **TheAudioDB isn't one of Wikidata's own identifier properties** — its own item
-   here needs a separate step, but doesn't need its own search either, since its API takes the
-   MusicBrainz id directly (already populated via Wikidata) rather than a TheAudioDB-specific id.
-   `tmdb`/`tvdb`/`imdb` all only need the bare id in `xkey` — confirmed against real pages for all
-   three, the trailing name slug each site shows is cosmetic.
+   several** — `action=wbgetentities`, or simpler, a plain GET against
+   `wikidata.org/wiki/Special:EntityData/<Qid>.json` (no API key), returns every property
+   (`Pnnnn`) on that person's entity at once. Property→item mapping, hard-confirmed against a real
+   entity (Olivia Newton-John, `Q185165`) by cross-matching values against ids already confirmed
+   by hand, not guessed from memory:
+
+   | xref item | Wikidata property | Confirmed how |
+   |---|---|---|
+   | `imdb` | `P345` | value matched the hand-confirmed id exactly |
+   | `tmdb` | `P4985` | value matched the hand-confirmed id exactly |
+   | `tvdb` | `P7920` | value matched the hand-confirmed id exactly |
+   | `musicbrainz` | `P434` | value is a valid MBID-shaped UUID |
+   | `viaf` | `P214` | value is VIAF-shaped |
+   | `openlibrary` | `P648` | value carries Open Library's own author-id `...A` suffix |
+   | `official_site` | `P856` | value is a real URL |
+   | `discogs_artist` | `P1953` (likely) | value is Discogs-shaped, not independently cross-checked against a live Discogs page the way the others were |
+
+   One Wikidata fetch populates most of `contact:external` in a single call rather than searching
+   each source individually. The one confirmed gap: **TheAudioDB has no Wikidata property at all**
+   (checked directly, not present on this entity) — its own item still needs a separate step, but
+   not its own search, since its API takes the MusicBrainz id directly (already populated via
+   Wikidata) rather than a TheAudioDB-specific id. `tmdb`/`tvdb`/`imdb` all only need the bare id in
+   `xkey` — confirmed against real pages for all three, the trailing name slug each site shows is
+   cosmetic.
