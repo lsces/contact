@@ -224,10 +224,20 @@ generic Liberty idea, not Contact-specific.
    same Contact rather than each minting their own. Same dedup shape as
    `FisheyeGallery::findOrCreateNestedGallery()` already uses (scoped lookup, not a bare name
    match).
-2. New `liberty_xref_item` definitions: Contact's own `music_gallery` reference item and
-   `contact:external` href-style items; `fisheyealbum`'s `artist`/`composer`/`conductor`/
-   `orchestra`/`performer` converted from `template='text'` to the new reference template.
+2. New `liberty_xref_item` definitions: Contact's own `music_gallery` reference item (not yet
+   done) and `contact:external` href-style items (done — `rdmcloud`'s own
+   `config/local/xref_schemes/contact.php`); `fisheyealbum`'s `artist`/`composer`/`conductor`/
+   `orchestra`/`performer` converted from `template='text'` to the new reference template (not yet
+   done).
 3. New `view_xxx_item.tpl` templates for the reference-style items (mirroring stock's
    `view_sup_item.tpl`), hyperlinking into `contact/view.php?content_id=`.
-4. Bio-fetch integration: TheAudioDB (keyed by the MBID already captured) as the primary source,
-   Discogs artist profile as fallback.
+4. Bio/identity-fetch integration: **Wikidata as the entry point, not just one source among
+   several** — its own per-person entity page (a `Qnnnn` id) carries external-identifier
+   properties for most of the sources above at once (MusicBrainz artist, IMDb, TMDb, TVDB, Discogs
+   artist, VIAF, Open Library all commonly present), so fetching one Wikidata entity populates most
+   of `contact:external` in a single call rather than searching each source individually. The one
+   confirmed gap: **TheAudioDB isn't one of Wikidata's own identifier properties** — its own item
+   here needs a separate step, but doesn't need its own search either, since its API takes the
+   MusicBrainz id directly (already populated via Wikidata) rather than a TheAudioDB-specific id.
+   `tmdb`/`tvdb`/`imdb` all only need the bare id in `xkey` — confirmed against real pages for all
+   three, the trailing name slug each site shows is cosmetic.
