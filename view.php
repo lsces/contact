@@ -14,6 +14,7 @@
 /**
  * required setup
  */
+use Bitweaver\Contact\ContactWikiGroup;
 use Bitweaver\Contact\ContactWikiIndividual;
 use Bitweaver\Fisheye\FisheyeGallery;
 
@@ -56,10 +57,10 @@ if ($gContent->isCommentable()) {
 $gBitSmarty->assign( 'isPerson', $gContent instanceof \Bitweaver\Contact\ContactPerson );
 $gBitSmarty->assign( 'gXrefInfo', $gContent->mXrefInfo );
 
-$isWikiIndividual = $gContent instanceof ContactWikiIndividual;
-$gBitSmarty->assign( 'isWikiIndividual', $isWikiIndividual );
+$isWikiContact = $gContent instanceof ContactWikiIndividual || $gContent instanceof ContactWikiGroup;
+$gBitSmarty->assign( 'isWikiContact', $isWikiContact );
 
-if( $isWikiIndividual ) {
+if( $isWikiContact ) {
 	// Role-flag pills (WPxx currently ticked) - getAvailableTypeItems() is the full code=>name
 	// lookup, getSetTypeItems() (Contact.php) is which of those are actually set here; type
 	// markers are excluded from mXrefInfo by design (see LibertyXrefType's own docblock), so this
@@ -99,4 +100,4 @@ if( $isWikiIndividual ) {
 }
 
 $gBitSystem->setBrowserTitle( $gContent->getTitle() );
-$gBitSystem->display( $isWikiIndividual ? 'bitpackage:contact/view_wiki_profile.tpl' : 'bitpackage:contact/show_contact.tpl' );
+$gBitSystem->display( $isWikiContact ? 'bitpackage:contact/view_wiki_profile.tpl' : 'bitpackage:contact/show_contact.tpl' );

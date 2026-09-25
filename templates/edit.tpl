@@ -178,7 +178,7 @@
 			<div class="form-group submit">
 				<input type="submit" class="btn btn-default" name="fCancel" value="{tr}Cancel{/tr}" />&nbsp;
 				<input type="submit" class="btn btn-primary" name="fSaveContact" value="{tr}Save{/tr}" />
-				{if $isWikiIndividual && $gContent->mInfo.content_id}
+				{if $isWikiContact && $gContent->mInfo.content_id}
 					&nbsp;<input type="submit" class="btn btn-secondary" name="fReloadWikidata" value="{tr}Reload from Wikidata{/tr}" />
 				{/if}
 			</div>

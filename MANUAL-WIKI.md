@@ -219,22 +219,41 @@ generic Liberty idea, not Contact-specific.
 
 ## Build plan
 
-0. **`ContactWikiIndividual`/`ContactWikiGroup` classes** — `ContactWikiIndividual extends
-   ContactPerson` is done (`contact/includes/classes/ContactWikiIndividual.php`), its own
-   `content_type_guid='contactwikiindi'`, `storeXref()` overridden to mirror the editable
-   `dob` xref into `liberty_content.event_time` whenever it's written (covers both a fresh add and
-   a later edit through the normal `edit_xref.php` flow, since `upsertXref()` delegates to this
-   same `storeXref()` call). `add_wiki_person.php` now instantiates it instead of plain
-   `ContactPerson` - no `P01` injection any more, since this is a genuinely separate content type,
-   not a `contactperson` tagged Personal. Every Wikidata fetch/apply helper (entity fetch, claim
-   extraction, TMDb biography, Commons image download) lives as a static/instance method on the
-   class itself, not page-level functions - `reloadFromWikidata( ?string $pQid = null )` runs the
-   full fetch-then-apply cascade (raw entity json, external ids, dob/dod, P18 image) and is shared
-   by `add_wiki_person.php`'s own initial Save and `edit.php`'s fisheye-style `fReloadWikidata`
-   button (`edit.tpl`, `.btn-secondary`, same convention as `edit_album.tpl`'s Reload
-   Images/Tracks) - the latter re-fetches using `getWikidataQid()`, the contact's already-stored
-   `wikidata` xref. `ContactWikiGroup extends ContactBusiness` (the `formed` equivalent) is not yet
-   built.
+0. **`ContactWikiIndividual`/`ContactWikiGroup` classes** — both done.
+   `ContactWikiIndividual extends ContactPerson` (`contact/includes/classes/
+   ContactWikiIndividual.php`), `content_type_guid='contactwikiindi'`; `ContactWikiGroup extends
+   ContactBusiness` (`ContactWikiGroup.php`), `content_type_guid='contactwikigroup'` - a group's own
+   name is plain `organisation`/`liberty_content.title`, no NAME-xref name-parts mechanism needed.
+   Each overrides `storeXref()` to mirror its own editable date xref (`dob` for an individual,
+   `formed` for a group) into `liberty_content.event_time` whenever it's written (covers both a
+   fresh add and a later edit through the normal `edit_xref.php` flow, since `upsertXref()`
+   delegates to this same `storeXref()` call). `add_wiki_person.php`/`add_wiki_group.php` instantiate
+   these instead of plain `ContactPerson`/`ContactBusiness` - no `P01`/type injection, since these
+   are genuinely separate content types, not a tagged Personal/generic business.
+
+   Every Wikidata fetch/apply helper (entity fetch, claim extraction, TMDb biography, Commons image
+   download, `reloadFromWikidata()` itself) lives on `ContactWikiTrait` (`ContactWikiTrait.php`),
+   shared by both classes - a trait rather than a shared base class since the two already have
+   divergent real parents (`ContactPerson` vs `ContactBusiness`, no multiple inheritance in PHP).
+   `reloadFromWikidata( ?string $pQid = null )` runs the full fetch-then-apply cascade (raw entity
+   json, external ids, this content type's own biography dates via `biographyDateProps()` -
+   dob/dod vs formed/disbanded, P18 image) and is shared by each add-flow's own initial Save and
+   `edit.php`'s fisheye-style `fReloadWikidata` button (`edit.tpl`, `.btn-secondary`, same
+   convention as `edit_album.tpl`'s Reload Images/Tracks) - the latter re-fetches using
+   `getWikidataQid()`, the contact's already-stored `wikidata` xref. Role-tag suggestions stay
+   per-class (`OCCUPATION_MAP` from P106 for an individual, `GROUP_TYPE_MAP` from P31 for a group) -
+   `GROUP_TYPE_MAP` currently has just the one live-confirmed entry (`Q215380` "musical group" ->
+   `WB01`, confirmed against Fleetwood Mac/`Q106648`); the rest of WBxx's own Q-ids aren't guessed,
+   same "curated, not exhaustive" reasoning as `OCCUPATION_MAP`.
+
+   `view_wiki_profile.tpl` (the shared profile-style `view.php` layout for both wiki content types)
+   reads its biography/external-link panels straight from `$gXrefInfo->mGroups` rather than
+   pre-flattened PHP variables - a new item added to either group later just appears, no template
+   change needed.
+
+   **Not yet built**: linking a group's own Wikidata "member"-style claims to create/link the
+   individual members' own Contact records - flagged as something that "may come out in the wash"
+   once a real group's data is fetched and looked at properly, not designed yet.
 1. **Find-or-create-Contact-by-name helper** — used both when the artist-folder scan creates a
    discography gallery, and when registering any media credit, so both call sites converge on the
    same Contact rather than each minting their own. Same dedup shape as
