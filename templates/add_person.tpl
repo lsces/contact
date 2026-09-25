@@ -8,6 +8,11 @@
 		{formfeedback error=$errors}
 
 		{form id="addPersonForm"}
+			{* Contact::store()'s type-marker write is gated on this - see edit_type_header.tpl's
+			   own copy of this exact field for why an unconditional hidden field is needed even
+			   when there's no checkbox picker on this particular form (P01 is injected directly
+			   in add_person.php, not offered as a checkbox here). *}
+			<input type="hidden" name="fContactTypesSubmitted" value="1" />
 			<div class="form-group">
 				{formlabel label="Title" for="prefix"}
 				{forminput}

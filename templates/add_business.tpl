@@ -8,6 +8,9 @@
 		{formfeedback error=$errors}
 
 		{form id="addBusinessForm"}
+			{* Contact::store()'s type-marker write is gated on this - see edit_type_header.tpl's
+			   own copy for why it's needed even alongside a real checkbox picker below. *}
+			<input type="hidden" name="fContactTypesSubmitted" value="1" />
 			<div class="form-group">
 				{formlabel label="Organisation" for="organisation"}
 				{forminput}
