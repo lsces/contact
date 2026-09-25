@@ -126,6 +126,16 @@ project policy, not a gap in the API:
 | **TheAudioDB** (`theaudiodb.com/api/v1/json/2/artist-mb.php?i=<mbid>`) | `strBiographyEN` (+ other languages), formed year, genre/style/mood, thumb/fanart/banner images | Keyed directly off the MBID — a single hop, no name-matching ambiguity. Likely the closest match to what Plex's own music agent shows as "About the Artist". Best first choice for real bio prose. |
 | **Discogs artist profile** | `profile` field — prose bio | `FisheyeAlbum::fetchDiscogsLink()` already exists for album-level Discogs data, so some of this plumbing is reusable. Good fallback when TheAudioDB has nothing for an artist. |
 
+**TMDb does not generally cover the music space** — its own person catalogue is scoped to people
+with an actual film/TV credit, not musicians broadly. A working artist with no documentary, concert
+film, biopic, or scoring credit simply has no TMDb entry at all, so it can't stand in for
+MusicBrainz/TheAudioDB/Discogs as a general music source. The overlap is real but narrower than it
+looks: a composer who also scores films, or an artist who's the subject of a concert film or
+documentary, genuinely does get a TMDb person page — for exactly that person, a Contact can (and
+should) carry *both* an `mbid` and a `tmdb_id` at once, since these are separate `contact:external`
+items on the same record, not a choice between one or the other. TMDb is worth checking as a
+supplementary link whenever that overlap exists, just not assumed as a first-choice music source.
+
 **Film/TV** — the same shape again, and closer to being ready than it looks: `imdb`/`tmdb`/`tvdb`
 are already captured today as plain external-link xref items on `fisheyefilm`/`fisheyeprogram`
 (pulled straight from Plex's own metadata GUIDs, `<Guid id="imdb://...">`/`<Guid id="tmdb://...">`)
