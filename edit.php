@@ -1,5 +1,6 @@
 <?php
 
+use Bitweaver\Contact\ContactWikiIndividual;
 use Bitweaver\KernelTools;
 use Bitweaver\HttpStatusCodes;
 /**
@@ -74,6 +75,13 @@ if( !empty( $_REQUEST['expunge'] ) && $gContent->isValid() ) {
 		$formInfo = $_REQUEST;
 		$formInfo['data'] = &$_REQUEST['edit'];
 	}
+} elseif( !empty( $_REQUEST['fReloadWikidata'] ) && $gContent instanceof ContactWikiIndividual ) {
+	// Fisheye-style Reload button (edit_album.php's own fReloadImages/fReloadTracks) - re-runs the
+	// same fetch-then-apply cascade add_wiki_person.php's own Save step used to create this
+	// contact, picking up anything changed on Wikidata since (see
+	// ContactWikiIndividual::reloadFromWikidata()'s own docblock).
+	$wikiReloadResult = $gContent->reloadFromWikidata();
+	$wikiReloadLabel = empty( $wikiReloadResult['error'] ) ? KernelTools::tra( 'Reloaded from Wikidata' ) : KernelTools::tra( 'Reload from Wikidata' );
 }
 
 // formInfo might be set due to a error on submit
@@ -85,6 +93,9 @@ $isPerson = $gContent instanceof \Bitweaver\Contact\ContactPerson;
 $gContent->loadXrefInfo();
 $gBitSmarty->assign( 'gXrefInfo', $gContent->mXrefInfo );
 $gBitSmarty->assign( 'isPerson', $isPerson );
+$gBitSmarty->assign( 'isWikiIndividual', $gContent instanceof ContactWikiIndividual );
+$gBitSmarty->assign( 'wikiReloadResult', $wikiReloadResult ?? null );
+$gBitSmarty->assign( 'wikiReloadLabel', $wikiReloadLabel ?? null );
 
 // Build type toggle list: available options from schema (getAvailableTypeItems()),
 // checked state from contact_types (currently set items in Xref).

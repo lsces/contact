@@ -12,11 +12,47 @@
  * content_type_guid (done in contact.php) is enough on its own, no further code needed for that
  * part.
  *
+ * Hosts every Wikidata-fetch/apply helper (add_wiki_person.php's own create flow and edit.php's
+ * fisheye-style Reload button both call reloadFromWikidata() - moved here, not left as page-level
+ * functions, for exactly that reuse, same reasoning as FisheyeAlbum::reloadTracks()/
+ * reloadPlexImages() living on the class rather than edit_album.php itself).
+ *
  * @package contact
  */
 namespace Bitweaver\Contact;
 
+use Bitweaver\KernelTools;
+
 class ContactWikiIndividual extends ContactPerson {
+
+	// item => Wikidata property, matching contact.php's own 'external' group item set exactly.
+	const EXTERNAL_ID_PROPS = [
+		'imdb'           => 'P345',
+		'tmdb'           => 'P4985',
+		'tvdb'           => 'P7920',
+		'musicbrainz'    => 'P434',
+		'discogs_artist' => 'P1953',
+		'viaf'           => 'P214',
+		'openlibrary'    => 'P648',
+		'official_site'  => 'P856',
+	];
+
+	// Curated, not a mirror of Wikidata's own occupation (P106) list - only the occupations that
+	// map onto a role this system actually credits someone with on a work (fisheye's own
+	// director/writer/composer/star items, plus WPxx's own Artist/Performer music roles).
+	// Anything else in a person's P106 list (recording artist, singer-songwriter,
+	// businessperson, ...) is simply not represented here rather than actively filtered - the
+	// picker still shows every WPxx code, ticked or not.
+	const OCCUPATION_MAP = [
+		'Q10800557' => 'WP01', // film actor
+		'Q33999'    => 'WP01', // actor
+		'Q2526255'  => 'WP02', // film director
+		'Q36834'    => 'WP03', // composer
+		'Q753110'   => 'WP03', // songwriter
+		'Q177220'   => 'WP04', // singer
+		'Q639669'   => 'WP06', // musician
+		'Q28389'    => 'WP07', // screenwriter
+	];
 
 	public function __construct( $pContactId = NULL, $pContentId = NULL ) {
 		parent::__construct( $pContactId, $pContentId );
@@ -35,9 +71,9 @@ class ContactWikiIndividual extends ContactPerson {
 	 * Keeps liberty_content.event_time mirroring the editable 'dob' xref - event_time is just a
 	 * denormalized convenience for cheap date-based sort/list (the same mechanism Calendar's own
 	 * day content already uses), the xref item itself stays the real, editable source of truth.
-	 * Catches every write path (a fresh dob added by add_wiki_person.php, or a later edit through
-	 * the normal edit_xref.php flow) since upsertXref() delegates to this same storeXref() call
-	 * internally - no separate hook needed for either case.
+	 * Catches every write path (a fresh dob added by add_wiki_person.php, a later reloadFromWikidata()
+	 * refresh, or a manual edit through the normal edit_xref.php flow) since upsertXref() delegates
+	 * to this same storeXref() call internally - no separate hook needed for any of them.
 	 */
 	public function storeXref( &$pParamHash ): bool {
 		$result = parent::storeXref( $pParamHash );
@@ -66,5 +102,193 @@ class ContactWikiIndividual extends ContactPerson {
 	 */
 	public function getExtraImagePath( string $pRelativePath ): string {
 		return CONTACT_IMPORT_PATH.\Bitweaver\Liberty\liberty_mime_get_storage_branch( [ 'attachment_id' => $this->mContentId ] ).$pRelativePath;
+	}
+
+	/**
+	 * The Wikidata qid this contact is already linked to (its own stored 'wikidata' xref's
+	 * xkey_ext), or null for one that's never been fetched/saved - used by reloadFromWikidata()
+	 * when no qid is explicitly passed (the edit.php Reload button case; add_wiki_person.php's own
+	 * initial Save always passes one explicitly instead, since the xref doesn't exist yet).
+	 */
+	public function getWikidataQid(): ?string {
+		$row = \Bitweaver\Liberty\LibertyContent::lookupXrefByItem( $this->mContentId, 'wikidata', CONTACTWIKIINDIVIDUAL_CONTENT_TYPE_GUID );
+		return $row['xkey_ext'] ?? null;
+	}
+
+	/**
+	 * (Re-)fetches this contact's Wikidata entity and applies every derived xref on top of it -
+	 * the raw entity json itself, each configured external-id link, dob/dod, and a freshly
+	 * downloaded P18 image. Shared by add_wiki_person.php's own initial Save (passing the qid just
+	 * picked in the fetch step) and edit.php's fisheye-style 'Reload' action on an already-created
+	 * contact (passing nothing, so getWikidataQid() supplies the already-stored one) - same
+	 * fetch-then-apply cascade either way, just a different qid source.
+	 *
+	 * Returns a result array in the same shape FisheyeAlbum::reloadTracks()/reloadPlexImages() use
+	 * ('items' => human-readable lines of what was applied, or 'error') so edit_album.tpl's own
+	 * display convention can be reused as-is.
+	 *
+	 * @param string|null $pQid
+	 * @return array
+	 */
+	public function reloadFromWikidata( ?string $pQid = null ): array {
+		$qid = $pQid ?: $this->getWikidataQid();
+		if( !$qid ) {
+			return [ 'error' => KernelTools::tra( 'No Wikidata id known for this contact - fetch one first.' ) ];
+		}
+		$entity = self::fetchWikidataEntity( $qid );
+		if( !$entity ) {
+			return [ 'error' => KernelTools::tra( 'Could not fetch that Wikidata entity.' ) ];
+		}
+
+		$items = [];
+
+		// 'edit', not 'data' - LibertyXref::verify() only ever populates xref_store['data'] from a
+		// param key literally named 'edit' (see liberty/MANUAL.md's own "'edit', not 'data'"
+		// section) - a plain 'data' key here is silently ignored.
+		$this->storeXref( [ 'content_id' => $this->mContentId, 'item' => 'wikidata', 'xkey_ext' => $qid, 'edit' => json_encode( $entity ) ] );
+		$items[] = KernelTools::tra( 'Wikidata entity data' ).' ('.$qid.')';
+
+		foreach( self::EXTERNAL_ID_PROPS as $item => $property ) {
+			$value = self::stringClaim( $entity, $property );
+			if( $value !== null ) {
+				$this->storeXref( [ 'content_id' => $this->mContentId, 'item' => $item, 'xkey_ext' => $value ] );
+				$items[] = $item.': '.$value;
+			}
+		}
+
+		$dob = self::dateClaim( $entity, 'P569' );
+		if( $dob !== null ) {
+			$this->storeXref( [ 'content_id' => $this->mContentId, 'item' => 'dob', 'xkey_ext' => $dob ] );
+			$items[] = KernelTools::tra( 'Date of birth' ).': '.$dob;
+		}
+		$dod = self::dateClaim( $entity, 'P570' );
+		if( $dod !== null ) {
+			$this->storeXref( [ 'content_id' => $this->mContentId, 'item' => 'dod', 'xkey_ext' => $dod ] );
+			$items[] = KernelTools::tra( 'Date of death' ).': '.$dod;
+		}
+
+		$imageFilename = self::imageFilename( $entity );
+		if( $imageFilename ) {
+			$imagesDir = $this->getExtraImagePath( '' );
+			$ext = strtolower( pathinfo( $imageFilename, PATHINFO_EXTENSION ) ) ?: 'jpg';
+			$storedName = 'wikidata.'.$ext;
+			KernelTools::mkdir_p( $imagesDir );
+			if( self::downloadCommonsFile( $imageFilename, $imagesDir.$storedName ) ) {
+				$this->storeXref( [ 'content_id' => $this->mContentId, 'item' => 'image', 'xkey_ext' => $storedName, 'fAddXref' => 1 ] );
+				$items[] = KernelTools::tra( 'Image' ).': '.$imageFilename;
+			}
+		}
+
+		return [ 'items' => $items ];
+	}
+
+	public static function extractQid( string $pInput ): ?string {
+		return preg_match( '/(Q\d+)/i', $pInput, $matches ) ? strtoupper( $matches[1] ) : null;
+	}
+
+	public static function fetchWikidataEntity( string $pQid ): ?array {
+		$context = stream_context_create( [ 'http' => [
+			'header'  => "User-Agent: bitweaver-contact-wikidata-lookup/1.0 ( lscesuk@gmail.com )\r\n",
+			'timeout' => 15,
+		] ] );
+		$json = @file_get_contents( "https://www.wikidata.org/wiki/Special:EntityData/$pQid.json", false, $context );
+		if( $json === false ) {
+			return null;
+		}
+		$data = json_decode( $json, true );
+		return $data['entities'][$pQid] ?? null;
+	}
+
+	/**
+	 * TMDb's own read access token (v4, Bearer auth) - a real secret, so it lives in kernel_config
+	 * (contact_tmdb_token, package='contact', editable via admin_contact.php's own Integration
+	 * Settings section), never in a committed file, same as fisheye's own fisheye_plex_token.
+	 * Returns null (not an error) when unconfigured, so a site with no token set just skips this
+	 * step silently rather than failing the whole fetch.
+	 */
+	public static function fetchTmdbBiography( string $pTmdbId ): ?string {
+		global $gBitSystem;
+		$token = $gBitSystem->getConfig( 'contact_tmdb_token', '' );
+		if( $token === '' ) {
+			return null;
+		}
+		$context = stream_context_create( [ 'http' => [
+			'header'  => "Authorization: Bearer $token\r\nAccept: application/json\r\n",
+			'timeout' => 15,
+		] ] );
+		$json = @file_get_contents( "https://api.themoviedb.org/3/person/$pTmdbId?language=en-US", false, $context );
+		if( $json === false ) {
+			return null;
+		}
+		$data = json_decode( $json, true );
+		$bio = trim( (string)( $data['biography'] ?? '' ) );
+		return $bio !== '' ? $bio : null;
+	}
+
+	// Only string-valued claims (external ids) - P106/P569 etc. are wikibase-item/time typed and
+	// handled by their own dedicated helpers below, this one would just return null for those.
+	public static function stringClaim( array $pEntity, string $pProperty ): ?string {
+		foreach( $pEntity['claims'][$pProperty] ?? [] as $claim ) {
+			$value = $claim['mainsnak']['datavalue']['value'] ?? null;
+			if( is_string( $value ) ) {
+				return $value;
+			}
+		}
+		return null;
+	}
+
+	public static function occupationQids( array $pEntity ): array {
+		$qids = [];
+		foreach( $pEntity['claims']['P106'] ?? [] as $claim ) {
+			$id = $claim['mainsnak']['datavalue']['value']['id'] ?? null;
+			if( $id ) {
+				$qids[] = $id;
+			}
+		}
+		return $qids;
+	}
+
+	// Wikidata's own time value is "+YYYY-MM-DDT00:00:00Z" (a leading sign, always) - only the
+	// date portion is used, precision (day/month/year-only) isn't checked since a plain date is
+	// all liberty_content.event_time can hold anyway.
+	public static function dateClaim( array $pEntity, string $pProperty ): ?string {
+		foreach( $pEntity['claims'][$pProperty] ?? [] as $claim ) {
+			$time = $claim['mainsnak']['datavalue']['value']['time'] ?? null;
+			if( $time && preg_match( '/([+-]?\d{4}-\d{2}-\d{2})/', $time, $matches ) ) {
+				return ltrim( $matches[1], '+' );
+			}
+		}
+		return null;
+	}
+
+	// P18's own value is a bare Commons filename (e.g. "Olivia Newton John (...).jpg"), not a URL
+	// - entity-typed like the occupation claims, but a plain string value rather than a
+	// wikibase-item reference, so this is its own small helper rather than reusing stringClaim().
+	public static function imageFilename( array $pEntity ): ?string {
+		foreach( $pEntity['claims']['P18'] ?? [] as $claim ) {
+			$value = $claim['mainsnak']['datavalue']['value'] ?? null;
+			if( is_string( $value ) && $value !== '' ) {
+				return $value;
+			}
+		}
+		return null;
+	}
+
+	// Commons' own Special:FilePath redirect resolves a bare filename straight to the image bytes,
+	// no need to compute the md5-hash-bucketed upload.wikimedia.org path by hand. Downloaded and
+	// stored locally (see getExtraImagePath()), never hotlinked - same reasoning as every other
+	// externally-sourced image already saved locally elsewhere in this stack.
+	public static function downloadCommonsFile( string $pFilename, string $pDestPath ): bool {
+		$context = stream_context_create( [ 'http' => [
+			'header'  => "User-Agent: bitweaver-contact-wikidata-lookup/1.0 ( lscesuk@gmail.com )\r\n",
+			'timeout' => 20,
+			'follow_location' => 1,
+		] ] );
+		$url = 'https://commons.wikimedia.org/wiki/Special:FilePath/'.rawurlencode( $pFilename );
+		$bytes = @file_get_contents( $url, false, $context );
+		if( $bytes === false || $bytes === '' ) {
+			return false;
+		}
+		return (bool)file_put_contents( $pDestPath, $bytes );
 	}
 }
