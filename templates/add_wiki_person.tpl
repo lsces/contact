@@ -27,6 +27,7 @@
 			<input type="hidden" name="wikidata_raw" value="{$wikiRawJson|escape}" />
 			<input type="hidden" name="dob" value="{$wikiDob|escape}" />
 			<input type="hidden" name="dod" value="{$wikiDod|escape}" />
+			<input type="hidden" name="wikidata_image" value="{$wikiImageFilename|escape}" />
 			{foreach from=$wikiExternalIds key=item item=value}
 				<input type="hidden" name="ext_{$item}" value="{$value|escape}" />
 			{/foreach}
@@ -49,6 +50,12 @@
 			{if $wikiDod}
 				<div class="form-group">
 					<p>{tr}Date of death{/tr}: {$wikiDod|escape}</p>
+				</div>
+			{/if}
+			{if $wikiImagePreviewUrl}
+				<div class="form-group">
+					<p>{tr}Image found{/tr} ({$wikiImageFilename|escape}) - {tr}saved locally on Save{/tr}:</p>
+					<img src="{$wikiImagePreviewUrl|escape}" alt="{$wikiImageFilename|escape}" style="max-height:150px;" />
 				</div>
 			{/if}
 

@@ -111,6 +111,38 @@ function wiki_person_date_claim( array $pEntity, string $pProperty ): ?string {
 	return null;
 }
 
+// P18's own value is a bare Commons filename (e.g. "Olivia Newton John (...).jpg"), not a URL -
+// entity-typed like the occupation claims, but a plain string value rather than a wikibase-item
+// reference, so this is its own small helper rather than reusing wiki_person_string_claim().
+function wiki_person_image_filename( array $pEntity ): ?string {
+	foreach( $pEntity['claims']['P18'] ?? [] as $claim ) {
+		$value = $claim['mainsnak']['datavalue']['value'] ?? null;
+		if( is_string( $value ) && $value !== '' ) {
+			return $value;
+		}
+	}
+	return null;
+}
+
+// Commons' own Special:FilePath redirect resolves a bare filename straight to the image bytes,
+// no need to compute the md5-hash-bucketed upload.wikimedia.org path by hand. Downloaded and
+// stored locally (see ContactWikiIndividual::getExtraImagePath()), never hotlinked - same
+// reasoning as every other externally-sourced image already saved locally elsewhere in this
+// stack.
+function wiki_person_download_commons_file( string $pFilename, string $pDestPath ): bool {
+	$context = stream_context_create( [ 'http' => [
+		'header'  => "User-Agent: bitweaver-contact-wikidata-lookup/1.0 ( lscesuk@gmail.com )\r\n",
+		'timeout' => 20,
+		'follow_location' => 1,
+	] ] );
+	$url = 'https://commons.wikimedia.org/wiki/Special:FilePath/'.rawurlencode( $pFilename );
+	$bytes = @file_get_contents( $url, false, $context );
+	if( $bytes === false || $bytes === '' ) {
+		return false;
+	}
+	return (bool)file_put_contents( $pDestPath, $bytes );
+}
+
 $gContent = new ContactWikiIndividual();
 $wikiEntity = null;
 $wikiQid = null;
@@ -167,6 +199,20 @@ if( !empty( $_REQUEST['fSaveContact'] ) ) {
 			$xrefHash = [ 'content_id' => $gContent->mContentId, 'item' => 'dod', 'xkey_ext' => $dodValue ];
 			$gContent->storeXref( $xrefHash );
 		}
+		// Wikidata's P18 image, downloaded now rather than at fetch time - only worth the real
+		// network fetch once the contact is actually being kept, not on every intermediate
+		// fetch/re-render of the form.
+		$imageFilename = trim( (string)( $_REQUEST['wikidata_image'] ?? '' ) );
+		if( $imageFilename !== '' ) {
+			$imagesDir = $gContent->getExtraImagePath( '' );
+			$ext = strtolower( pathinfo( $imageFilename, PATHINFO_EXTENSION ) ) ?: 'jpg';
+			$storedName = 'wikidata.'.$ext;
+			\Bitweaver\KernelTools::mkdir_p( $imagesDir );
+			if( wiki_person_download_commons_file( $imageFilename, $imagesDir.$storedName ) ) {
+				$xrefHash = [ 'content_id' => $gContent->mContentId, 'item' => 'image', 'xkey_ext' => $storedName, 'fAddXref' => 1 ];
+				$gContent->storeXref( $xrefHash );
+			}
+		}
 		KernelTools::bit_redirect( CONTACT_PKG_URL.'edit.php?content_id='.$gContent->mContentId );
 		die;
 	}
@@ -180,6 +226,7 @@ $wikiSuggestedTypes = [];
 $wikiRawJson = $_REQUEST['wikidata_raw'] ?? null;
 $wikiDob = $_REQUEST['dob'] ?? null;
 $wikiDod = $_REQUEST['dod'] ?? null;
+$wikiImageFilename = $_REQUEST['wikidata_image'] ?? null;
 $wikiSitelink = null;
 
 if( $wikiEntity ) {
@@ -204,9 +251,12 @@ if( $wikiEntity ) {
 	}
 	$wikiDob = wiki_person_date_claim( $wikiEntity, 'P569' );
 	$wikiDod = wiki_person_date_claim( $wikiEntity, 'P570' );
+	$wikiImageFilename = wiki_person_image_filename( $wikiEntity );
 	$wikiSitelink = $wikiEntity['sitelinks']['enwiki']['url'] ?? null;
 	$wikiRawJson = json_encode( $wikiEntity );
 }
+
+$wikiImagePreviewUrl = $wikiImageFilename ? 'https://commons.wikimedia.org/wiki/Special:FilePath/'.rawurlencode( $wikiImageFilename ).'?width=200' : null;
 
 $gBitSmarty->assign( 'gContent', $gContent );
 $gBitSmarty->assign( 'errors', $gContent->mErrors );
@@ -216,6 +266,8 @@ $gBitSmarty->assign( 'wikiExternalIds', $wikiExternalIds );
 $gBitSmarty->assign( 'wikiSuggestedTypes', $wikiSuggestedTypes );
 $gBitSmarty->assign( 'wikiDob', $wikiDob );
 $gBitSmarty->assign( 'wikiDod', $wikiDod );
+$gBitSmarty->assign( 'wikiImageFilename', $wikiImageFilename );
+$gBitSmarty->assign( 'wikiImagePreviewUrl', $wikiImagePreviewUrl );
 $gBitSmarty->assign( 'wikiSitelink', $wikiSitelink );
 $gBitSmarty->assign( 'personTypes', $gContent->getAvailableTypeItems() );
 

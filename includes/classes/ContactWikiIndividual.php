@@ -53,4 +53,18 @@ class ContactWikiIndividual extends ContactPerson {
 		}
 		return $result;
 	}
+
+	/**
+	 * Storage location for this Contact's own downloaded images (Wikidata's P18, currently the
+	 * only source) - CONTACT_IMPORT_PATH is contact's own existing STORAGE_PKG_PATH.'contact/'
+	 * convention (see includes/bit_setup_inc.php), bucketed the same way fisheye's own
+	 * getImageStorageBranchPath() already does via the shared liberty_mime_get_storage_branch()
+	 * helper, so this doesn't end up as one flat directory of every Contact's files. Always
+	 * nginx-writable by construction, unlike an external media tree would be.
+	 *
+	 * @return string
+	 */
+	public function getExtraImagePath( string $pRelativePath ): string {
+		return CONTACT_IMPORT_PATH.\Bitweaver\Liberty\liberty_mime_get_storage_branch( [ 'attachment_id' => $this->mContentId ] ).$pRelativePath;
+	}
 }
