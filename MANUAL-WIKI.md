@@ -268,13 +268,18 @@ generic Liberty idea, not Contact-specific.
    only individual album import does - and a live, reviewable batch list (Lester's own explicit ask:
    "a chance to block anything that does not seem right") suits an already-populated library better
    than a one-shot decision buried inside the normal import flow anyway.
-2. Converting `fisheyealbum`'s own `artist`/`composer`/`conductor`/`orchestra`/`performer` items from
-   `template='text'` to a real Contact reference (linking existing plain-text credits to the Contact
-   records item 1 above can now create) - deliberately kept as its own separate follow-up, not bundled
-   into this pass. Lester's own framing: re-scanning everything from scratch to get a tidier result
-   isn't necessary, more likely "a 'merge' function, as we have in a few places" once this is actually
-   tackled. `contact:external` href-style items are done (`rdmcloud`'s own
-   `config/local/xref_schemes/contact.php`).
+2. **Correction to an earlier draft of this step**: it isn't `fisheyealbum`'s own `artist`/
+   `composer`/etc credits that most need converting - nothing substantial has been imported there
+   yet. The real gap is Film and TV, which already have real cast/crew data: **Film and TV both need
+   extending to use this same Contact layer** (their own director/actor/writer/etc credits converted
+   from `template='text'` to a real Contact reference), so those *existing* entries can be married up
+   with the set of Contacts `load_wiki_artists.php` (and any future film/TV equivalent) creates - not
+   designed yet, kept as its own separate follow-up rather than bundled into this pass. Lester's own
+   framing: re-scanning everything from scratch to get a tidier result isn't necessary once this is
+   tackled, more likely "a 'merge' function, as we have in a few places". `contact:external`
+   href-style items are done (`rdmcloud`'s own `config/local/xref_schemes/contact.php`); the album
+   credit conversion, if it ends up mattering once music is actually imported, is the same shape
+   again, just lower priority than Film/TV.
 3. New `view_xxx_item.tpl` templates for the reference-style items (mirroring stock's
    `view_sup_item.tpl`), hyperlinking into `contact/view.php?content_id=`.
 4. Bio/identity-fetch integration: **Wikidata as the entry point, not just one source among
