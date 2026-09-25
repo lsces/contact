@@ -247,7 +247,7 @@ generic Liberty idea, not Contact-specific.
    | `viaf` | `P214` | value is VIAF-shaped |
    | `openlibrary` | `P648` | value carries Open Library's own author-id `...A` suffix |
    | `official_site` | `P856` | value is a real URL |
-   | `discogs_artist` | `P1953` (likely) | value is Discogs-shaped, not independently cross-checked against a live Discogs page the way the others were |
+   | `discogs_artist` | `P1953` | confirmed against a real Discogs page |
 
    One Wikidata fetch populates most of `contact:external` in a single call rather than searching
    each source individually. The one confirmed gap: **TheAudioDB has no Wikidata property at all**
@@ -255,4 +255,29 @@ generic Liberty idea, not Contact-specific.
    not its own search, since its API takes the MusicBrainz id directly (already populated via
    Wikidata) rather than a TheAudioDB-specific id. `tmdb`/`tvdb`/`imdb` all only need the bare id in
    `xkey` — confirmed against real pages for all three, the trailing name slug each site shows is
-   cosmetic.
+   cosmetic. Open Library's own page loaded fine by hand but is bot-gated against a plain fetch -
+   won't be scriptable the same way the id-based sources above are, worth knowing before assuming
+   every source here is equally automatable.
+
+   **What actually answers "what populates the bio" — the real open question this whole design
+   started from**: not a separate lookup at all. The same entity JSON carries a top-level
+   `sitelinks` object (distinct from `claims`, easy to miss when only scanning for `Pnnnn`
+   properties - confirmed: `sitelinks.enwiki` gave `{title: "Olivia Newton-John", url:
+   "https://en.wikipedia.org/wiki/Olivia_Newton-John"}` directly, no search needed). That title
+   feeds straight into Wikipedia's own REST summary endpoint for a lead-paragraph extract. TMDb's
+   own `biography` field (fetched separately via the `tmdb` id already captured) reads better when
+   it exists and is worth preferring where available - but Wikidata's `sitelinks` is the reliable,
+   always-available path underneath it, not just a last-resort fallback as it read before this was
+   checked.
+
+   **Decision**: cache the whole raw Wikidata entity JSON on its own `wikidata` item's `data` field
+   (a `data`-holding item, not just a bare id-in-`xkey` href like the others), so a property nobody
+   thought to map yet can be mined later from what's already stored rather than re-fetching.
+
+   **New gap surfaced, not yet built**: birth/death details (DOB/POB/DOD/POD) have nowhere to live
+   yet. DOB is a good fit for `liberty_content.event_time` - a real, already-existing generic
+   column (not an xref at all), the same one Calendar's own day content already sorts by
+   (`event_time_asc`/`_desc`) - reusing it gives free sort/list support, no new schema. It only
+   holds one date though, so POB/DOD/POD still need a home - most likely a new `details` item with
+   a small JSON blob (same `json-list`-style shape as Track's own `disc`/`track` data), not
+   designed yet.
