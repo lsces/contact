@@ -9,6 +9,24 @@ use Bitweaver\Contact\ContactType;
 
 $contactTypeMarkers = ContactType::getTypeMarkerList();
 
+// Same shape as fisheye's own admin_fisheye_inc.php ($formGalleryGeneral) - a real secret, so it
+// only ever lives in kernel_config (getConfig()/storeConfig()), never a committed file. Used by
+// add_wiki_person.php to fetch a person's TMDb biography.
+$formContactGeneral = [
+	"contact_tmdb_token" => [
+		'label' => 'TMDb API Read Access Token',
+		'note'  => 'From themoviedb.org/settings/api - the v4 "API Read Access Token" (a long token starting eyJ...), not the shorter v3 "API Key". Used to fetch a person\'s biography when adding a Wiki Individual from a Wikidata entity. Leave blank to skip the biography fetch.',
+		'type'  => 'text',
+	],
+];
+$gBitSmarty->assign( 'formContactGeneral', $formContactGeneral );
+
+if( !empty( $_REQUEST['contactGeneralSubmit'] ) ) {
+	foreach( $formContactGeneral as $item => $data ) {
+		$gBitSystem->storeConfig( $item, trim( (string)( $_REQUEST[$item] ?? '' ) ), CONTACT_PKG_NAME );
+	}
+}
+
 $formContactListFeatures = [
 	"contact_list_id"            => [
 		'label' => 'Contact Number',
