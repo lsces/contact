@@ -231,6 +231,27 @@ class ContactWikiIndividual extends ContactPerson {
 		return $bio !== '' ? $bio : null;
 	}
 
+	/**
+	 * TMDb's own biography field is plain text, paragraphs separated by a blank line (a literal
+	 * "\n\n") - fine as-is in add_wiki_person.tpl's own plain, non-wysiwyg preview textarea (a
+	 * <textarea> always renders \n as a visible line break regardless), but this package's Notes
+	 * tab (edit.tpl's own {textarea}) turns wysiwyg on automatically whenever the sitewide bithtml
+	 * plugin is active - CKEditor then treats the stored value as HTML *source*, where a bare
+	 * newline is just collapsed whitespace, not a paragraph break, so the nice-looking bio flattens
+	 * into one undifferentiated block the moment it's actually saved. Converts each blank-line-
+	 * separated block into its own real <p>, with any remaining single newline inside one becoming
+	 * a <br> - the same shape a normal hand-typed CKEditor note already saves as, so this just
+	 * matches that existing convention for an auto-imported one instead of introducing a new format.
+	 */
+	public static function plainTextToHtmlParagraphs( string $pText ): string {
+		$blocks = preg_split( '/\n\s*\n/', trim( $pText ) );
+		$blocks = array_filter( array_map( 'trim', $blocks ), fn( $p ) => $p !== '' );
+		return implode( '', array_map(
+			fn( $p ) => '<p>'.nl2br( htmlspecialchars( $p, ENT_QUOTES, 'UTF-8' ) ).'</p>',
+			$blocks
+		) );
+	}
+
 	// Only string-valued claims (external ids) - P106/P569 etc. are wikibase-item/time typed and
 	// handled by their own dedicated helpers below, this one would just return null for those.
 	public static function stringClaim( array $pEntity, string $pProperty ): ?string {

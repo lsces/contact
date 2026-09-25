@@ -62,7 +62,19 @@ if( !empty( $_REQUEST['fSaveContact'] ) ) {
 	$_REQUEST['contact_types'] = array_values( (array)( $_REQUEST['contact_types'] ?? [] ) );
 	$wikiQid = trim( (string)( $_REQUEST['wikidata_qid'] ?? '' ) ) ?: null;
 
-	if( $gContent->store( $_REQUEST ) ) {
+	// A separate copy for store(), not a mutation of $_REQUEST['edit'] itself - if store() fails
+	// validation (e.g. no name), the form re-renders from $_REQUEST below and should still show the
+	// plain, readable text the user was just editing, not the HTML this converts it to for saving.
+	$storeHash = $_REQUEST;
+	if( !empty( $storeHash['edit'] ) && strip_tags( $storeHash['edit'] ) === $storeHash['edit'] ) {
+		// Plain text in, no tags of its own yet - this is the auto-fetched TMDb bio (or anything
+		// else typed as plain text), not something already re-edited through the Notes tab's own
+		// CKEditor. See ContactWikiIndividual::plainTextToHtmlParagraphs()'s own docblock for why
+		// this needs converting to real HTML before it's stored.
+		$storeHash['edit'] = ContactWikiIndividual::plainTextToHtmlParagraphs( $storeHash['edit'] );
+	}
+
+	if( $gContent->store( $storeHash ) ) {
 		if( $wikiQid ) {
 			// Re-fetched here (inside reloadFromWikidata()) rather than round-tripped through a
 			// hidden form field - the raw entity JSON is ~200KB, which HTML-escaped for an
