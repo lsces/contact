@@ -1,5 +1,13 @@
 {strip}
-<div class="floaticon">{bithelp}</div>
+<div class="floaticon">
+	{bithelp}
+	{* Delete lives here, not on view.php's own date-bar - same reasoning every other package
+	   already follows (fisheye's own edit_film.tpl etc.): the edit page is a deliberate extra
+	   step before a destructive action, not something reachable straight from a plain view. *}
+	{if $gContent->mInfo.content_id && $gBitUser->hasPermission('p_contact_expunge')}
+		{smartlink ititle="Delete Contact" ifile="edit.php" biticon="user-trash" content_id=$gContent->mInfo.content_id expunge=1 ionclick="return confirm('{tr}Are you sure you want to delete this contact?{/tr}')"}
+	{/if}
+</div>
 
 {assign var=serviceEditTpls value=$gLibertySystem->getServiceValues('content_edit_tpl')}
 
