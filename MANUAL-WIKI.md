@@ -188,6 +188,21 @@ every row, so a person↔band membership xref (whichever direction it ends up li
 a mechanism for "member from X to Y" built in — expanding the role-marker scheme to cover this
 doesn't need new schema, just a proper pass at the actual xref shape once it's discussed.
 
+**Also worth splitting `Wxx` into `WPxx`/`WBxx`** (person-role markers vs business/ensemble-role
+markers — Band/Orchestra/Choir as their own `contactbusiness` markers) once this gets picked up —
+purely additive, no migration, and it's the natural namespacing for the split above.
+
+**Deferred idea, not decided**: whether to keep `W01`-`W06` as separate `liberty_xref_item`
+toggle-markers (today's shape, one xref row per active tag) or collapse them into one packed
+flag value on a single row — held off for now since the query cost (losing a trivial indexed
+`WHERE item='W01'` in favour of a text/bitmask scan) isn't worth paying while only 6 markers exist
+and none are in use yet. If it's ever revisited: Firebird has native `BIN_AND`/`BIN_OR`/`BIN_XOR`/
+`BIN_NOT` built in since 3.0 (confirmed working directly against this DB — no UDF needed, unlike an
+old hand-rolled 32-bit-flags-in-an-integer UDF from years back that would otherwise need reviving
+and redeploying to every Firebird instance). See `liberty/MANUAL.md`'s "Type-marker convention"
+section for the generic (not Contact-specific) version of this same idea, using `liberty_xref.xref`
+itself as the packed integer rather than `xkey`.
+
 ## Migration/retrofit shape
 
 - Existing plain-text `artist`/`composer`/etc. values need a one-time pass: find-or-create a
