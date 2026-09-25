@@ -19,7 +19,11 @@ use Bitweaver\Liberty\LibertyContent;		// Contact base class
 define( 'CONTACT_CONTENT_TYPE_GUID', 'contact' );
 defined( 'CONTACTPERSON_CONTENT_TYPE_GUID' )   || define( 'CONTACTPERSON_CONTENT_TYPE_GUID',   'contactperson' );
 defined( 'CONTACTBUSINESS_CONTENT_TYPE_GUID' ) || define( 'CONTACTBUSINESS_CONTENT_TYPE_GUID', 'contactbusiness' );
-defined( 'CONTACTWIKIINDIVIDUAL_CONTENT_TYPE_GUID' ) || define( 'CONTACTWIKIINDIVIDUAL_CONTENT_TYPE_GUID', 'contactwikiindividual' );
+// liberty_content_types.content_type_guid is VARCHAR(16) (unlike liberty_xref_group/
+// liberty_xref_item's own VARCHAR(32) content_type_guid columns) - 'contactwikiindividual' (21
+// chars) overflowed it. Abbreviated rather than widening liberty's own core schema for this -
+// this value is never shown anywhere, only ever read back in code.
+defined( 'CONTACTWIKIINDIVIDUAL_CONTENT_TYPE_GUID' ) || define( 'CONTACTWIKIINDIVIDUAL_CONTENT_TYPE_GUID', 'contactwikiindi' );
 defined( 'CONTACTWIKIGROUP_CONTENT_TYPE_GUID' )      || define( 'CONTACTWIKIGROUP_CONTENT_TYPE_GUID',      'contactwikigroup' );
 
 class Contact extends LibertyContent {
