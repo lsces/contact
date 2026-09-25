@@ -32,10 +32,25 @@ if( !empty( $_REQUEST['fCancel'] ) ) {
 }
 
 if( !empty( $_REQUEST['fFetchWikidata'] ) ) {
-	$wikiQid = ContactWikiGroup::extractQid( trim( (string)( $_REQUEST['wikidata_input'] ?? '' ) ) );
+	$rawInput = trim( (string)( $_REQUEST['wikidata_input'] ?? '' ) );
+	$wikiQid = ContactWikiGroup::extractQid( $rawInput );
 	if( !$wikiQid ) {
-		$gContent->mErrors[] = KernelTools::tra( 'Not a recognisable Wikidata id or URL.' );
-	} else {
+		// Not a Wikidata id/URL - try it as a MusicBrainz artist id/URL instead, resolving via that
+		// artist's own 'wikidata' url-rel (confirmed live against Fleetwood Mac's own MusicBrainz
+		// artist entity - see resolveWikidataQidFromMusicBrainzArtist()'s own docblock) rather than
+		// making the user go and search Wikidata separately. This is the common case for a group -
+		// its MusicBrainz artist id is usually already known from the album tags fisheye scanned in.
+		$mbArtistId = ContactWikiGroup::extractMusicBrainzArtistId( $rawInput );
+		if( $mbArtistId ) {
+			$wikiQid = ContactWikiGroup::resolveWikidataQidFromMusicBrainzArtist( $mbArtistId );
+			if( !$wikiQid ) {
+				$gContent->mErrors[] = KernelTools::tra( 'That MusicBrainz artist has no linked Wikidata id.' );
+			}
+		} else {
+			$gContent->mErrors[] = KernelTools::tra( 'Not a recognisable Wikidata id/URL or MusicBrainz artist id/URL.' );
+		}
+	}
+	if( $wikiQid ) {
 		$wikiEntity = ContactWikiGroup::fetchWikidataEntity( $wikiQid );
 		if( !$wikiEntity ) {
 			$gContent->mErrors[] = KernelTools::tra( 'Could not fetch that Wikidata entity.' );
@@ -88,6 +103,16 @@ if( $wikiEntity ) {
 	$wikiFormed = ContactWikiGroup::dateClaim( $wikiEntity, 'P571' );
 	$wikiDisbanded = ContactWikiGroup::dateClaim( $wikiEntity, 'P576' );
 	$wikiImageFilename = ContactWikiGroup::imageFilename( $wikiEntity );
+	// Wikipedia's own summary, keyed by the enwiki sitelink title - see add_wiki_person.php's own
+	// identical block for the full reasoning; unlike TMDb (never used here at all - it has no
+	// concept of a "band" biography), this works the same for a group's own article.
+	$wikiTitle = ContactWikiGroup::wikipediaTitle( $wikiEntity );
+	if( $wikiTitle !== null ) {
+		$bio = ContactWikiGroup::fetchWikipediaSummary( $wikiTitle );
+		if( $bio !== null ) {
+			$_REQUEST['edit'] = $bio;
+		}
+	}
 	$wikiSitelink = $wikiEntity['sitelinks']['enwiki']['url'] ?? null;
 }
 

@@ -45,11 +45,11 @@ trait ContactWikiTrait {
 	/**
 	 * (Re-)fetches this contact's Wikidata entity and applies every derived xref on top of it - the
 	 * raw entity json itself, each configured external-id link, this content type's own biography
-	 * dates (see biographyDateProps()), a freshly downloaded P18 image, and (when a 'tmdb' external
-	 * id is present) a re-fetched TMDb biography. Shared by the add-flow's own initial Save (passing
-	 * the qid just picked in the fetch step) and edit.php's fisheye-style 'Reload' action on an
-	 * already-created contact (passing nothing, so getWikidataQid() supplies the already-stored one)
-	 * - same fetch-then-apply cascade either way, just a different qid source.
+	 * dates (see biographyDateProps()), a freshly downloaded P18 image, and (when the entity has an
+	 * enwiki sitelink) a re-fetched Wikipedia summary as the biography text. Shared by the add-flow's
+	 * own initial Save (passing the qid just picked in the fetch step) and edit.php's fisheye-style
+	 * 'Reload' action on an already-created contact (passing nothing, so getWikidataQid() supplies
+	 * the already-stored one) - same fetch-then-apply cascade either way, just a different qid source.
 	 *
 	 * Returns a result array in the same shape FisheyeAlbum::reloadTracks()/reloadPlexImages() use
 	 * ('items' => human-readable lines of what was applied, or 'error') so edit_album.tpl's own
@@ -82,33 +82,32 @@ trait ContactWikiTrait {
 		$this->upsertXref( $this->mContentId, 'wikidata', [ 'xkey_ext' => $qid, 'edit' => json_encode( $entity ) ] );
 		$items[] = KernelTools::tra( 'Wikidata entity data' ).' ('.$qid.')';
 
-		$tmdbId = null;
 		foreach( static::EXTERNAL_ID_PROPS as $item => $property ) {
 			$value = self::stringClaim( $entity, $property );
 			if( $value !== null ) {
 				$this->upsertXref( $this->mContentId, $item, [ 'xkey_ext' => $value ] );
 				$items[] = $item.': '.$value;
-				if( $item === 'tmdb' ) {
-					$tmdbId = $value;
-				}
 			}
 		}
 
-		// Biography re-fetch - a Reload should refresh everything Wikidata/TMDb can supply, same as
-		// the rest of this method. Always overwrites the existing note, same "Wikidata/TMDb wins"
+		// Biography re-fetch - a Reload should refresh everything Wikidata/Wikipedia can supply,
+		// same as the rest of this method. Always overwrites the existing note, same "source wins"
 		// behaviour every other item here already has (upsertXref() replaces the stored value
 		// unconditionally) - a hand-edited note added since the last Reload would be lost, not
 		// merged. LibertyContent::store() directly, not $this->store() (Contact's own override) -
 		// this only ever needs to touch the free-text data field, not re-run the address/
-		// contact_types/NAME logic Contact::store() layers on top for a full page save. Harmless,
-		// not just individual-specific: Wikidata's own TMDb-person property simply won't be present
-		// on a group's entity, so $tmdbId stays null and this whole block no-ops for one.
-		if( $tmdbId !== null ) {
-			$bio = self::fetchTmdbBiography( $tmdbId );
+		// contact_types/NAME logic Contact::store() layers on top for a full page save. Works
+		// identically for both content types - a Wikipedia sitelink exists for a group's own entity
+		// just as much as a person's (confirmed live against Fleetwood Mac), unlike TMDb's own
+		// biography field, which is person-only and no longer used as a bio source here at all (see
+		// fetchTmdbBiography()'s own docblock for why it's kept, just not called from here).
+		$wikiTitle = self::wikipediaTitle( $entity );
+		if( $wikiTitle !== null ) {
+			$bio = self::fetchWikipediaSummary( $wikiTitle );
 			if( $bio !== null ) {
 				$bioHash = [ 'content_id' => $this->mContentId, 'edit' => self::plainTextToHtmlParagraphs( $bio ) ];
 				\Bitweaver\Liberty\LibertyContent::store( $bioHash );
-				$items[] = KernelTools::tra( 'Biography' ).' ('.KernelTools::tra( 'TMDb' ).')';
+				$items[] = KernelTools::tra( 'Biography' ).' ('.KernelTools::tra( 'Wikipedia' ).')';
 			}
 		}
 
@@ -153,11 +152,84 @@ trait ContactWikiTrait {
 	}
 
 	/**
+	 * The enwiki sitelink Wikidata's own entity carries (separate from claims entirely - see
+	 * contact/MANUAL-WIKI.md's own "What actually answers 'what populates the bio'" section), title
+	 * form ("Fleetwood_Mac", underscores not spaces) ready to hand straight to Wikipedia's own REST
+	 * summary endpoint. Null when this entity has no English Wikipedia article at all.
+	 */
+	public static function wikipediaTitle( array $pEntity ): ?string {
+		return $pEntity['sitelinks']['enwiki']['title'] ?? null;
+	}
+
+	/**
+	 * Wikipedia's own REST summary endpoint - a clean lead-paragraph extract, no auth needed, works
+	 * identically for a person or a group article. Chosen over TMDb (person/film-cast only, and
+	 * TheAudioDB's own free API confirmed dead - both a 404 on well-known artists as of 2026-09-25)
+	 * as this package's one generic biography source.
+	 */
+	public static function fetchWikipediaSummary( string $pTitle ): ?string {
+		$context = stream_context_create( [ 'http' => [
+			'header'  => "User-Agent: bitweaver-contact-wikidata-lookup/1.0 ( lscesuk@gmail.com )\r\n",
+			'timeout' => 15,
+		] ] );
+		$json = @file_get_contents( 'https://en.wikipedia.org/api/rest_v1/page/summary/'.rawurlencode( $pTitle ), false, $context );
+		if( $json === false ) {
+			return null;
+		}
+		$data = json_decode( $json, true );
+		$extract = trim( (string)( $data['extract'] ?? '' ) );
+		return $extract !== '' ? $extract : null;
+	}
+
+	// A MusicBrainz artist id is a bare UUID - distinguishable from a Wikidata Qid or URL, so the
+	// same input field can accept either (see resolveWikidataQidFromMusicBrainzArtist()'s own
+	// docblock for why this matters).
+	public static function extractMusicBrainzArtistId( string $pInput ): ?string {
+		return preg_match( '/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i', $pInput, $matches )
+			? strtolower( $matches[1] ) : null;
+	}
+
+	/**
+	 * MusicBrainz's own ARTIST-level entity (not a release/album - fisheye's own existing
+	 * fetchDiscogsLink() only ever queries the release endpoint, which has no reason to carry this)
+	 * commonly links out to the artist's own Wikidata item as a 'wikidata' url-rel - confirmed live
+	 * against Fleetwood Mac's own MusicBrainz artist id, resolving to exactly the Q106648 already
+	 * found by hand. Lets a MusicBrainz-tagged artist/group be fetched without the user needing to
+	 * separately go and search Wikidata at all. Returns null if this artist has no such relation on
+	 * MusicBrainz, or the lookup fails outright.
+	 */
+	public static function resolveWikidataQidFromMusicBrainzArtist( string $pMbArtistId ): ?string {
+		$context = stream_context_create( [ 'http' => [
+			'header'  => "User-Agent: bitweaver-contact-wikidata-lookup/1.0 ( lscesuk@gmail.com )\r\n",
+			'timeout' => 15,
+		] ] );
+		$json = @file_get_contents(
+			"https://musicbrainz.org/ws/2/artist/$pMbArtistId?inc=url-rels&fmt=json", false, $context
+		);
+		if( $json === false ) {
+			return null;
+		}
+		$data = json_decode( $json, true );
+		foreach( $data['relations'] ?? [] as $relation ) {
+			if( ( $relation['type'] ?? null ) === 'wikidata' ) {
+				$url = $relation['url']['resource'] ?? '';
+				if( preg_match( '#/(Q\d+)$#i', $url, $matches ) ) {
+					return strtoupper( $matches[1] );
+				}
+			}
+		}
+		return null;
+	}
+
+	/**
 	 * TMDb's own read access token (v4, Bearer auth) - a real secret, so it lives in kernel_config
 	 * (contact_tmdb_token, package='contact', editable via admin_contact.php's own Integration
 	 * Settings section), never in a committed file, same as fisheye's own fisheye_plex_token.
 	 * Returns null (not an error) when unconfigured, so a site with no token set just skips this
-	 * step silently rather than failing the whole fetch.
+	 * step silently rather than failing the whole fetch. Not currently called from
+	 * reloadFromWikidata() any more (see that method's own docblock - Wikipedia replaced it as the
+	 * generic biography source) - kept for a later film/TV credit bio use, where TMDb's own person
+	 * bios are genuinely the better/more detailed source, unlike here.
 	 */
 	public static function fetchTmdbBiography( string $pTmdbId ): ?string {
 		global $gBitSystem;

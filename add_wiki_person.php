@@ -42,10 +42,24 @@ if( !empty( $_REQUEST['fCancel'] ) ) {
 }
 
 if( !empty( $_REQUEST['fFetchWikidata'] ) ) {
-	$wikiQid = ContactWikiIndividual::extractQid( trim( (string)( $_REQUEST['wikidata_input'] ?? '' ) ) );
+	$rawInput = trim( (string)( $_REQUEST['wikidata_input'] ?? '' ) );
+	$wikiQid = ContactWikiIndividual::extractQid( $rawInput );
 	if( !$wikiQid ) {
-		$gContent->mErrors[] = KernelTools::tra( 'Not a recognisable Wikidata id or URL.' );
-	} else {
+		// Not a Wikidata id/URL - try it as a MusicBrainz artist id/URL instead, resolving via that
+		// artist's own 'wikidata' url-rel (confirmed live against Fleetwood Mac's own MusicBrainz
+		// artist entity - see resolveWikidataQidFromMusicBrainzArtist()'s own docblock) rather than
+		// making the user go and search Wikidata separately.
+		$mbArtistId = ContactWikiIndividual::extractMusicBrainzArtistId( $rawInput );
+		if( $mbArtistId ) {
+			$wikiQid = ContactWikiIndividual::resolveWikidataQidFromMusicBrainzArtist( $mbArtistId );
+			if( !$wikiQid ) {
+				$gContent->mErrors[] = KernelTools::tra( 'That MusicBrainz artist has no linked Wikidata id.' );
+			}
+		} else {
+			$gContent->mErrors[] = KernelTools::tra( 'Not a recognisable Wikidata id/URL or MusicBrainz artist id/URL.' );
+		}
+	}
+	if( $wikiQid ) {
 		$wikiEntity = ContactWikiIndividual::fetchWikidataEntity( $wikiQid );
 		if( !$wikiEntity ) {
 			$gContent->mErrors[] = KernelTools::tra( 'Could not fetch that Wikidata entity.' );
@@ -123,13 +137,14 @@ if( $wikiEntity ) {
 	$wikiDob = ContactWikiIndividual::dateClaim( $wikiEntity, 'P569' );
 	$wikiDod = ContactWikiIndividual::dateClaim( $wikiEntity, 'P570' );
 	$wikiImageFilename = ContactWikiIndividual::imageFilename( $wikiEntity );
-	// TMDb's own biography, keyed by the tmdb id already pulled from Wikidata above - pre-fills
-	// the same Note field every other fetched value pre-fills, since that field IS the Contact's
-	// own lc.data ('edit' -> data, not 'data' directly - see LibertyContent::store()'s own
-	// convention), not a separate mechanism. Silently does nothing when no token is configured
-	// (fetchTmdbBiography() returns null) or TMDb has no bio for this person.
-	if( !empty( $wikiExternalIds['tmdb'] ) ) {
-		$bio = ContactWikiIndividual::fetchTmdbBiography( $wikiExternalIds['tmdb'] );
+	// Wikipedia's own summary, keyed by the enwiki sitelink title already carried on the entity -
+	// pre-fills the same Note field every other fetched value pre-fills, since that field IS the
+	// Contact's own lc.data ('edit' -> data, not 'data' directly - see LibertyContent::store()'s own
+	// convention), not a separate mechanism. Silently does nothing when there's no English Wikipedia
+	// article for this entity, or the fetch fails outright.
+	$wikiTitle = ContactWikiIndividual::wikipediaTitle( $wikiEntity );
+	if( $wikiTitle !== null ) {
+		$bio = ContactWikiIndividual::fetchWikipediaSummary( $wikiTitle );
 		if( $bio !== null ) {
 			$_REQUEST['edit'] = $bio;
 		}

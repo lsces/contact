@@ -9,9 +9,10 @@
 
 		{form id="wikiFetchForm"}
 			<div class="form-group">
-				{formlabel label="Wikidata ID or URL" for="wikidata_input"}
+				{formlabel label="Wikidata ID or MusicBrainz Artist ID" for="wikidata_input"}
 				{forminput}
-					<input type="text" class="form-control" name="wikidata_input" id="wikidata_input" placeholder="Q185165 or https://www.wikidata.org/wiki/Q185165" value="{$smarty.request.wikidata_input|escape}" />
+					<input type="text" class="form-control" name="wikidata_input" id="wikidata_input" placeholder="Q185165, https://www.wikidata.org/wiki/Q185165, or a MusicBrainz artist id" value="{$smarty.request.wikidata_input|escape}" />
+					{formhelp note="A MusicBrainz artist id or URL resolves via that artist's own Wikidata link on MusicBrainz - no need to search Wikidata separately if the MusicBrainz id is already known."}
 				{/forminput}
 			</div>
 			<div class="form-group submit">

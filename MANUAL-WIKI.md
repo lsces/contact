@@ -299,11 +299,26 @@ generic Liberty idea, not Contact-specific.
    `sitelinks` object (distinct from `claims`, easy to miss when only scanning for `Pnnnn`
    properties - confirmed: `sitelinks.enwiki` gave `{title: "Olivia Newton-John", url:
    "https://en.wikipedia.org/wiki/Olivia_Newton-John"}` directly, no search needed). That title
-   feeds straight into Wikipedia's own REST summary endpoint for a lead-paragraph extract. TMDb's
-   own `biography` field (fetched separately via the `tmdb` id already captured) reads better when
-   it exists and is worth preferring where available - but Wikidata's `sitelinks` is the reliable,
-   always-available path underneath it, not just a last-resort fallback as it read before this was
-   checked.
+   feeds straight into Wikipedia's own REST summary endpoint (`en.wikipedia.org/api/rest_v1/page/
+   summary/<title>`) for a lead-paragraph extract.
+
+   **Settled, superseding an earlier draft of this section**: Wikipedia is now the *only* biography
+   source (`ContactWikiTrait::fetchWikipediaSummary()`), not TMDb - TMDb's own `biography` field is
+   person/film-cast only (meaningless for a `ContactWikiGroup`), and TheAudioDB, the other candidate
+   floated early on, turned out to have a dead free API (confirmed live 2026-09-25: its old public
+   test key 404s on well-known artists). `fetchTmdbBiography()` is kept on the trait but no longer
+   called from `reloadFromWikidata()` - flagged for a later film/TV credit use, where TMDb's own
+   person bios genuinely are the better/more detailed source, unlike here.
+
+   **Finding the Wikidata id without searching for it**: MusicBrainz's own *artist*-level entity
+   (not a release/album - `FisheyeAlbum::fetchDiscogsLink()`'s existing MusicBrainz lookup only ever
+   queries the release endpoint, which has no reason to carry this) commonly carries a `wikidata`
+   url-rel pointing straight at the artist's own Wikidata item - confirmed live against Fleetwood
+   Mac's own MusicBrainz artist id, resolving to exactly `Q106648`. Both add-flows' own "Wikidata ID"
+   field now also accepts a bare MusicBrainz artist id/URL (`ContactWikiTrait::
+   extractMusicBrainzArtistId()`/`resolveWikidataQidFromMusicBrainzArtist()`) - the common case for a
+   group, whose MusicBrainz artist id is usually already known from the album tags fisheye scanned
+   in, without a separate manual Wikidata search at all.
 
    **Decision**: cache the whole raw Wikidata entity JSON on its own `wikidata` item's `data` field
    (a `data`-holding item, not just a bare id-in-`xkey` href like the others), so a property nobody
