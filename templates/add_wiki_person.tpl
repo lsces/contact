@@ -24,7 +24,6 @@
 			   own copy for why it's needed even alongside a real checkbox picker below. *}
 			<input type="hidden" name="fContactTypesSubmitted" value="1" />
 			<input type="hidden" name="wikidata_qid" value="{$wikiQid|escape}" />
-			<input type="hidden" name="wikidata_raw" value="{$wikiRawJson|escape}" />
 			<input type="hidden" name="dob" value="{$wikiDob|escape}" />
 			<input type="hidden" name="dod" value="{$wikiDod|escape}" />
 			<input type="hidden" name="wikidata_image" value="{$wikiImageFilename|escape}" />

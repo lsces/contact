@@ -197,12 +197,20 @@ if( !empty( $_REQUEST['fSaveContact'] ) ) {
 	// selections.
 	$_REQUEST['contact_types'] = array_values( (array)( $_REQUEST['contact_types'] ?? [] ) );
 	$wikiQid = trim( (string)( $_REQUEST['wikidata_qid'] ?? '' ) ) ?: null;
-	$wikiRaw = $_REQUEST['wikidata_raw'] ?? null;
 
 	if( $gContent->store( $_REQUEST ) ) {
-		if( $wikiQid && $wikiRaw ) {
-			$xrefHash = [ 'content_id' => $gContent->mContentId, 'item' => 'wikidata', 'xkey_ext' => $wikiQid, 'data' => $wikiRaw ];
-			$gContent->storeXref( $xrefHash );
+		if( $wikiQid ) {
+			// Re-fetched here rather than round-tripped through a hidden form field - the raw
+			// entity JSON is ~200KB, which HTML-escaped for an attribute value lands right on
+			// post_max_size/client_max_body_size limits (found live: it was silently never
+			// arriving at all). The qid alone is tiny and round-trips through the form fine; one
+			// extra Wikidata fetch server-side is cheap and far more reliable than carrying that
+			// much data through an HTML round-trip at all.
+			$wikiEntityForSave = wiki_person_fetch_entity( $wikiQid );
+			if( $wikiEntityForSave ) {
+				$xrefHash = [ 'content_id' => $gContent->mContentId, 'item' => 'wikidata', 'xkey_ext' => $wikiQid, 'data' => json_encode( $wikiEntityForSave ) ];
+				$gContent->storeXref( $xrefHash );
+			}
 		}
 		foreach( WIKI_PERSON_EXTERNAL_ID_PROPS as $item => $property ) {
 			$value = trim( (string)( $_REQUEST['ext_'.$item] ?? '' ) );
@@ -244,11 +252,11 @@ if( !empty( $_REQUEST['fSaveContact'] ) ) {
 }
 
 // Pre-fill from a successful fetch (GET-then-render step) or fall through to whatever was already
-// typed (a failed Save re-renders with the same hidden wikidata_raw/wikidata_qid the form already
-// carried, not a fresh fetch).
+// typed (a failed Save re-renders with the same hidden wikidata_qid the form already carried, not
+// a fresh fetch) - the raw entity JSON itself is never round-tripped through the form at all (see
+// the Save block's own comment), just the qid.
 $wikiExternalIds = [];
 $wikiSuggestedTypes = [];
-$wikiRawJson = $_REQUEST['wikidata_raw'] ?? null;
 $wikiDob = $_REQUEST['dob'] ?? null;
 $wikiDod = $_REQUEST['dod'] ?? null;
 $wikiImageFilename = $_REQUEST['wikidata_image'] ?? null;
@@ -289,7 +297,6 @@ if( $wikiEntity ) {
 		}
 	}
 	$wikiSitelink = $wikiEntity['sitelinks']['enwiki']['url'] ?? null;
-	$wikiRawJson = json_encode( $wikiEntity );
 }
 
 $wikiImagePreviewUrl = $wikiImageFilename ? 'https://commons.wikimedia.org/wiki/Special:FilePath/'.rawurlencode( $wikiImageFilename ).'?width=200' : null;
@@ -297,7 +304,6 @@ $wikiImagePreviewUrl = $wikiImageFilename ? 'https://commons.wikimedia.org/wiki/
 $gBitSmarty->assign( 'gContent', $gContent );
 $gBitSmarty->assign( 'errors', $gContent->mErrors );
 $gBitSmarty->assign( 'wikiQid', $wikiQid );
-$gBitSmarty->assign( 'wikiRawJson', $wikiRawJson );
 $gBitSmarty->assign( 'wikiExternalIds', $wikiExternalIds );
 $gBitSmarty->assign( 'wikiSuggestedTypes', $wikiSuggestedTypes );
 $gBitSmarty->assign( 'wikiDob', $wikiDob );
