@@ -22,23 +22,14 @@ if( !empty( $_REQUEST['fCancel'] ) ) {
 }
 
 if( !empty( $_REQUEST['fSaveContact'] ) ) {
-	$types = [];
-	if( !empty( $_REQUEST['contact_types'] ) && is_array( $_REQUEST['contact_types'] ) ) {
-		foreach( $_REQUEST['contact_types'] as $type ) {
-			if( $type !== '$00' ) {
-				$types[] = $type;
-			}
-		}
-	}
-	$_REQUEST['contact_types'] = $types;
+	$_REQUEST['contact_types'] = array_values( (array)( $_REQUEST['contact_types'] ?? [] ) );
 	if( $gContent->store( $_REQUEST ) ) {
 		KernelTools::bit_redirect( CONTACT_PKG_URL.'edit.php?content_id='.$gContent->mContentId );
 		die;
 	}
 }
 
-// ContactBusiness type markers are $02+ only ($00/$01 live under contactperson/deprecated)
-$businessTypes = $gContent->getXrefSourceList();
+$businessTypes = $gContent->getAvailableTypeItems();
 
 $gBitSmarty->assign( 'gContent', $gContent );
 $gBitSmarty->assign( 'businessTypes', array_values( (array)$businessTypes ) );

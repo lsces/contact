@@ -7,6 +7,7 @@
 	{if $gBitUser->isAdmin() || $gBitUser->hasPermission( 'p_contact_update' ) }
 		<li><a class="item" href="{$smarty.const.CONTACT_PKG_URL}add_person.php">{biticon ipackage="icons" iname="contact-new-symbolic" iexplain="Add Person" ilocation=menu}</a></li>
 		<li><a class="item" href="{$smarty.const.CONTACT_PKG_URL}add_business.php">{biticon ipackage="icons" iname="address-book-new-symbolic" iexplain="Add Business" ilocation=menu}</a></li>
+		<li><a class="item" href="{$smarty.const.CONTACT_PKG_URL}add_wiki_person.php">{biticon ipackage="icons" iname="contact-new-symbolic" iexplain="Add Wiki Individual" ilocation=menu}</a></li>
 	{/if}
 	{if !empty($gContent->mContentId) && $gBitUser->hasPermission( 'p_liberty_post_comments' ) }
 		<li><a class="item" href="{$smarty.const.CONTACT_PKG_URL}view.php?content_id={$gContent->mContentId}#addcomment">{biticon ipackage="icons" iname="task-add" iexplain="Log a call" ilocation=menu}</a></li>

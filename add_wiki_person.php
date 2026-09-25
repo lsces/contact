@@ -1,0 +1,205 @@
+<?php
+/**
+ * Add a ContactPerson seeded from a Wikidata entity - name, WPxx role-tag suggestions (from a
+ * curated occupation lookup, not a raw mirror of Wikidata's own broader occupation list), and the
+ * external-identity links documented at contact/MANUAL-WIKI.md. Two-step flow: fetch shows an
+ * editable, pre-filled version of the normal add_person.php form (nothing is written until Save),
+ * Save stores the contact exactly like add_person.php does, then layers the xrefs on top.
+ *
+ * Deliberately scoped: does not attempt a thumbnail (Contact's own IMG/client_gallery mechanism
+ * has no real liberty_xref_item behind it at all right now, so there's nothing safe to wire a
+ * fetched image into yet) and does not attempt a bio fetch (Wikidata's own sitelinks.enwiki gives
+ * the Wikipedia article directly, but turning that into fetched prose is its own follow-up, not
+ * bundled into this first pass).
+ *
+ * @package contact
+ * @subpackage functions
+ */
+
+use Bitweaver\Contact\ContactPerson;
+use Bitweaver\KernelTools;
+
+require_once '../kernel/includes/setup_inc.php';
+
+global $gBitSystem, $gBitSmarty, $gBitUser;
+
+$gBitSystem->verifyPackage( 'contact' );
+$gBitSystem->verifyPermission( 'p_contact_update' );
+
+// Curated, not a mirror of Wikidata's own occupation (P106) list - only the occupations that map
+// onto a role this system actually credits someone with on a work (fisheye's own director/writer/
+// composer/star items, plus WPxx's own Artist/Performer music roles). Anything else in a person's
+// P106 list (recording artist, singer-songwriter, businessperson, ...) is simply not represented
+// here rather than actively filtered - the picker still shows every WPxx code, ticked or not.
+const WIKI_PERSON_OCCUPATION_MAP = [
+	'Q10800557' => 'WP01', // film actor
+	'Q33999'    => 'WP01', // actor
+	'Q2526255'  => 'WP02', // film director
+	'Q36834'    => 'WP03', // composer
+	'Q753110'   => 'WP03', // songwriter
+	'Q177220'   => 'WP04', // singer
+	'Q639669'   => 'WP06', // musician
+	'Q28389'    => 'WP07', // screenwriter
+];
+
+// item => Wikidata property, matching contact.php's own 'external' group item set exactly.
+const WIKI_PERSON_EXTERNAL_ID_PROPS = [
+	'imdb'           => 'P345',
+	'tmdb'           => 'P4985',
+	'tvdb'           => 'P7920',
+	'musicbrainz'    => 'P434',
+	'discogs_artist' => 'P1953',
+	'viaf'           => 'P214',
+	'openlibrary'    => 'P648',
+	'official_site'  => 'P856',
+];
+
+function wiki_person_extract_qid( string $pInput ): ?string {
+	return preg_match( '/(Q\d+)/i', $pInput, $matches ) ? strtoupper( $matches[1] ) : null;
+}
+
+function wiki_person_fetch_entity( string $pQid ): ?array {
+	$context = stream_context_create( [ 'http' => [
+		'header'  => "User-Agent: bitweaver-contact-wikidata-lookup/1.0 ( lscesuk@gmail.com )\r\n",
+		'timeout' => 15,
+	] ] );
+	$json = @file_get_contents( "https://www.wikidata.org/wiki/Special:EntityData/$pQid.json", false, $context );
+	if( $json === false ) {
+		return null;
+	}
+	$data = json_decode( $json, true );
+	return $data['entities'][$pQid] ?? null;
+}
+
+// Only string-valued claims (external ids) - P106/P569 etc. are wikibase-item/time typed and
+// handled separately below, this helper would just return null for those.
+function wiki_person_string_claim( array $pEntity, string $pProperty ): ?string {
+	foreach( $pEntity['claims'][$pProperty] ?? [] as $claim ) {
+		$value = $claim['mainsnak']['datavalue']['value'] ?? null;
+		if( is_string( $value ) ) {
+			return $value;
+		}
+	}
+	return null;
+}
+
+function wiki_person_occupation_qids( array $pEntity ): array {
+	$qids = [];
+	foreach( $pEntity['claims']['P106'] ?? [] as $claim ) {
+		$id = $claim['mainsnak']['datavalue']['value']['id'] ?? null;
+		if( $id ) {
+			$qids[] = $id;
+		}
+	}
+	return $qids;
+}
+
+// Wikidata's own time value is "+YYYY-MM-DDT00:00:00Z" (a leading sign, always) - only the date
+// portion is used, precision (day/month/year-only) isn't checked since a plain date is all
+// liberty_content.event_time can hold anyway.
+function wiki_person_date_claim( array $pEntity, string $pProperty ): ?string {
+	foreach( $pEntity['claims'][$pProperty] ?? [] as $claim ) {
+		$time = $claim['mainsnak']['datavalue']['value']['time'] ?? null;
+		if( $time && preg_match( '/([+-]?\d{4}-\d{2}-\d{2})/', $time, $matches ) ) {
+			return ltrim( $matches[1], '+' );
+		}
+	}
+	return null;
+}
+
+$gContent = new ContactPerson();
+$wikiEntity = null;
+$wikiQid = null;
+
+if( !empty( $_REQUEST['fCancel'] ) ) {
+	KernelTools::bit_redirect( CONTACT_PKG_URL );
+	die;
+}
+
+if( !empty( $_REQUEST['fFetchWikidata'] ) ) {
+	$wikiQid = wiki_person_extract_qid( trim( (string)( $_REQUEST['wikidata_input'] ?? '' ) ) );
+	if( !$wikiQid ) {
+		$gContent->mErrors[] = KernelTools::tra( 'Not a recognisable Wikidata id or URL.' );
+	} else {
+		$wikiEntity = wiki_person_fetch_entity( $wikiQid );
+		if( !$wikiEntity ) {
+			$gContent->mErrors[] = KernelTools::tra( 'Could not fetch that Wikidata entity.' );
+			$wikiQid = null;
+		}
+	}
+}
+
+if( !empty( $_REQUEST['fSaveContact'] ) ) {
+	$_REQUEST['contact_types'] = array_unique( array_merge( [ 'P01' ], array_values( (array)( $_REQUEST['contact_types'] ?? [] ) ) ) );
+	$wikiQid = trim( (string)( $_REQUEST['wikidata_qid'] ?? '' ) ) ?: null;
+	$wikiRaw = $_REQUEST['wikidata_raw'] ?? null;
+	$eventTime = null;
+	if( !empty( $_REQUEST['dob'] ) ) {
+		$eventTime = strtotime( $_REQUEST['dob'] );
+		if( $eventTime !== false ) {
+			$_REQUEST['event_time'] = $eventTime;
+		}
+	}
+
+	if( $gContent->store( $_REQUEST ) ) {
+		if( $wikiQid && $wikiRaw ) {
+			$xrefHash = [ 'content_id' => $gContent->mContentId, 'item' => 'wikidata', 'xkey_ext' => $wikiQid, 'data' => $wikiRaw ];
+			$gContent->storeXref( $xrefHash );
+		}
+		foreach( WIKI_PERSON_EXTERNAL_ID_PROPS as $item => $property ) {
+			$value = trim( (string)( $_REQUEST['ext_'.$item] ?? '' ) );
+			if( $value !== '' ) {
+				$xrefHash = [ 'content_id' => $gContent->mContentId, 'item' => $item, 'xkey_ext' => $value ];
+				$gContent->storeXref( $xrefHash );
+			}
+		}
+		KernelTools::bit_redirect( CONTACT_PKG_URL.'edit.php?content_id='.$gContent->mContentId );
+		die;
+	}
+}
+
+// Pre-fill from a successful fetch (GET-then-render step) or fall through to whatever was already
+// typed (a failed Save re-renders with the same hidden wikidata_raw/wikidata_qid the form already
+// carried, not a fresh fetch).
+$wikiExternalIds = [];
+$wikiSuggestedTypes = [];
+$wikiRawJson = $_REQUEST['wikidata_raw'] ?? null;
+$wikiDob = $_REQUEST['dob'] ?? null;
+$wikiSitelink = null;
+
+if( $wikiEntity ) {
+	$label = $wikiEntity['labels']['en']['value'] ?? '';
+	$parts = explode( ' ', trim( $label ) );
+	$_REQUEST['surname']  = array_pop( $parts ) ?: '';
+	$_REQUEST['forename'] = implode( ' ', $parts );
+
+	foreach( WIKI_PERSON_EXTERNAL_ID_PROPS as $item => $property ) {
+		$value = wiki_person_string_claim( $wikiEntity, $property );
+		if( $value !== null ) {
+			$wikiExternalIds[$item] = $value;
+		}
+	}
+	foreach( wiki_person_occupation_qids( $wikiEntity ) as $qid ) {
+		if( isset( WIKI_PERSON_OCCUPATION_MAP[$qid] ) ) {
+			// Flag-map, not a list - templates here can't reliably call a bare function like
+			// in_array() inside {if} (same Smarty restriction fisheye's own MANUAL.md documents
+			// for method_exists()), so membership is checked via plain dot-notation instead.
+			$wikiSuggestedTypes[WIKI_PERSON_OCCUPATION_MAP[$qid]] = true;
+		}
+	}
+	$wikiDob = wiki_person_date_claim( $wikiEntity, 'P569' );
+	$wikiSitelink = $wikiEntity['sitelinks']['enwiki']['url'] ?? null;
+	$wikiRawJson = json_encode( $wikiEntity );
+}
+
+$gBitSmarty->assign( 'gContent', $gContent );
+$gBitSmarty->assign( 'errors', $gContent->mErrors );
+$gBitSmarty->assign( 'wikiQid', $wikiQid );
+$gBitSmarty->assign( 'wikiRawJson', $wikiRawJson );
+$gBitSmarty->assign( 'wikiExternalIds', $wikiExternalIds );
+$gBitSmarty->assign( 'wikiSuggestedTypes', $wikiSuggestedTypes );
+$gBitSmarty->assign( 'wikiDob', $wikiDob );
+$gBitSmarty->assign( 'wikiSitelink', $wikiSitelink );
+$gBitSmarty->assign( 'personTypes', $gContent->getAvailableTypeItems() );
+
+$gBitSystem->display( 'bitpackage:contact/add_wiki_person.tpl', KernelTools::tra( 'Add Wiki Individual' ), [ 'display_mode' => 'edit' ] );
