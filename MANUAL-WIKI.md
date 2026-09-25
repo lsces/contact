@@ -1,7 +1,7 @@
 # Contact as a Universal Person/Entity Hub — Design
 
 **Status: design, not yet built.** Nothing described here exists as working code yet, but it isn't
-a new idea either — `contactperson`'s existing `W01`-`W06` type markers (Actor/Director/Composer/
+a new idea either — `contactperson`'s existing `WP01`-`WP06` type markers (Actor/Director/Composer/
 Artist/Arranger/Performer, see below) were seeded specifically to support this, ahead of anything
 using them. Read this alongside `MANUAL.md` (the package's current, already-live schema) and
 `liberty/MANUAL.md` (the xref machinery this design builds on with no new schema of its own).
@@ -41,20 +41,30 @@ Two things do **not** get merged into one object:
   other artists' albums but with no folder of its own is a perfectly valid Contact with no gallery
   link at all — that isn't a gap to fill later, it's the expected shape for that kind of entity.
 
-## Existing seed: the `W01`-`W06` role markers
+## Existing seed: the `WPxx`/`WBxx` role markers
 
-`contactperson`'s `type` xref group already carries a set of role markers, at `sort_order=0`
+`contactperson`'s `type` xref group carries a set of person-role markers, at `sort_order=0`
 (Liberty's toggleable-multi-tag convention — see `MANUAL.md`'s own `P01`/`P02` for the pattern),
-distinct from the personal/business-capacity `P01`/`P02` markers:
+distinct from the personal/business-capacity `P01`/`P02` markers. `contactbusiness` carries the
+equivalent group/ensemble-role markers:
 
 | Item | Role |
 |---|---|
-| `W01` | Actor |
-| `W02` | Director |
-| `W03` | Composer |
-| `W04` | Artist |
-| `W05` | Arranger |
-| `W06` | Performer |
+| `WP01` | Actor |
+| `WP02` | Director |
+| `WP03` | Composer |
+| `WP04` | Artist |
+| `WP05` | Arranger |
+| `WP06` | Performer |
+
+| Item | Role |
+|---|---|
+| `WB01` | Band |
+| `WB02` | Orchestra |
+| `WB03` | Choir |
+| `WB04` | Ensemble |
+| `WB05` | Production Company |
+| `WB06` | Record Label |
 
 These exist purely as reference-item definitions today — no real Contact has been tagged with any
 of them yet. They're what "what kind of media-credited person is this" was always meant to answer;
@@ -173,26 +183,23 @@ well-known authors tend to have well-curated Wikipedia biographies:
 |---|---|---|
 | **Wikidata → Wikipedia** (via a `url-rels`-style Wikidata link from MusicBrainz, TMDb's `external_ids`, or Open Library's own `links[]`, then Wikipedia's REST summary endpoint) | Lead-paragraph extract | Works, keyless, for any person regardless of medium — a longer chain (two hops) with less control over tone/length than a purpose-built bio field, but for authors it's less of a fallback and more a first-choice-equivalent to Open Library's own `bio` field, which is itself often just Wikipedia text anyway. |
 
-## Open question: bands and ensembles as `ContactBusiness`
+## Open question: band/ensemble membership over time
 
 `ContactBusiness` is the natural fit for a band/orchestra/ensemble conceptually — it's a group, not
-a person. But the role markers above (`W01`-`W06`) currently live only under `contactperson`'s own
-`type` group, and a band isn't just "a person with a group label": it's made of individual persons
-whose own membership changes over time, and any one of those persons may belong to several
-different bands across different periods. Modelling that properly is a real design task on its
-own, not something to fold into the person/gallery/credit linking above without thinking it
-through — deliberately left open rather than guessed at here.
+a person — and now has its own `WBxx` role markers (above) alongside `contactperson`'s `WPxx`. What
+that split doesn't touch: a band isn't just "a `ContactBusiness` with a group label", it's made of
+individual persons whose own membership changes over time, and any one of those persons may belong
+to several different bands across different periods. Modelling *that* — the actual person↔band
+membership relationship — is a real design task on its own, not something to fold into the
+person/gallery/credit linking above without thinking it through — deliberately left open rather
+than guessed at here.
 
 The one piece already in place for it: `liberty_xref` already carries `start_date`/`end_date` on
 every row, so a person↔band membership xref (whichever direction it ends up living on) already has
-a mechanism for "member from X to Y" built in — expanding the role-marker scheme to cover this
-doesn't need new schema, just a proper pass at the actual xref shape once it's discussed.
+a mechanism for "member from X to Y" built in — this doesn't need new schema, just a proper pass at
+the actual xref shape once it's discussed.
 
-**Also worth splitting `Wxx` into `WPxx`/`WBxx`** (person-role markers vs business/ensemble-role
-markers — Band/Orchestra/Choir as their own `contactbusiness` markers) once this gets picked up —
-purely additive, no migration, and it's the natural namespacing for the split above.
-
-**Deferred idea, not decided**: collapsing `W01`-`W06`'s separate xref rows into one packed flag
+**Deferred idea, not decided**: collapsing `WPxx`/`WBxx`'s separate xref rows into one packed flag
 value — see `liberty/MANUAL.md`'s "Type-marker convention" section, its correct home since it's a
 generic Liberty idea, not Contact-specific.
 
