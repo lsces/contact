@@ -112,15 +112,38 @@ no-gallery-of-their-own case.
 
 ## External sources — what each actually provides
 
-MusicBrainz gives structured identity but **no prose biography** — that's a deliberate MB project
-policy, not a gap in the API. Getting real descriptive text needs one more hop:
+Contact serves every media type, so this splits into music sources and film/TV sources, plus one
+source that's genuinely medium-agnostic. The shape of the problem is the same in both halves:
+the "official" metadata database for the medium gives structured identity but is thin or absent on
+actual prose biography, so a real bio needs a second, community-run source keyed off the same id.
+
+**Music** — MusicBrainz gives structured identity but **no prose biography** at all, a deliberate MB
+project policy, not a gap in the API:
 
 | Source | What it gives | Notes |
 |---|---|---|
 | **MusicBrainz Artist** (`/ws/2/artist/<mbid>`) | `name`, `sort-name`, `disambiguation`, `type` (Person/Group/Orchestra/Choir/...), `gender`, `country`/`area`, `begin-area`/`end-area`, `life-span`, `aliases[]`, `ipis[]`/`isnis[]`, `tags[]`/`genres[]`, `rating`; via `inc=url-rels`: links to Wikidata, Discogs, official homepage, social accounts, IMDb, etc. | No biography field. The MBID is already captured today via `FISHEYEALBUM_COMMON_TAG_MAP`'s `MUSICBRAINZ_ALBUMID` handling, so it's the natural join key for everything below. |
 | **TheAudioDB** (`theaudiodb.com/api/v1/json/2/artist-mb.php?i=<mbid>`) | `strBiographyEN` (+ other languages), formed year, genre/style/mood, thumb/fanart/banner images | Keyed directly off the MBID — a single hop, no name-matching ambiguity. Likely the closest match to what Plex's own music agent shows as "About the Artist". Best first choice for real bio prose. |
 | **Discogs artist profile** | `profile` field — prose bio | `FisheyeAlbum::fetchDiscogsLink()` already exists for album-level Discogs data, so some of this plumbing is reusable. Good fallback when TheAudioDB has nothing for an artist. |
-| **Wikidata → Wikipedia** (via the MB `url-rels` Wikidata link, then Wikipedia's REST summary endpoint) | Lead-paragraph extract | Works, keyless, but a longer chain (two hops) with less control over tone/length than a purpose-built bio field. Fallback of last resort. |
+
+**Film/TV** — the same shape again, and closer to being ready than it looks: `imdb`/`tmdb`/`tvdb`
+are already captured today as plain external-link xref items on `fisheyefilm`/`fisheyeprogram`
+(pulled straight from Plex's own metadata GUIDs, `<Guid id="imdb://...">`/`<Guid id="tmdb://...">`)
+— currently just stored as link IDs, never used to actually fetch person data, exactly like
+music's own `mbid`/`discogs` items before this design.
+
+| Source | What it gives | Notes |
+|---|---|---|
+| **TMDb** (`/3/person/<tmdb_id>`) | `biography` (real prose — TMDb, unlike MusicBrainz, does host bios directly), `birthday`/`deathday`, `place_of_birth`, `also_known_as[]` (aliases), `profile_path` (photo), `known_for_department`, `gender`, `popularity`; `append_to_response=external_ids` in the same call returns `imdb_id`/`tvdb_id`/`wikidata_id`/`instagram_id`/`twitter_id`/`facebook_id` for free. | Free, actively maintained, generous rate limits — the modern, practical first choice for a real bio, and the natural next step here since the `tmdb` id is already being captured, just not fetched from yet. |
+| **TheTVDB** (`/v4/people/<tvdb_id>`) | Name, image, birth date/place, some biography text via translations | Its own person endpoint exists but is comparatively sparse on biography compared to TMDb — TVDB is much stronger on show/season/episode metadata than on cast/crew prose. Useful as a fallback or for a person TMDb hasn't matched, not a first choice. |
+| **IMDb** | — | **No accessible API for actual data** — IMDb's own data is proprietary; programmatic access is a paid/licensed commercial product ("Essential Metadata"), not something a self-hosted app integrates directly. The `imdb` xref item should stay exactly what it is today: an outbound link people can click, never a fetchable data source. |
+
+**Medium-agnostic fallback** — Wikidata → Wikipedia works identically for a musician, an actor, or
+a director, since it doesn't care which domain-specific database first pointed at it:
+
+| Source | What it gives | Notes |
+|---|---|---|
+| **Wikidata → Wikipedia** (via a `url-rels`-style Wikidata link from MusicBrainz *or* TMDb's `external_ids`, then Wikipedia's REST summary endpoint) | Lead-paragraph extract | Works, keyless, for any person regardless of medium — but a longer chain (two hops) with less control over tone/length than a purpose-built bio field. Fallback of last resort in both halves above. |
 
 ## Open question: bands and ensembles as `ContactBusiness`
 
