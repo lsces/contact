@@ -101,9 +101,9 @@
 			{/if}
 
 			<div class="form-group">
-				{formlabel label="Note" for="edit"}
+				{formlabel label="Note / Biography" for="edit"}
 				{forminput}
-					<input type="text" class="form-control" name="edit" id="edit" value="{$smarty.request.edit|escape}" />
+					<textarea class="form-control" name="edit" id="edit" rows="6">{$smarty.request.edit|escape}</textarea>
 				{/forminput}
 			</div>
 

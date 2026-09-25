@@ -2,19 +2,21 @@
 /**
  * Add a ContactWikiIndividual seeded from a Wikidata entity - name, WPxx role-tag suggestions (from
  * a curated occupation lookup, not a raw mirror of Wikidata's own broader occupation list), the
- * external-identity links, and dob/dod, all documented at contact/MANUAL-WIKI.md. Two-step flow:
- * fetch shows an editable, pre-filled version of the normal add_person.php form (nothing is written
- * until Save), Save stores the contact exactly like add_person.php does, then layers the xrefs on
- * top - dob/dod as real xref items, not a direct event_time set, so
- * ContactWikiIndividual::storeXref()'s own mirroring keeps liberty_content.event_time in sync
- * automatically.
+ * external-identity links, dob/dod, a downloaded P18 image, and a TMDb-fetched biography, all
+ * documented at contact/MANUAL-WIKI.md. Two-step flow: fetch shows an editable, pre-filled version
+ * of the normal add_person.php form (nothing is written until Save), Save stores the contact
+ * exactly like add_person.php does, then layers the xrefs on top - dob/dod as real xref items, not
+ * a direct event_time set, so ContactWikiIndividual::storeXref()'s own mirroring keeps
+ * liberty_content.event_time in sync automatically.
  *
- * Deliberately scoped: does not attempt a thumbnail (Contact's own IMG/client_gallery mechanism
- * has no real liberty_xref_item behind it at all right now, so there's nothing safe to wire a
- * fetched image into yet), does not attempt a bio fetch (Wikidata's own sitelinks.enwiki gives
- * the Wikipedia article directly, but turning that into fetched prose is its own follow-up), and
- * does not fetch place-of-birth/place-of-death (P19/P20 are Wikidata items, not plain strings -
- * resolving them to a readable place name needs a further lookup, not added here).
+ * The biography pre-fills the same Note field ('edit' -> lc.data) every other fetched value
+ * pre-fills its own field, not a separate mechanism - needs contact_tmdb_token set in
+ * kernel_config (see wiki_person_fetch_tmdb_biography()'s own docblock), silently skipped if not
+ * configured or TMDb has no bio for this person.
+ *
+ * Deliberately scoped: does not fetch place-of-birth/place-of-death (P19/P20 are Wikidata items,
+ * not plain strings - resolving them to a readable place name needs a further lookup, not added
+ * here).
  *
  * @package contact
  * @subpackage functions
@@ -73,6 +75,29 @@ function wiki_person_fetch_entity( string $pQid ): ?array {
 	}
 	$data = json_decode( $json, true );
 	return $data['entities'][$pQid] ?? null;
+}
+
+// TMDb's own read access token (v4, Bearer auth) - a real secret, so it lives in kernel_config
+// (contact_tmdb_token, package='contact'), never in a committed file, same as fisheye's own
+// fisheye_plex_token. Returns null (not an error) when unconfigured, so a site with no token set
+// just skips this step silently rather than failing the whole fetch.
+function wiki_person_fetch_tmdb_biography( string $pTmdbId ): ?string {
+	global $gBitSystem;
+	$token = $gBitSystem->getConfig( 'contact_tmdb_token', '' );
+	if( $token === '' ) {
+		return null;
+	}
+	$context = stream_context_create( [ 'http' => [
+		'header'  => "Authorization: Bearer $token\r\nAccept: application/json\r\n",
+		'timeout' => 15,
+	] ] );
+	$json = @file_get_contents( "https://api.themoviedb.org/3/person/$pTmdbId?language=en-US", false, $context );
+	if( $json === false ) {
+		return null;
+	}
+	$data = json_decode( $json, true );
+	$bio = trim( (string)( $data['biography'] ?? '' ) );
+	return $bio !== '' ? $bio : null;
 }
 
 // Only string-valued claims (external ids) - P106/P569 etc. are wikibase-item/time typed and
@@ -252,6 +277,17 @@ if( $wikiEntity ) {
 	$wikiDob = wiki_person_date_claim( $wikiEntity, 'P569' );
 	$wikiDod = wiki_person_date_claim( $wikiEntity, 'P570' );
 	$wikiImageFilename = wiki_person_image_filename( $wikiEntity );
+	// TMDb's own biography, keyed by the tmdb id already pulled from Wikidata above - pre-fills
+	// the same Note field every other fetched value pre-fills, since that field IS the Contact's
+	// own lc.data ('edit' -> data, not 'data' directly - see LibertyContent::store()'s own
+	// convention), not a separate mechanism. Silently does nothing when no token is configured
+	// (wiki_person_fetch_tmdb_biography() returns null) or TMDb has no bio for this person.
+	if( !empty( $wikiExternalIds['tmdb'] ) ) {
+		$bio = wiki_person_fetch_tmdb_biography( $wikiExternalIds['tmdb'] );
+		if( $bio !== null ) {
+			$_REQUEST['edit'] = $bio;
+		}
+	}
 	$wikiSitelink = $wikiEntity['sitelinks']['enwiki']['url'] ?? null;
 	$wikiRawJson = json_encode( $wikiEntity );
 }
