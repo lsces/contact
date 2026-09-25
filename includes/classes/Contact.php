@@ -96,6 +96,19 @@ class Contact extends LibertyContent {
 	}
 
 	/**
+	 * Which of getAvailableTypeItems()'s own codes are actually set on this contact (e.g. WPxx role
+	 * tags ticked for a ContactWikiIndividual) - type markers are deliberately excluded from
+	 * mXrefInfo (see LibertyXrefType's own docblock on getTypeMarkerXrefs()), so a display page
+	 * wanting "which roles does this contact actually have" needs this rather than scanning
+	 * mXrefInfo like every other xref group.
+	 *
+	 * @return string[]  item codes only, e.g. ['WP01','WP04']
+	 */
+	public function getSetTypeItems(): array {
+		return array_keys( $this->xrefType()->getTypeMarkerXrefs( $this->mContentId ) );
+	}
+
+	/**
 	 * Load contact record, name parts, and xref groups into $this->mInfo.
 	 *
 	 * @param int|null   $pContentId    Override mContentId for this load.
@@ -129,6 +142,12 @@ class Contact extends LibertyContent {
 
 				if ( $imgXref = $this->mXrefInfo->findRowByItem( 'IMG' ) ) {
 					$this->mInfo['client_gallery'] = $imgXref['xkey'];
+				}
+				// Wiki-only item ('music_gallery', see rdmcloud's own site-local contact.php scheme) -
+				// findRowByItem() just returns null for a plain, non-wiki contact, same as any other
+				// item this content type never registered, so this is safe to read unconditionally.
+				if ( $galleryXref = $this->mXrefInfo->findRowByItem( 'music_gallery' ) ) {
+					$this->mInfo['music_gallery'] = $galleryXref['xref'];
 				}
 				if ( $addressXref = $this->findAddressXref() ) {
 					$this->mInfo['house'] = $addressXref['xkey_ext'];

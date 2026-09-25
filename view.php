@@ -14,6 +14,7 @@
 /**
  * required setup
  */
+use Bitweaver\Contact\ContactWikiIndividual;
 use Bitweaver\Fisheye\FisheyeGallery;
 
 require_once '../kernel/includes/setup_inc.php';
@@ -55,5 +56,67 @@ if ($gContent->isCommentable()) {
 $gBitSmarty->assign( 'isPerson', $gContent instanceof \Bitweaver\Contact\ContactPerson );
 $gBitSmarty->assign( 'gXrefInfo', $gContent->mXrefInfo );
 
+$isWikiIndividual = $gContent instanceof ContactWikiIndividual;
+$gBitSmarty->assign( 'isWikiIndividual', $isWikiIndividual );
+
+if( $isWikiIndividual ) {
+	// Role-flag pills (WPxx currently ticked) - getAvailableTypeItems() is the full code=>name
+	// lookup, getSetTypeItems() (Contact.php) is which of those are actually set here; type
+	// markers are excluded from mXrefInfo by design (see LibertyXrefType's own docblock), so this
+	// needs both rather than reading mXrefInfo the way everything else on this page does.
+	$typeNames = [];
+	foreach( $gContent->getAvailableTypeItems() as $t ) {
+		$typeNames[$t['item']] = $t['name'];
+	}
+	$roleFlags = [];
+	foreach( $gContent->getSetTypeItems() as $item ) {
+		if( isset( $typeNames[$item] ) ) {
+			$roleFlags[] = $typeNames[$item];
+		}
+	}
+	$gBitSmarty->assign( 'roleFlags', $roleFlags );
+
+	// External identity links - same xkey-falling-back-to-xkey_ext href-building as liberty's own
+	// view_href_item.tpl (a MusicBrainz/URL-shaped value lives in xkey_ext, everything else in xkey).
+	$externalLinks = [];
+	foreach( $gContent->mXrefInfo->mGroups as $xrefGroup ) {
+		if( $xrefGroup->mXGroup !== 'external' ) {
+			continue;
+		}
+		foreach( $xrefGroup->mXrefs as $xrefInfo ) {
+			$key = $xrefInfo['xkey'] ?: $xrefInfo['xkey_ext'];
+			if( $xrefInfo['cross_ref_href'] && $key ) {
+				$externalLinks[] = [ 'title' => $xrefInfo['xref_title'], 'url' => $xrefInfo['cross_ref_href'].$key ];
+			}
+		}
+	}
+	$gBitSmarty->assign( 'externalLinks', $externalLinks );
+
+	// Large profile thumbnail - the first downloaded Wikidata image, if any (item is multiple=1,
+	// but a wiki contact only ever has the one auto-downloaded image today).
+	if( $imageXref = $gContent->mXrefInfo->findRowByItem( 'image' ) ) {
+		$gBitSmarty->assign( 'wikiThumbnailUrl', CONTACT_PKG_URL.'view_extra_image.php?xref_id='.$imageXref['xref_id'] );
+	}
+
+	// dob/dod are xref items, not mInfo columns Contact::load() populates for every contact (unlike
+	// client_gallery/x_coordinate etc.) - wiki-specific, so read here rather than in Contact.php.
+	if( $dobXref = $gContent->mXrefInfo->findRowByItem( 'dob' ) ) {
+		$gBitSmarty->assign( 'wikiDob', $dobXref['xkey_ext'] );
+	}
+	if( $dodXref = $gContent->mXrefInfo->findRowByItem( 'dod' ) ) {
+		$gBitSmarty->assign( 'wikiDod', $dodXref['xkey_ext'] );
+	}
+
+	// "Other content" - the linked FisheyeGallery (this contact's own discography), if any. Manually
+	// linked via the 'music_gallery' xref item for now (add_xref.php's own 'gallery' template) -
+	// see contact.php's own site-local scheme comment for why this isn't automatic yet.
+	if( !empty( $gContent->mInfo['music_gallery'] ) ) {
+		$gMusicGallery = new FisheyeGallery( $gContent->mInfo['music_gallery'] );
+		$gMusicGallery->load();
+		$gMusicGallery->loadImages( [ 'max_records' => 24 ] );
+		$gBitSmarty->assign( 'gMusicGallery', $gMusicGallery );
+	}
+}
+
 $gBitSystem->setBrowserTitle( $gContent->getTitle() );
-$gBitSystem->display( 'bitpackage:contact/show_contact.tpl');
+$gBitSystem->display( $isWikiIndividual ? 'bitpackage:contact/view_wiki_profile.tpl' : 'bitpackage:contact/show_contact.tpl' );
