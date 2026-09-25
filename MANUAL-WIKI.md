@@ -254,16 +254,27 @@ generic Liberty idea, not Contact-specific.
    **Not yet built**: linking a group's own Wikidata "member"-style claims to create/link the
    individual members' own Contact records - flagged as something that "may come out in the wash"
    once a real group's data is fetched and looked at properly, not designed yet.
-1. **Find-or-create-Contact-by-name helper** — used both when the artist-folder scan creates a
-   discography gallery, and when registering any media credit, so both call sites converge on the
-   same Contact rather than each minting their own. Same dedup shape as
-   `FisheyeGallery::findOrCreateNestedGallery()` already uses (scoped lookup, not a bare name
-   match).
-2. New `liberty_xref_item` definitions: Contact's own `music_gallery` reference item (not yet
-   done) and `contact:external` href-style items (done — `rdmcloud`'s own
-   `config/local/xref_schemes/contact.php`); `fisheyealbum`'s `artist`/`composer`/`conductor`/
-   `orchestra`/`performer` converted from `template='text'` to the new reference template (not yet
-   done).
+1. **Batch-creating Contacts from the existing music library — done, `contact/load_wiki_artists.php`**
+   (not the auto-trigger-on-disk-scan shape originally floated here - see below for why). Surveys
+   every top-level Music artist/composer gallery, showing which already have a linked Contact (via
+   the `music_gallery` xref, informational only) and which don't; for the gap set, finds a
+   representative registered album's own `mb_artistid` common-tag xref and resolves it through
+   `ContactWikiTrait::lookupMusicBrainzArtist()` - MusicBrainz's own artist `type` (Person/Group)
+   picks the class, its `wikidata` url-rel supplies the qid with no manual search. Nothing gets
+   created until the list is reviewed and submitted - an unresolvable gallery (no `mb_artistid`, or
+   no Wikidata link on MusicBrainz) is shown with no checkbox at all, and a clean match is pre-ticked
+   but still just a checkbox, not automatic. Rejected the original "hook into `registerFromDisk()`
+   itself" idea once it turned out gallery-creation time (`load_music.php`) has no tag data at all -
+   only individual album import does - and a live, reviewable batch list (Lester's own explicit ask:
+   "a chance to block anything that does not seem right") suits an already-populated library better
+   than a one-shot decision buried inside the normal import flow anyway.
+2. Converting `fisheyealbum`'s own `artist`/`composer`/`conductor`/`orchestra`/`performer` items from
+   `template='text'` to a real Contact reference (linking existing plain-text credits to the Contact
+   records item 1 above can now create) - deliberately kept as its own separate follow-up, not bundled
+   into this pass. Lester's own framing: re-scanning everything from scratch to get a tidier result
+   isn't necessary, more likely "a 'merge' function, as we have in a few places" once this is actually
+   tackled. `contact:external` href-style items are done (`rdmcloud`'s own
+   `config/local/xref_schemes/contact.php`).
 3. New `view_xxx_item.tpl` templates for the reference-style items (mirroring stock's
    `view_sup_item.tpl`), hyperlinking into `contact/view.php?content_id=`.
 4. Bio/identity-fetch integration: **Wikidata as the entry point, not just one source among

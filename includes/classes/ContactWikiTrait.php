@@ -199,6 +199,20 @@ trait ContactWikiTrait {
 	 * MusicBrainz, or the lookup fails outright.
 	 */
 	public static function resolveWikidataQidFromMusicBrainzArtist( string $pMbArtistId ): ?string {
+		return self::lookupMusicBrainzArtist( $pMbArtistId )['wikidata_qid'] ?? null;
+	}
+
+	/**
+	 * The richer form behind resolveWikidataQidFromMusicBrainzArtist() - one HTTP round trip giving
+	 * the artist's own MusicBrainz name, its 'type' ('Person', 'Group', 'Orchestra', 'Choir', ... -
+	 * MusicBrainz's own distinction, not WPxx/WBxx), and the resolved Wikidata qid if it has one.
+	 * Used by load_wiki_artists.php's own batch survey to decide ContactWikiIndividual vs
+	 * ContactWikiGroup without a second lookup. Null if the artist id doesn't resolve to a real
+	 * MusicBrainz artist at all (not just "no Wikidata link" - see the 'wikidata_qid' key for that).
+	 *
+	 * @return array{name:?string,type:?string,wikidata_qid:?string}|null
+	 */
+	public static function lookupMusicBrainzArtist( string $pMbArtistId ): ?array {
 		$context = stream_context_create( [ 'http' => [
 			'header'  => "User-Agent: bitweaver-contact-wikidata-lookup/1.0 ( lscesuk@gmail.com )\r\n",
 			'timeout' => 15,
@@ -210,15 +224,24 @@ trait ContactWikiTrait {
 			return null;
 		}
 		$data = json_decode( $json, true );
+		if( empty( $data['id'] ) ) {
+			return null;
+		}
+		$wikidataQid = null;
 		foreach( $data['relations'] ?? [] as $relation ) {
 			if( ( $relation['type'] ?? null ) === 'wikidata' ) {
 				$url = $relation['url']['resource'] ?? '';
 				if( preg_match( '#/(Q\d+)$#i', $url, $matches ) ) {
-					return strtoupper( $matches[1] );
+					$wikidataQid = strtoupper( $matches[1] );
+					break;
 				}
 			}
 		}
-		return null;
+		return [
+			'name'         => $data['name'] ?? null,
+			'type'         => $data['type'] ?? null,
+			'wikidata_qid' => $wikidataQid,
+		];
 	}
 
 	/**
