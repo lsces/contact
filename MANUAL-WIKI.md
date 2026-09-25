@@ -112,10 +112,13 @@ no-gallery-of-their-own case.
 
 ## External sources — what each actually provides
 
-Contact serves every media type, so this splits into music sources and film/TV sources, plus one
-source that's genuinely medium-agnostic. The shape of the problem is the same in both halves:
-the "official" metadata database for the medium gives structured identity but is thin or absent on
-actual prose biography, so a real bio needs a second, community-run source keyed off the same id.
+Contact serves every media type, so this splits by medium — music, film/TV, books/authors — plus
+one source that's genuinely medium-agnostic. The shape of the problem repeats in each block: the
+"official" metadata database for the medium gives structured identity but is thin or absent on
+actual prose biography, so a real bio needs a second, often community-run source keyed off the
+same id. It also repeats sideways: a person can legitimately belong to more than one block at once
+(a composer scoring films, an author whose novel gets adapted) — `contact:external` items coexist
+on one Contact rather than forcing a single source per person.
 
 **Music** — MusicBrainz gives structured identity but **no prose biography** at all, a deliberate MB
 project policy, not a gap in the API:
@@ -148,12 +151,27 @@ music's own `mbid`/`discogs` items before this design.
 | **TheTVDB** (`/v4/people/<tvdb_id>`) | Name, image, birth date/place, some biography text via translations | Its own person endpoint exists but is comparatively sparse on biography compared to TMDb — TVDB is much stronger on show/season/episode metadata than on cast/crew prose. Useful as a fallback or for a person TMDb hasn't matched, not a first choice. |
 | **IMDb** | — | **No accessible API for actual data** — IMDb's own data is proprietary; programmatic access is a paid/licensed commercial product ("Essential Metadata"), not something a self-hosted app integrates directly. The `imdb` xref item should stay exactly what it is today: an outbound link people can click, never a fetchable data source. |
 
-**Medium-agnostic fallback** — Wikidata → Wikipedia works identically for a musician, an actor, or
-a director, since it doesn't care which domain-specific database first pointed at it:
+**Books/Authors** — the fourth media block, not yet built out at all (no `fisheyebook`-equivalent
+content type exists today). The same author-also-writes-for-film/TV overlap as composers/musicians
+applies here too — a novelist credited as "story by"/"based on characters created by" on a TMDb
+crew list is a real, if imperfect, case for the same Contact carrying both an `openlibrary_id` and
+a `tmdb_id`:
 
 | Source | What it gives | Notes |
 |---|---|---|
-| **Wikidata → Wikipedia** (via a `url-rels`-style Wikidata link from MusicBrainz *or* TMDb's `external_ids`, then Wikipedia's REST summary endpoint) | Lead-paragraph extract | Works, keyless, for any person regardless of medium — but a longer chain (two hops) with less control over tone/length than a purpose-built bio field. Fallback of last resort in both halves above. |
+| **Open Library** (`openlibrary.org/authors/<id>.json`) | `name`, `bio` (often itself Wikipedia-sourced but presented as clean structured text), `birth_date`/`death_date`, `alternate_names[]`, `photos[]` (via Internet Archive's cover service), `links[]` (including a Wikipedia URL when known); `/authors/<id>/works.json` gives the author's own bibliography for free. | Free, keyless, run by the Internet Archive — the closest thing to "MusicBrainz for books" in spirit, and the practical first choice here. Bonus: bibliography data comes from the same source, no separate lookup needed. |
+| **VIAF** (Virtual International Authority File) | Aggregated library-catalogue authority records (Library of Congress, British Library, etc.) — confirms which "John Smith" is meant, links out to national library IDs | Not a bio source itself, but the disambiguation-of-identity role MBIDs play for musicians — worth using to confirm a match before trusting a bio fetched elsewhere, not for the bio text itself. |
+| **AbeBooks** | Decent author summary text on their own bookshop site | No public API found for this — their author pages are presentation-only on-site content, not something to integrate against the way Open Library's actual JSON API can be. Fine as a manual reference link, not a fetch source. |
+| **Goodreads** | (historically: bio, ratings, "similar authors") | Its public API was deprecated years ago (Amazon-owned) and isn't open to new integrations any more — despite being the name most people think of first, not a realistic modern choice. |
+
+**Medium-agnostic fallback** — Wikidata → Wikipedia works identically for a musician, an actor, a
+director, or an author, since it doesn't care which domain-specific database first pointed at it —
+for authors specifically this hop is often the *more* reliable base, not just a fallback, since
+well-known authors tend to have well-curated Wikipedia biographies:
+
+| Source | What it gives | Notes |
+|---|---|---|
+| **Wikidata → Wikipedia** (via a `url-rels`-style Wikidata link from MusicBrainz, TMDb's `external_ids`, or Open Library's own `links[]`, then Wikipedia's REST summary endpoint) | Lead-paragraph extract | Works, keyless, for any person regardless of medium — a longer chain (two hops) with less control over tone/length than a purpose-built bio field, but for authors it's less of a fallback and more a first-choice-equivalent to Open Library's own `bio` field, which is itself often just Wikipedia text anyway. |
 
 ## Open question: bands and ensembles as `ContactBusiness`
 
