@@ -94,7 +94,9 @@ if( $isWikiContact ) {
 	if( !empty( $gContent->mInfo['music_gallery'] ) ) {
 		$gMusicGallery = new FisheyeGallery( $gContent->mInfo['music_gallery'] );
 		$gMusicGallery->load();
-		$gMusicGallery->loadImages( [ 'max_records' => 24 ] );
+		// loadImages() takes its param by reference - a literal array can't bind to that.
+		$musicGalleryListHash = [ 'max_records' => 24 ];
+		$gMusicGallery->loadImages( $musicGalleryListHash );
 		$gBitSmarty->assign( 'gMusicGallery', $gMusicGallery );
 	}
 }

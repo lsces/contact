@@ -58,7 +58,10 @@ function load_wiki_artists_existing_contact( int $pGalleryContentId ): ?array {
 // artists compilation's own albums won't have one (the tag only gets promoted when it's identical
 // across every track), which is exactly the "nothing to resolve from" case this is meant to surface.
 function load_wiki_artists_mb_artist_id( FisheyeGallery $pGallery ): ?string {
-	$pGallery->loadImages( [ 'max_records' => 50 ] );
+	// loadImages() takes its param by reference - a literal array can't bind to that, needs a real
+	// variable first (same gotcha already hit and fixed for storeXref() elsewhere in this package).
+	$listHash = [ 'max_records' => 20 ];
+	$pGallery->loadImages( $listHash );
 	foreach( $pGallery->mItems as $item ) {
 		if( !( $item instanceof FisheyeAlbum ) ) {
 			continue;
@@ -130,7 +133,8 @@ if( !empty( $_REQUEST['fCreate'] ) ) {
 
 $candidates = [];
 if( $topGallery && $topGallery->isValid() ) {
-	$topGallery->loadImages( [ 'max_records' => LOAD_WIKI_ARTISTS_LIMIT ] );
+	$topGalleryListHash = [ 'max_records' => LOAD_WIKI_ARTISTS_LIMIT ];
+	$topGallery->loadImages( $topGalleryListHash );
 	foreach( $topGallery->mItems as $artistGallery ) {
 		if( !( $artistGallery instanceof FisheyeGallery ) ) {
 			continue;
