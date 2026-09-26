@@ -17,7 +17,7 @@
 					<p>{tr}Contacts created{/tr}:</p>
 					<ul>
 						{foreach from=$result.created item=row}
-							<li>{$row.title|escape} - <a href="{$smarty.const.CONTACT_PKG_URL}edit.php?content_id={$row.content_id}">{tr}Edit{/tr}</a></li>
+							<li>{$row.title|escape} - <a href="{$smarty.const.CONTACT_PKG_URL}view.php?content_id={$row.content_id}">{tr}View{/tr}</a></li>
 						{/foreach}
 					</ul>
 				</div>
