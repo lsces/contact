@@ -27,7 +27,6 @@ namespace Bitweaver\Contact;
 
 use Bitweaver\Fisheye\FisheyeAlbum;
 use Bitweaver\Fisheye\FisheyeGallery;
-use Bitweaver\Liberty\LibertyContent;
 use Bitweaver\KernelTools;
 
 require_once '../kernel/includes/setup_inc.php';
@@ -54,10 +53,17 @@ function load_wiki_artists_existing_contact( int $pGalleryContentId ): ?array {
 	) ?: null;
 }
 
-// The first 'mb_artistid' found on any registered album directly under this gallery - a various-
-// artists compilation's own albums won't have one (the tag only gets promoted when it's identical
-// across every track), which is exactly the "nothing to resolve from" case this is meant to surface.
+// The first (lowest xorder) 'mb_artistid' found on any registered album directly under this
+// gallery - a various-artists compilation's own albums won't have one at all (the tag only gets
+// promoted when it's identical across every track), which is exactly the "nothing to resolve from"
+// case this is meant to surface. mb_artistid is now multiple=1 (FisheyeAlbum::storeCommonTagXref()
+// splits a bundled multi-id tag value into one row per id, xorder preserving the original list
+// order) - explicit ORDER BY xorder here, not LibertyContent::lookupXrefByItem()'s own unordered
+// "FIRST 1", since the lowest xorder is specifically the one confirmed (live, Samuel Barber's own
+// gallery) to be the same person across every album under one composer's gallery - the actual
+// composer/primary artist credit, not just an arbitrary row.
 function load_wiki_artists_mb_artist_id( FisheyeGallery $pGallery ): ?string {
+	global $gBitDb;
 	// loadImages() takes its param by reference - a literal array can't bind to that, needs a real
 	// variable first (same gotcha already hit and fixed for storeXref() elsewhere in this package).
 	$listHash = [ 'max_records' => 20 ];
@@ -66,9 +72,14 @@ function load_wiki_artists_mb_artist_id( FisheyeGallery $pGallery ): ?string {
 		if( !( $item instanceof FisheyeAlbum ) ) {
 			continue;
 		}
-		$row = LibertyContent::lookupXrefByItem( $item->mContentId, 'mb_artistid', FISHEYEALBUM_CONTENT_TYPE_GUID );
-		if( !empty( $row['xkey_ext'] ?? $row['xkey'] ?? null ) ) {
-			return $row['xkey_ext'] ?: $row['xkey'];
+		$value = $gBitDb->getOne(
+			"SELECT FIRST 1 x.xkey_ext FROM `".BIT_DB_PREFIX."liberty_xref` x
+			 WHERE x.content_id = ? AND x.item = 'mb_artistid' AND ( x.end_date IS NULL OR x.end_date > ? )
+			 ORDER BY x.xorder",
+			[ $item->mContentId, time() ]
+		);
+		if( !empty( $value ) ) {
+			return $value;
 		}
 	}
 	return null;
