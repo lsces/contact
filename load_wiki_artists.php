@@ -72,8 +72,13 @@ function load_wiki_artists_mb_artist_id( FisheyeGallery $pGallery ): ?string {
 		if( !( $item instanceof FisheyeAlbum ) ) {
 			continue;
 		}
+		// No 'FIRST 1' of our own here - getOne() already limits to one row itself (passes
+		// pNumRows=1 through to query()/SelectLimit()), and Firebird's own ADOdb driver injects its
+		// own 'FIRST 1' into the SQL to do that - colliding with one already in the string produces
+		// malformed SQL ("Token unknown" - confirmed live). ORDER BY still needed, LIMIT doesn't
+		// happen until after that.
 		$value = $gBitDb->getOne(
-			"SELECT FIRST 1 x.xkey_ext FROM `".BIT_DB_PREFIX."liberty_xref` x
+			"SELECT x.xkey_ext FROM `".BIT_DB_PREFIX."liberty_xref` x
 			 WHERE x.content_id = ? AND x.item = 'mb_artistid' AND ( x.end_date IS NULL OR x.end_date > ? )
 			 ORDER BY x.xorder",
 			[ $item->mContentId, time() ]
