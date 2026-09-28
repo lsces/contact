@@ -374,7 +374,7 @@ class Contact extends LibertyContent {
 	 *                  pages, xref displays, etc.) needs to know which package actually owns the
 	 *                  edit form for a given contact's concrete type.
 	 */
-	public function getEditUrl( $pContentId=NULL ) {
+	public function getEditUrl( $pContentId=NULL, $pMixed=NULL ) {
 		if( empty( $pContentId ) ) {
 			$pContentId = $this->mContentId;
 		}
