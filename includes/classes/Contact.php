@@ -19,12 +19,9 @@ use Bitweaver\Liberty\LibertyContent;		// Contact base class
 define( 'CONTACT_CONTENT_TYPE_GUID', 'contact' );
 defined( 'CONTACTPERSON_CONTENT_TYPE_GUID' )   || define( 'CONTACTPERSON_CONTENT_TYPE_GUID',   'contactperson' );
 defined( 'CONTACTBUSINESS_CONTENT_TYPE_GUID' ) || define( 'CONTACTBUSINESS_CONTENT_TYPE_GUID', 'contactbusiness' );
-// liberty_content_types.content_type_guid is VARCHAR(16) (unlike liberty_xref_group/
-// liberty_xref_item's own VARCHAR(32) content_type_guid columns) - 'contactwikiindividual' (21
-// chars) overflowed it. Abbreviated rather than widening liberty's own core schema for this -
-// this value is never shown anywhere, only ever read back in code.
-defined( 'CONTACTWIKIINDIVIDUAL_CONTENT_TYPE_GUID' ) || define( 'CONTACTWIKIINDIVIDUAL_CONTENT_TYPE_GUID', 'contactwikiindi' );
-defined( 'CONTACTWIKIGROUP_CONTENT_TYPE_GUID' )      || define( 'CONTACTWIKIGROUP_CONTENT_TYPE_GUID',      'contactwikigroup' );
+// CONTACTWIKIINDIVIDUAL_CONTENT_TYPE_GUID/CONTACTWIKIGROUP_CONTENT_TYPE_GUID live in contactwiki's
+// own bit_setup_inc.php - base contact has no business knowing those guids exist. See
+// getAllContentTypeGuids() below for how list_contacts.php still finds them generically.
 
 class Contact extends LibertyContent {
 
@@ -366,6 +363,42 @@ class Contact extends LibertyContent {
 		}
 
 		return CONTACT_PKG_URL.'view.php?content_id='.$pContentId;
+	}
+
+	/**
+	 * @param  int|null $pContentId  Defaults to $this->mContentId.
+	 * @return string   URL to edit.php for this contact. Overridden by a subtype whose own edit
+	 *                  form lives in a different package entirely (e.g. contactwiki's own
+	 *                  edit_wiki_indi.php/edit_wiki_group.php) - same polymorphic-override style as
+	 *                  getDisplayUrl() above, so nothing that links to "edit this contact" (list
+	 *                  pages, xref displays, etc.) needs to know which package actually owns the
+	 *                  edit form for a given contact's concrete type.
+	 */
+	public function getEditUrl( $pContentId=NULL ) {
+		if( empty( $pContentId ) ) {
+			$pContentId = $this->mContentId;
+		}
+
+		return CONTACT_PKG_URL.'edit.php?content_id='.$pContentId;
+	}
+
+	/**
+	 * Every content_type_guid the Contact-family "combined list" (list_contacts.php) should query
+	 * across - contactperson/contactbusiness plus whatever any other contact-family package
+	 * contributes via registerService('contact_content_type', $packageName, ['content_type_guid' =>
+	 * [...]]) - same generic extension point fisheye's own getAllLayouts() uses for gallery layouts.
+	 * Base contact has no hardcoded knowledge of contactwiki's own guids or package name anywhere -
+	 * contactwiki's bit_setup_inc.php registers them, this just collects whatever's registered.
+	 *
+	 * @return string[]
+	 */
+	public static function getAllContentTypeGuids(): array {
+		global $gLibertySystem;
+		$guids = [ CONTACTPERSON_CONTENT_TYPE_GUID, CONTACTBUSINESS_CONTENT_TYPE_GUID ];
+		foreach( $gLibertySystem->getServiceValues( 'content_type_guid' ) as $extraGuids ) {
+			$guids = array_merge( $guids, (array)$extraGuids );
+		}
+		return $guids;
 	}
 
 	/**

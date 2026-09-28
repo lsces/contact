@@ -25,17 +25,6 @@
 		</h1>
 	</div>
 
-	{if $wikiReloadResult}
-		<div class="form-group">
-			{if $wikiReloadResult.items}
-				<p>{$wikiReloadLabel|escape}:</p>
-				<ul>{foreach from=$wikiReloadResult.items item=line}<li>{$line|escape}</li>{/foreach}</ul>
-			{else}
-				<p>{$wikiReloadResult.error|escape}</p>
-			{/if}
-		</div>
-	{/if}
-
 	{* Check to see if there is an editing conflict *}
 	{if $errors.edit_conflict}
 		<script>
@@ -178,9 +167,6 @@
 			<div class="form-group submit">
 				<input type="submit" class="btn btn-default" name="fCancel" value="{tr}Cancel{/tr}" />&nbsp;
 				<input type="submit" class="btn btn-primary" name="fSaveContact" value="{tr}Save{/tr}" />
-				{if $isWikiContact && $gContent->mInfo.content_id}
-					&nbsp;<input type="submit" class="btn btn-secondary" name="fReloadWikidata" value="{tr}Reload from Wikidata{/tr}" />
-				{/if}
 			</div>
 		{/form}
 

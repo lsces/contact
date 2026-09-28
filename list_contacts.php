@@ -12,16 +12,18 @@ use Bitweaver\KernelTools;
 $gBitSystem->verifyPackage( 'contact' );
 $gBitSystem->verifyPermission( 'p_contact_view' );
 
-// One combined query across both types, via Contact::getList()'s array
-// content_type_guid override (see Contact.php) - a single real LIMIT/offset
-// and a single genuine postGetList(), instead of the old approach of running
-// ContactPerson::getList() and ContactBusiness::getList() separately and
-// merging the two page-slices afterward. That merge is what broke pagination:
-// the combined page never had a correct total_pages/current_page of its own,
-// only whichever side's listInfo happened to be reused as the base.
+// One combined query across every registered contact-family type, via Contact::getList()'s array
+// content_type_guid override (see Contact.php) - a single real LIMIT/offset and a single genuine
+// postGetList(), instead of running each type's own getList() separately and merging page-slices
+// afterward (that merge is what broke pagination previously - the combined page never had a
+// correct total_pages/current_page of its own). getAllContentTypeGuids() picks up
+// contactperson/contactbusiness plus whatever any other contact-family package (e.g. contactwiki's
+// wiki-sourced individual/group records) has registered - previously this was a hardcoded
+// two-guid array, which is why wiki contacts never showed up here even before the contactwiki
+// split existed.
 $listContent = new Contact();
 $listHash = $_REQUEST;
-$listHash['content_type_guid'] = [ CONTACTPERSON_CONTENT_TYPE_GUID, CONTACTBUSINESS_CONTENT_TYPE_GUID ];
+$listHash['content_type_guid'] = Contact::getAllContentTypeGuids();
 $listcontacts = $listContent->getList( $listHash );
 
 // title is already the plain surname-led sort/display form straight from the
