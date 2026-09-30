@@ -444,7 +444,7 @@ class Contact extends LibertyContent {
 	 * Return a paged list of contacts matching filter criteria.
 	 *
 	 * Recognised keys in $pParamHash: user_id (filters by linked user; stored in con.role_id), find_xref,
-	 * find_title, active, sort_mode, max_records, offset.
+	 * find_title, sort_mode, max_records, offset.
 	 * Sets $pParamHash['cant'] and $pParamHash['listInfo'] on return.
 	 *
 	 * find_location/find_postcode aren't handled here — they depended on
@@ -514,18 +514,10 @@ class Contact extends LibertyContent {
 
 		$this->getServicesSql( 'content_list_sql_function', $selectSql, $joinSql, $whereSql, $bindVars, NULL, $pParamHash );
 
-		$t = $gBitSystem->getUTCTime();
-		if ( isset( $active ) ) {
-			if ( $active === 'Inactive' ) {
-				$whereSql .= " AND ( lc.`event_time` > 0 AND lc.`event_time` < $t ) ";
-			}
-		} else {
-			$active = 'Active';
-		}
-		if ( $active == 'Active' ) {
-			$whereSql .= " AND ( lc.`event_time` = 0 OR lc.`event_time` > $t ) ";
-		}
-		$pParamHash["listInfo"]["active"] = $active;
+		// No event_time filter: contact itself never sets event_time, and a contact-family type
+		// that does (contactwiki's dob/formed date, so wiki contacts sort by date in calendar) uses
+		// it as a date, not an end date - the old default "Active" filter (event_time 0 or in the
+		// future) silently hid every one of those from every list.
 
 
 		if( isset( $find_title ) and is_string( $find_title ) and $find_title <> '' ) {
