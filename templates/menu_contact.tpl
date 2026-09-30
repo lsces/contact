@@ -14,5 +14,10 @@
 	{if !empty($gContent->mContentId) && $gBitSystem->isPackageActive('order') && ( $gBitUser->isAdmin() || $gBitUser->hasPermission( 'p_contact_update' ) ) }
 		<li><a class="item" href="{$smarty.const.ORDER_PKG_URL}edit.php?content_id={$gContent->mContentId}">{biticon ipackage="icons" iname="list-add" iexplain="Create an Order" ilocation=menu}</a></li>
 	{/if}
+	{* Sections contributed by other packages (e.g. contactwiki's wiki tools) through the generic
+	   'contact_menu_tpl' service - contact itself names none of them. *}
+	{foreach $gLibertySystem->getServiceValues( 'contact_menu_tpl' )|default:[] as $contactMenuTpl}
+		{include file=$contactMenuTpl}
+	{/foreach}
 </ul>
 {/strip}
