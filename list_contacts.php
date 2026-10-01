@@ -23,8 +23,19 @@ $gBitSystem->verifyPermission( 'p_contact_view' );
 // split existed.
 $listContent = new Contact();
 $listHash = $_REQUEST;
-$listHash['content_type_guid'] = Contact::getAllContentTypeGuids();
+$allGuids = Contact::getAllContentTypeGuids();
+// Two-stage class/type filter (Contact::applyListFilter()) - sets content_type_guid, and liberty's
+// generic xref_items filter for any type tags ticked.
+$listFilter = Contact::applyListFilter( $listHash, $_REQUEST, $allGuids );
 $listcontacts = $listContent->getList( $listHash );
+// Comma-separated so pagination links (listInfo.ihash) carry the filter from page to page.
+if( $listFilter['classes'] ) {
+	$listHash['listInfo']['ihash']['content_class'] = implode( ',', $listFilter['classes'] );
+}
+if( $listFilter['items'] ) {
+	$listHash['listInfo']['ihash']['xref_items'] = implode( ',', $listFilter['items'] );
+}
+$gBitSmarty->assign( 'filterOptions', Contact::getListFilterOptions( $allGuids, $listFilter ) );
 
 // title is already the plain surname-led sort/display form straight from the
 // DB for a person record, same as a business's own plain title — no

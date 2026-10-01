@@ -395,10 +395,79 @@ class Contact extends LibertyContent {
 	public static function getAllContentTypeGuids(): array {
 		global $gLibertySystem;
 		$guids = [ CONTACTPERSON_CONTENT_TYPE_GUID, CONTACTBUSINESS_CONTENT_TYPE_GUID ];
-		foreach( $gLibertySystem->getServiceValues( 'content_type_guid' ) as $extraGuids ) {
+		foreach( (array)$gLibertySystem->getServiceValues( 'content_type_guid' ) as $extraGuids ) {
 			$guids = array_merge( $guids, (array)$extraGuids );
 		}
 		return $guids;
+	}
+
+	/**
+	 * The two-stage filter a contact list page offers: each content class (person, business, and
+	 * whatever contact-family types other packages register) with the type tags available within
+	 * it - the checkbox groups list_filter_inc.tpl renders.
+	 *
+	 * @param list<string> $pGuids     classes to offer
+	 * @param array $pSelected          applyListFilter()'s result - marks what's ticked
+	 * @return list<array{guid:string, name:string, checked:bool,
+	 *               types:list<array{item:string, name:string, checked:bool}>}>
+	 */
+	public static function getListFilterOptions( array $pGuids, array $pSelected = [] ): array {
+		global $gLibertySystem;
+		$ret = [];
+		foreach( $pGuids as $guid ) {
+			$types = ( new \Bitweaver\Liberty\LibertyXrefType( $guid ) )->getTypeMarkers();
+			foreach( $types as &$type ) {
+				$type['checked'] = in_array( $type['item'], $pSelected['items'] ?? [], true );
+			}
+			unset( $type );
+			$ret[] = [
+				'guid'    => $guid,
+				'name'    => $gLibertySystem->getContentTypeName( $guid, true ) ?: $guid,
+				'checked' => in_array( $guid, $pSelected['classes'] ?? [], true ),
+				'types'   => $types,
+			];
+		}
+		return $ret;
+	}
+
+	/**
+	 * Apply the class/type filter from a list page's request to a getList() param hash. Classes
+	 * ('content_class') narrow content_type_guid; type tags ('xref_items') narrow within them via
+	 * liberty's generic xref_items list filter - a ticked class with none of its own types ticked
+	 * still lists all its members (xref_items_exempt_types); with no class ticked, the ticked types
+	 * alone decide. Either arrives as checkbox arrays or
+	 * as the comma-separated form pagination links carry; the comma-separated form goes back into
+	 * listInfo.ihash so paging keeps the filter. Nothing ticked = every allowed class, no type filter.
+	 *
+	 * @param array $pListHash      getList() params, modified in place
+	 * @param array $pRequest       usually $_REQUEST
+	 * @param list<string> $pAllowedGuids
+	 * @return array{classes:list<string>, items:list<string>}  what was applied, for the form
+	 */
+	public static function applyListFilter( array &$pListHash, array $pRequest, array $pAllowedGuids ): array {
+		$asList = fn( $v ) => array_values( array_filter( array_map( 'trim', is_array( $v ) ? $v : explode( ',', (string)$v ) ) ) );
+		$classes = array_values( array_intersect( $asList( $pRequest['content_class'] ?? '' ), $pAllowedGuids ) );
+		$items = $asList( $pRequest['xref_items'] ?? '' );
+
+		unset( $pListHash['xref_items'], $pListHash['xref_items_exempt_types'] );
+		// Which classes own any of the ticked types - those are listed too, whether or not their
+		// class box is ticked (list_wiki's row layout: "All" on one row, specific types on another).
+		$filtered = [];
+		if( $items ) {
+			foreach( self::getListFilterOptions( $pAllowedGuids ) as $class ) {
+				if( array_intersect( array_column( $class['types'], 'item' ), $items ) ) {
+					$filtered[] = $class['guid'];
+				}
+			}
+		}
+		$pListHash['content_type_guid'] = array_values( array_unique( array_merge( $classes, $filtered ) ) ) ?: $pAllowedGuids;
+		if( $items ) {
+			$pListHash['xref_items'] = $items;
+			// Only a class actually ticked with none of its own types ticked keeps all its members -
+			// with no class ticked at all, the ticked types alone decide (Composer alone = composers).
+			$pListHash['xref_items_exempt_types'] = array_values( array_diff( $classes, $filtered ) );
+		}
+		return [ 'classes' => $classes, 'items' => $items ];
 	}
 
 	/**
