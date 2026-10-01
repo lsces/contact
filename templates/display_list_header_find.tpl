@@ -6,7 +6,7 @@
 			<input type="hidden" name="sort_mode" value="{$sort_mode|default:$smarty.request.sort_mode}" />
 
 			<label class="col-md-5 col-sm-5 col-xs-12">{tr}Title{/tr}:&nbsp;<input size="20" type="text" name="find_title" value="{$find_title|default:$smarty.request.find_title|escape}" /></label>
-			<label class="col-md-4 col-sm-4 col-xs-12">{tr}Number{/tr}:&nbsp;<input size="10" type="text" name="find_xref" value="{$find_xref|default:$smarty.request.find_xref|escape}" /></label>
+			<label class="col-md-4 col-sm-4 col-xs-12">{tr}Identifier{/tr}:&nbsp;<input size="14" type="text" name="find_xref" title="{tr}Any stored id or number - a Wikidata Q-id, MusicBrainz id, phone number...{/tr}" value="{$find_xref|default:$smarty.request.find_xref|escape}" /></label>
 			{include file="bitpackage:contact/list_filter_inc.tpl"}
 			<div  class="col-md-1 col-sm-3 col-xs-12">
 				<input type="submit" name="search" value="{tr}Find{/tr}" />&nbsp;

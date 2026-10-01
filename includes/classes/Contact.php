@@ -413,18 +413,21 @@ class Contact extends LibertyContent {
 	 */
 	public static function getListFilterOptions( array $pGuids, array $pSelected = [] ): array {
 		global $gLibertySystem;
-		$ret = [];
-		foreach( $pGuids as $guid ) {
-			$types = ( new \Bitweaver\Liberty\LibertyXrefType( $guid ) )->getTypeMarkers();
-			foreach( $types as &$type ) {
+		$mark = function( array $pTypes ) use ( $pSelected ): array {
+			foreach( $pTypes as &$type ) {
 				$type['checked'] = in_array( $type['item'], $pSelected['items'] ?? [], true );
 			}
-			unset( $type );
+			return $pTypes;
+		};
+		$ret = [];
+		foreach( $pGuids as $guid ) {
+			// Package guid too: a site's 'type' xref group can be registered at package level
+			// ('contact') while its items are per type (merg).
 			$ret[] = [
 				'guid'    => $guid,
 				'name'    => $gLibertySystem->getContentTypeName( $guid, true ) ?: $guid,
 				'checked' => in_array( $guid, $pSelected['classes'] ?? [], true ),
-				'types'   => $types,
+				'types'   => $mark( ( new \Bitweaver\Liberty\LibertyXrefType( $guid, CONTACT_PKG_NAME ) )->getTypeMarkers() ),
 			];
 		}
 		return $ret;
@@ -570,12 +573,7 @@ class Contact extends LibertyContent {
 		// this will set $sort_mode, $max_records and $offset
 		extract( $pParamHash );
 
-		// Unscoped LIKE on any item's xkey — see getList()'s own TODO.
-		if( isset( $find_xref ) and is_string( $find_xref ) and $find_xref <> '' ) {
-			$joinSql .= "JOIN `".BIT_DB_PREFIX."liberty_xref` cy ON cy.`content_id` = con.`content_id` AND cy.`xkey` like ? ";
-			$bindVars[] = '%' . strtoupper( $find_xref ). '%';
-			$pParamHash["listInfo"]["ihash"]["find_xref"] = $find_xref;
-		}
+
 
 		if ( !isset( $pParamHash['user_id'] ) ) {
 			array_push( $bindVars, ...$typeGuids );
@@ -588,6 +586,16 @@ class Contact extends LibertyContent {
 		// it as a date, not an end date - the old default "Active" filter (event_time 0 or in the
 		// future) silently hid every one of those from every list.
 
+
+		// Identifier search: any live xref value - xkey (numbers, codes) or xkey_ext (a Wikidata qid,
+		// MusicBrainz/Discogs id...) - as an EXISTS, so a contact matching on two xrefs isn't listed
+		// twice. Still the unscoped "any item" search getList()'s own TODO describes.
+		if( isset( $find_xref ) and is_string( $find_xref ) and trim( $find_xref ) <> '' ) {
+			$whereSql .= " AND EXISTS ( SELECT 1 FROM `".BIT_DB_PREFIX."liberty_xref` cy WHERE cy.`content_id` = con.`content_id` AND cy.`end_date` IS NULL AND ( UPPER( cy.`xkey` ) LIKE ? OR UPPER( cy.`xkey_ext` ) LIKE ? ) ) ";
+			$bindVars[] = '%'.strtoupper( trim( $find_xref ) ).'%';
+			$bindVars[] = '%'.strtoupper( trim( $find_xref ) ).'%';
+			$pParamHash["listInfo"]["ihash"]["find_xref"] = $find_xref;
+		}
 
 		if( isset( $find_title ) and is_string( $find_title ) and $find_title <> '' ) {
 			$whereSql .= " AND UPPER( lc.`title` ) like ? ";
@@ -615,7 +623,9 @@ class Contact extends LibertyContent {
 			// enrichment fields be added here the same way instead of growing the
 			// query itself. See getList()'s own docblock re: the postcode/address
 			// rebuild this is standing in for.
-			$address = LibertyContent::lookupXrefByTemplate( $res['content_id'], 'address', 'contact' );
+			// Row's own type AND the package-level 'contact' guid - sites register the address items
+			// (#C/#I/#R/#S/#T) either way (package-level on older sites, per type on newer ones).
+			$address = LibertyContent::lookupXrefByTemplate( $res['content_id'], 'address', $res['content_type_guid'], 'contact' );
 			$res['house'] = $address['xkey_ext'] ?? null;
 			$res['postcode'] = $address['xkey'] ?? null;
 			// Per-row content_type_guid, not $this->mContentTypeGuid — a combined
@@ -634,6 +644,17 @@ class Contact extends LibertyContent {
 		$pParamHash["listInfo"]["count"] = $pParamHash["cant"];
 
 		LibertyContent::postGetList( $pParamHash );
+		// Other contact-family packages can fill in their own rows' extra list information
+		// (contactwiki's wiki summary: types, dates, Wikidata) - registered as a
+		// 'contact_list_row_function' callable taking the rows by reference. A row they fill gets a
+		// 'summary_tpl' that list.tpl's Information cell shows in place of an address.
+		global $gLibertySystem;
+		foreach( (array)$gLibertySystem->getServiceValues( 'contact_list_row_function' ) as $rowFunction ) {
+			if( is_callable( $rowFunction ) ) {
+				$rowFunction( $ret );
+			}
+		}
+
 		return $ret;
 	}
 }

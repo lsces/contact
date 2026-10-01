@@ -67,7 +67,8 @@ $gBitInstaller->registerSchemaSequences( CONTACT_PKG_NAME, [] );
 
 // ### Defaults
 // Xref schema: shared groups/items at content_type_guid='contact'; type markers split by sub-type.
-// contactperson: 'type' group + $00 item. contactbusiness: 'type' group + $02-$05 items.
+// contactperson: 'type' group + P01/P02 (and the 'name' group's NAME item). contactbusiness: 'type'
+// group + B01-B04. (Older installs used package-level $00-$05 - see upgrades/5.0.2.php.)
 $gBitInstaller->registerSchemaDefault( CONTACT_PKG_NAME, [
 
 	// liberty_content_types rows for contactperson/contactbusiness are NOT declared here - that

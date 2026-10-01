@@ -19,19 +19,22 @@
 			<caption>{tr}Available Content{/tr} <span class="total">[ {$listInfo.total_records} ]</span></caption>
 			<tr>
 				<th>{smartlink ititle="Title" isort="title" idefault=1 iorder=desc ihash=$listInfo.ihash|default:''}</th>
-				<th>{tr}Address{/tr}</th>
+				<th>{tr}Information{/tr}</th>
 			</tr>
 			{section name=content loop=$listcontacts}
 				{if $smarty.section.content.rownum % 2 != 0}{assign var=rowclass value="odd"}{else}{assign var=rowclass value="even"}{/if}
 				<tr class="first {$rowclass}">
 					<td class="alignleft">
-						<a href="view.php?content_id={$listcontacts[content].content_id}" title="ci_{$listcontacts[content].content_id}">
+						<a href="{$listcontacts[content].view_url|default:"view.php?content_id=`$listcontacts[content].content_id`"}" title="ci_{$listcontacts[content].content_id}">
 							{$listcontacts[content].title}
 						</a>
 					</td>
-					<td>{if isset($listcontacts[content].house) && ($listcontacts[content].house <> '') }
-						{$listcontacts[content].house},&nbsp;{/if}
-						{$listcontacts[content].postcode}</td>
+					<td>{if $listcontacts[content].house || $listcontacts[content].postcode}
+						{if $listcontacts[content].house}{$listcontacts[content].house},&nbsp;{/if}
+						{$listcontacts[content].postcode}
+					{elseif $listcontacts[content].summary_tpl}
+						{include file=$listcontacts[content].summary_tpl row=$listcontacts[content]}
+					{/if}</td>
 				</tr>
 				<tr class="second {$rowclass}">
 					<td colspan="2">

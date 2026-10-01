@@ -44,7 +44,8 @@ $gBitSmarty->assign( 'filterOptions', Contact::getListFilterOptions( $allGuids, 
 // types now, not just paginate correctly.
 
 if( $listHash['listInfo']['count'] == 1 ) {
-	KernelTools::bit_redirect( CONTACT_PKG_URL."view.php?content_id=".$listcontacts[0]['content_id'] );
+	// The row's own view page when a contact-family package set one (a wiki contact's view.php).
+	KernelTools::bit_redirect( $listcontacts[0]['view_url'] ?? CONTACT_PKG_URL."view.php?content_id=".$listcontacts[0]['content_id'] );
 }
 
 $gBitSmarty->assign( 'listcontacts', $listcontacts );
