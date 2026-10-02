@@ -91,7 +91,9 @@
 								<div class="clear"></div>
 							</div>
 						{/if}
-						{if !$isPerson && ( $gContent->mInfo.organisation || !isset( $gContent->mInfo.contact_types ) )}
+						{* A business/group's own name - always offered, even when empty (a group created without a
+						   name has no other way to get one) *}
+						{if !$isPerson}
 							<div class="form-group">
 								{formlabel label="Organisation" for="organisation"}
 								{forminput}
