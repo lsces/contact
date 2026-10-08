@@ -1,0 +1,18 @@
+<div class="floaticon">
+  {if $lock}
+    {biticon ipackage="icons" iname="lock" iexplain="Locked"}{$info.editor|userlink}
+  {/if}
+  {if $print_page ne 'y'}
+    {if !$lock}
+      {if $gBitUser->hasPermission('p_edit_contact')}
+		{* getEditUrl(), not a relative "edit.php" - this bar is shared with contact-family types
+		   that have their own edit page (contactwiki's wiki individual/group), and a relative
+		   file resolved against whichever package's view page included it. *}
+		<a title="{tr}Edit Contact{/tr}" href="{$gContent->getEditUrl()|escape}">{biticon ipackage="icons" iname="edit" iexplain="Edit Contact"}</a>
+      {/if}
+    {/if}
+    <a title="{tr}print{/tr}" href="{$smarty.const.CONTACT_PKG_URL}print.php?content_id={$gContent->mInfo.content_id}">{biticon ipackage="icons" iname="document-print" iexplain="print"}</a>
+    {* Delete moved to edit.tpl's own icon bar - same convention every other package already
+       follows, keeping a destructive action one deliberate step away from a plain view. *}
+  {/if} {* end print_page *}
+</div> {*end .floaticon *}

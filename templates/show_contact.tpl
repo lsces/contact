@@ -1,4 +1,5 @@
 <div class="display contact">
+{include file="bitpackage:contact/contact_icons.tpl"}
 {include file="bitpackage:contact/contact_header.tpl"}
 {include file="bitpackage:contact/contact_date_bar.tpl"}
 	<div class="body">
