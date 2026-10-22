@@ -25,7 +25,7 @@
 		</div>
 		<div class="row">
 			<div class="col-xs-12 text-right">
-				<a href="{$smarty.const.FISHEYE_PKG_URL}gallery.php?gallery_id={$gGallery->mGalleryId}">{tr}View full gallery{/tr}</a>
+				<a href="{$gGallery->getDisplayUrl()|escape}">{tr}View full gallery{/tr}</a>
 			</div>
 		</div>
 	{else}
