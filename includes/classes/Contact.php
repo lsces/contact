@@ -119,7 +119,7 @@ class Contact extends LibertyContent {
 				uuc.`login` AS creator_user, uuc.`real_name` AS creator_real_name,
 				uu.`login` AS linked_user_login, uu.`real_name` AS linked_user_name
 				FROM `".BIT_DB_PREFIX."contact` con
-				LEFT JOIN `".BIT_DB_PREFIX."liberty_content` lc ON lc.content_id = con.content_id
+				INNER JOIN `".BIT_DB_PREFIX."liberty_content` lc ON lc.content_id = con.content_id
 				LEFT JOIN `".BIT_DB_PREFIX."users_users` uue ON (uue.`user_id` = lc.`modifier_user_id`)
 				LEFT JOIN `".BIT_DB_PREFIX."users_users` uuc ON (uuc.`user_id` = lc.`user_id`)
 				LEFT JOIN `".BIT_DB_PREFIX."users_users` uu ON uu.`user_id` = con.`role_id`
@@ -343,7 +343,17 @@ class Contact extends LibertyContent {
 	 */
 	public function expunge(): bool
 	{
-		return $this->isValid() && LibertyContent::expunge();
+		if( !$this->isValid() ) {
+			return false;
+		}
+		$contentId = (int)$this->mContentId;
+		if( !LibertyContent::expunge() ) {
+			return false;
+		}
+		// liberty removes the content, its xrefs and history, but not this package's own row: left behind it makes
+		// load() find a contact with no content behind it.
+		$this->mDb->query( "DELETE FROM `".BIT_DB_PREFIX."contact` WHERE `content_id` = ?", [ $contentId ] );
+		return true;
 	}
 
 	/** @return bool Always TRUE — contacts support comments. */
