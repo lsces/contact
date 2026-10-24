@@ -167,7 +167,7 @@
 			{/jstabs}
 
 			<div class="form-group submit">
-				<input type="submit" class="btn btn-default" name="fCancel" value="{tr}Cancel{/tr}" />&nbsp;
+				<input type="submit" class="btn btn-default" name="fCancel" value="{tr}Cancel{/tr}" />
 				<input type="submit" class="btn btn-primary" name="fSaveContact" value="{tr}Save{/tr}" />
 			</div>
 		{/form}

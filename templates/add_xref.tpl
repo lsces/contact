@@ -60,7 +60,7 @@ function updateContactXrefFormat() { {/literal}
 				{include file="bitpackage:contact/edit_xref_dates.tpl"}
 
 				<div class="form-group submit">
-					<input type="submit" name="fCancel" value="{tr}Cancel{/tr}" />&nbsp;
+					<input type="submit" name="fCancel" value="{tr}Cancel{/tr}" />
 					<input type="submit" name="fAddXref" value="{tr}Save{/tr}" />
 				</div>
 			{/jstabs}

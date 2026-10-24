@@ -99,7 +99,7 @@
 
 			<div class="form-group submit">
 				<input type="submit" name="preview" value="{tr}Preview{/tr}" /> 
-				<input type="submit" name="fSavePage" value="{tr}Save{/tr}" />&nbsp;
+				<input type="submit" name="fSavePage" value="{tr}Save{/tr}" />
 				<input type="submit" name="cancel" value="{tr}Cancel{/tr}" />
 			</div>
 		{/form}
