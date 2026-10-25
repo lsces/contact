@@ -107,21 +107,7 @@
 
 					{/legend}
 
-					{if $gXrefInfo->mGroups && $gContent->isValid()}
-						{jstabs}
-							{foreach $gXrefInfo->mGroups as $xrefGroup}
-								{include file=$gContent->getXrefListTemplate($xrefGroup->mTemplate)
-									xrefGroup=$xrefGroup
-									allow_add=true
-									allow_edit=true}
-							{/foreach}
-						{/jstabs}
-					{/if}
-
-				{/jstab}
-
-				{jstab title="Contact Notes"}
-					{legend legend="Notes Body"}
+					{legend legend="Notes"}
 						<div class="form-group">
 							{* $gContent->mInfo.edit is never actually set anywhere (LibertyContent/Contact
 							   only ever populate mInfo['data']) - edit.php's own bootstrap computes 'edit'
@@ -140,6 +126,18 @@
 						{/if}
 
 					{/legend}
+
+					{if $gXrefInfo->mGroups && $gContent->isValid()}
+						{jstabs}
+							{foreach $gXrefInfo->mGroups as $xrefGroup}
+								{include file=$gContent->getXrefListTemplate($xrefGroup->mTemplate)
+									xrefGroup=$xrefGroup
+									allow_add=true
+									allow_edit=true}
+							{/foreach}
+						{/jstabs}
+					{/if}
+
 				{/jstab}
 
 				{jstab title="Liberty Extensions"}

@@ -5,7 +5,7 @@
 </div> {* end category *}
 {/if}
 
-	<h1>{$gContent->mInfo.title}</h1>
+	<h1>{$gContent->mInfo.title}{if $showExtras}{include file="bitpackage:fisheyemedia/extras_inc.tpl"}{/if}</h1>
 	<div class="description">{$gContent->mInfo.description|default:''}</div>
 
 </div> {* end .header *}
