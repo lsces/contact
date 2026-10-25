@@ -36,11 +36,12 @@ consequence of the model, not the whole point of it.
   outbound message to the right contact and keeping it alongside their other detail, rather than
   correspondence living only in a separate mail client with no link back to who it's actually with
 - A few small internal cleanups — some dead code paths from an earlier contact-model iteration
-  that were never fully removed (see `MANUAL.md`'s "Known gap" note), low priority since they're
+  that were never fully removed (see `DEVELOPER.md`'s "Known gap" note), low priority since they're
   inert rather than broken
 
-See `MANUAL.md` for the full current picture — schema, the person/business type model, and how
-other packages are expected to link against a contact record.
+See `MANUAL.md` for using the package (finding, adding, viewing and editing contacts), and `DEVELOPER.md`
+for the current picture of the code — schema, the person/business type model, and how other packages
+are expected to link against a contact record.
 
 ## Requirements
 
@@ -49,7 +50,7 @@ other packages are expected to link against a contact record.
   content/xref framework, same foundation [`stock`](https://github.com/lsces/stock) and
   [`food`](https://github.com/lsces/food) use
 
-Since this package isn't through a stable install/upgrade cycle yet, see `MANUAL.md` in this repo
+Since this package isn't through a stable install/upgrade cycle yet, see `DEVELOPER.md` in this repo
 for the current schema-deployment approach if you're installing it fresh (`CLAUDE.md` is a dated
 development log, not a reference — useful for *why* something's built the way it is, not *how*
 to set it up).

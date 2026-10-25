@@ -1,117 +1,121 @@
-# Contact Package — Reference Manual
+# Contact — User Manual
 
-How the package actually works today. For the history of *why* — decisions, bugs found, wrong
-turns — see `CLAUDE.md`'s dated session log instead; this file only tracks current behaviour.
+Contact is an address book for people and businesses. A contact is a full record of its own, not a line in a
+table: it can have as many addresses, telephone numbers and email addresses as it needs, a rich-text description,
+a thread of notes about conversations with it, and a photo grid. Other packages (stock, orders and so on) link to a
+contact rather than keeping their own free-text names.
 
-See also: `liberty/MANUAL.md` for the xref machinery underpinning this package.
+For how the package is built, see [`DEVELOPER.md`](DEVELOPER.md). For the contacts that describe public figures —
+actors, directors, authors, bands — see the [`contactwiki`](../contactwiki/MANUAL.md) manual; those are a separate kind
+of contact with their own page.
 
-## Person vs Business subclasses
+## Two kinds of contact
 
-Two distinct content types, each its own `LibertyContent` subclass:
-- `ContactPerson extends Contact` — `mContentTypeGuid = 'contactperson'`
-- `ContactBusiness extends Contact` — `mContentTypeGuid = 'contactbusiness'`
+- **Person** — has a name made of parts (prefix, forename, surname, suffix) and is tagged *Personal* or *Business*
+  (a person acting in a business capacity, as opposed to a business record itself).
+- **Business** — has an organisation name and one or more subtype tags such as *Service*, *Manufacturer*,
+  *Distributor* and *Supplier*.
 
-Both share `Contact`'s common schema (addresses, SCREF, etc., registered at the bare
-`content_type_guid='contact'` package level). The class itself *is* the person/business
-distinction — `edit.php` detects which one it's rendering via `$gContent instanceof
-\Bitweaver\Contact\ContactPerson`, not by inspecting any stored data.
+The tags a site offers are set by an administrator (see [Settings for an administrator](#settings-for-an-administrator)),
+so your list may differ.
 
-- `add_person.php` — creates a `ContactPerson`, tags it with the `P01` type marker.
-- `add_business.php` — creates a `ContactBusiness`; the user picks one or more subtype markers
-  from `getXrefSourceList()` (Supplier, Manufacturer, etc. — expandable via the DB).
+## Finding contacts
 
-Type-tag markers live in `liberty_xref_item` at `sort_order=0` (Liberty's type-marker
-convention — see `liberty/MANUAL.md` — excluded from the normal tabbed xref display,
-loaded separately via `getTypeMarkers()`/`getContentTypeMarkers()`):
-- `contactperson`'s `type` group: `P01` (Personal), `P02` (Business — a person acting in a
-  business capacity, not a business record itself)
-- `contactbusiness`'s `type` group: `B01`-`B04` (Service/Manufacturer/Distributor/Supplier)
+The **Contact** menu has three lists:
 
-`Contact::loadXrefTypeList()` loads these markers into `$this->mInfo['contact_types']`
-(`getContentTypeMarkers()`) for display/edit-form use. Saving diffs the submitted set against
-what's actually stored (`getTypeMarkerXrefs()`) rather than delete-all-then-reinsert, so an
-unrelated add/remove doesn't reset an unchanged tag's `entry_date` — removed tags are hard-deleted
-(`expunge=3`), added tags go through the normal `storeXref()`/`fAddXref` path. A hidden
-`fContactTypesSubmitted` field distinguishes "the type-tag section was on this form with nothing
-checked" (clear all tags) from "this caller doesn't touch type tags at all" (e.g. an import
-script) — both would otherwise look identical as an absent `contact_types` key.
+- **List People** — people only, sorted by surname.
+- **List Businesses** — businesses only.
+- **All Contacts** — both, with a search box and the tag filter below.
 
-`display_contact.tpl` heading = "Personal Contact" / "Business Contact" from the same
-`instanceof`/class check `edit.php` uses.
+**All Contacts** can be narrowed with the tick-boxes at the top, one row of tags per kind of contact (for example
+*Supplier* or *Manufacturer* for businesses). A contact is listed if it has any of the tags ticked, and with nothing ticked
+everything is listed. The **All** box at the start of a row ticks or clears the whole row. Lists are split into pages.
+Select a name to open the contact. You need permission to browse the contact list (by default, any registered user).
 
-xref item templates gate dates and edit actions on `{$xrefAllowEdit}` (pass `allow_edit=false`
-in view, `allow_edit=true` in edit).
+## Adding a contact
 
-**SCREF** — short reference code for a contact, stored in `liberty_xref.xkey` where `item='SCREF'`.
-Used as the `from` value in stock movement CSVs to identify the supplier/source contact.
-`contact/includes/lookup_contact.php` provides JSON autocomplete searching by `lc.title` or SCREF `xkey`.
+- **Add Person** — fill in the name parts and choose *Personal* or *Business*, then save.
+- **Add Business** — enter the organisation name and tick the subtypes that apply, then save.
 
-## Name storage (`ContactPerson` only)
+Adding needs the permission to create contacts (by default, editors). Saving opens the new contact, where the addresses,
+telephone numbers and the rest are added with the edit page.
 
-`liberty_content.title` holds the plain, sortable "Surname, Prefix Forename Suffix" form directly
-(a real column, not derived at query time) — needed so a real SQL `ORDER BY lc.title` sorts
-correctly for listing/pagination. The individual `prefix`/`forename`/`surname`/`suffix` parts
-(needed to repopulate the edit form) live separately as a JSON array on a dedicated `NAME` xref
-item, its own `name` group at `sort_order=0` — deliberately not sharing the `type` group's
-sort_order=0 slot, since `NAME` isn't a togglable type marker and would otherwise leak into the
-`P01`/`P02` type-tag picker.
+## Viewing a contact
 
-`ContactPerson::load()` reads the `NAME` xref's JSON and overwrites `mInfo['title']`/`mInfo['name']`
-with the fuller "Prefix Forename Surname Suffix" display form for templates — the DB's own
-surname-led `lc.title` (used for listing/sorting) is intentionally overridden here for display
-purposes only. `ContactPerson::verify()` builds the surname-led sort form from the edit form's
-separate name fields before delegating to `Contact::verify()`, the same way `ContactBusiness`
-passes its organisation string through as `title`.
+The page shows, from the top:
 
-`ContactBusiness` has no equivalent — `liberty_content.title` is just the organisation name
-directly, no separate xref item involved.
+- the **name** and a heading saying *Personal Contact* or *Business Contact*, with icons to **edit** and **print**;
+- a **date bar** with when the contact was created and last changed;
+- the **details**: the main address, and for a person the date of birth, with the user account it is linked to if there
+  is one;
+- the contact's **description** (the Notes, below);
+- tabs for the other kinds of information it holds, such as further addresses, telephone numbers, email addresses and
+  web sites (these appear only when there is something in them);
+- **Local Notes**, the conversation thread — see below (shown to anyone who can read or post comments);
+- for a business with clients, a **Client List** tab;
+- a **photo grid** of the contact's own pictures, when it has some.
 
-## Entry points
+### Local Notes — the conversation thread
 
-`view.php` — shared display for both types (no separate person/business display file, matches
-its own `/contact/view/NNN` pretty URL and the bare `view.php`/`edit.php` pattern other
-single-content-type packages use, e.g. mapper/fisheye). `edit.php` — shared editor for both
-types. Listing is split three ways: `list_people.php`/`list_businesses.php`/`list_contacts.php`
-(all three share `list.tpl`).
+**Local Notes** is where the conversations with a contact are kept: a dated thread of notes about calls, emails and
+meetings, each added with the comment form under the thread. Anyone who has permission to post comments can add to it, and
+anyone who can read comments can read it. The thread belongs to the contact, so it stays with the record wherever the contact is linked from. It is different from
+the contact's description: the description says who the contact *is*, Local Notes says what has *happened*.
 
-## `isValid()` — checks for a real record, not just a valid-looking id
+## Editing a contact
 
-`Contact::isValid()` (inherited by `ContactPerson`/`ContactBusiness`) queries `liberty_content`
-directly for a matching `content_id` + `content_type_guid`, not just a bare id-format check — so a
-nonexistent `content_id` correctly 404s ("No contact exists with the given ID") rather than
-`view.php` falling through to a bare list redirect or `edit.php` silently switching to create-new
-mode. `stock` uses the same per-package pattern.
+Use the **Edit Contact** icon on the contact's page. The edit page has two tabs.
 
-## `Contact::load()` — xref-derived mInfo fields
+**The first tab** holds, from the top:
 
-After `loadXrefInfo()`, pulls a few fields from the already-loaded `$this->mXrefInfo` straight
-onto the flat `$this->mInfo` array for templates: `IMG` (gallery, `client_gallery`), `#L`
-(location, `x_coordinate`/`y_coordinate` — hand-entered directly), and the contact's own address
-(`house` = `xkey_ext`, `postcode` = `xkey` — raw hand-entered values, no lookup).
+1. **The details** — for a person the name parts and the *Personal*/*Business* tags; for a business the organisation
+   name and the subtype tags.
+2. **Notes** — the contact's description, in the rich-text editor, with a **Comment** box beside it for a short note about
+   what you changed.
+3. **The information tabs** — one for each kind of information: contact address, residential address, invoice address,
+   service address, tenant address, telephone, fax, email, web site, and free-format information. Each tab lists what is
+   there and has an **add** icon; a contact can have as many of each as it needs. Edit or remove a row with the icons at
+   the end of the row.
 
-**Address lookup is template-driven, not a fixed item code**: `findAddressXref()` scans the loaded
-xref rows for whichever item(s) have `liberty_xref_item.template = 'address'` (`#C`/`#I`/`#R`/`#S`/
-`#T` today, but a site could register others), preferring the first one with a real postcode, since
-a contact can have more than one address item populated at once. `export_contacts.php` uses the
-same `template === 'address'` filter independently.
+**Liberty Extensions** holds the settings that belong to the content system rather than to the contact: the user
+account the contact is linked to (administrators only), categories where they are switched on, and other services such
+as tags or a protection level when the site uses them.
 
-`address_postcode` (an OS-style postcode→area-code reference table) is no longer used anywhere in
-this package or in Liberty core — address enrichment relies purely on whatever's hand-entered on
-the address xref rows themselves (`xkey`/`xkey_ext`), with `#L`'s hand-entered
-`x_coordinate`/`y_coordinate` as the only source of a map pin. Postcode/coordinate lookup belongs
-to `mapper` (OSM-based) going forward, not this package.
+Press **Save** to keep the changes or **Cancel** to leave them.
 
-`IMG`/`#L` stay as direct `findRowByItem()` lookups — genuinely fixed single-purpose item codes,
-not subject to the same per-site variability as address items.
+## Removing a contact
 
-## CSV import xorder
+Removing a contact deletes its record and all its information, and cannot be undone, so it needs its own permission (by
+default, administrators only). Open the contact's **edit** page and use the **Delete Contact** icon at the top; it asks
+you to confirm.
 
-`ImportContactCSV.php` explicitly sets xorder: 0 for single items, 1 for #P/#F (multiple=1).
-Will need addressing when more than one record is needed per xref group.
+## Business information used by other packages
 
-## Delete / expunge
+A business can also carry a few reference items that other packages read, when a site has switched them on:
 
-`edit.php` handles `expunge=1`: checks `p_contact_expunge`, calls `$gContent->expunge()`,
-redirects to `list_contacts.php`. `contact_date_bar.tpl` uses
-`{smartlink ... ifile="edit.php" expunge=1}`. `Contact::expunge()` deletes liberty_xref rows
-then calls `LibertyContent::expunge()`.
+- a **stock source reference** — a short code that the stock package's movement import uses to find the supplier;
+- an **account number** and a **VAT number**.
+
+## Exporting contacts
+
+Every contact can be downloaded as a spreadsheet (CSV file) from `export_contacts.php` in the contact folder. There is no
+menu entry for it, and it needs only the permission to browse contacts. The file has one row per contact with its name,
+address (the full address text and the postcode), up to three telephone numbers and up to two email addresses.
+
+## Settings for an administrator
+
+Under **Administration → Contact**:
+
+- **Contact Type List** — the *Personal/Business* and business-subtype tags people can choose from.
+- **Contact Xref List** — the kinds of information (address, telephone, email ...) a contact can hold, and which of them
+  show for a person and which for a business.
+
+## Permissions
+
+| Permission | Allows | Default |
+|---|---|---|
+| View | browse the list and open contacts | registered users |
+| Create | add a person or a business | editors |
+| Update | edit a contact | editors |
+| Expunge | remove a contact | administrators |
+| Admin | the settings above | administrators |
