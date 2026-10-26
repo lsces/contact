@@ -1,4 +1,3 @@
-<div class="header">
 {if $is_categorized eq 'y' && $gBitSystem->isFeatureActive('package_categories') && $gBitSystem->isFeatureActive('feature_categorypath')}
 <div class="category">
   <div class="path">{$display_catpath}</div>
@@ -7,5 +6,3 @@
 
 	<h1>{$gContent->mInfo.title}{if $showExtras}{include file="bitpackage:fisheyemedia/extras_inc.tpl"}{/if}</h1>
 	<div class="description">{$gContent->mInfo.description|default:''}</div>
-
-</div> {* end .header *}

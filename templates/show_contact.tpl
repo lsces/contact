@@ -1,6 +1,8 @@
 <div class="display contact">
-{include file="bitpackage:contact/contact_icons.tpl"}
-{include file="bitpackage:contact/contact_header.tpl"}
+<header>
+	{include file="bitpackage:contact/contact_icons.tpl"}
+	{include file="bitpackage:contact/contact_header.tpl"}
+</header>
 {include file="bitpackage:contact/contact_date_bar.tpl"}
 	<div class="body">
 		{include file="bitpackage:contact/display_contact.tpl"}
