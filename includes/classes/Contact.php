@@ -25,6 +25,27 @@ defined( 'CONTACTBUSINESS_CONTENT_TYPE_GUID' ) || define( 'CONTACTBUSINESS_CONTE
 
 class Contact extends LibertyContent {
 
+	/** A contact's xref rows (addresses, numbers, links) are date-bounded - see LibertyContent::xrefShowsDates(). */
+	public function xrefShowsDates(): bool {
+		return true;
+	}
+
+	/**
+	 * Adds, for an item that links to a contact person, where its picker looks people up (read by
+	 * liberty's link picker template). Everything else is left to the base implementation.
+	 */
+	public function enrichXrefDisplay( array &$pXrefInfo ): void {
+		parent::enrichXrefDisplay( $pXrefInfo );
+		if( ( $pXrefInfo['template'] ?? '' ) === 'person' ) {
+			$pXrefInfo['lookup'] = [
+				'url'    => CONTACT_PKG_URL.'includes/lookup_contact.php',
+				'params' => [ 'type' => 'contactperson' ],
+				'label'  => 'Person',
+				'help'   => 'Existing contact person to link to this record.',
+			];
+		}
+	}
+
 	public $mParentId;
 	public $mDate;
 	public $mTypes;
