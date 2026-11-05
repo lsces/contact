@@ -10,11 +10,6 @@
 		{jstab title="Local Notes" class="contact_notes"}
 			{include file="bitpackage:contact/comments.tpl"}
 		{/jstab}
-		{if !empty($gContent->mInfo.client_list) }
-			{jstab title="Client List" class="client_list"}
-				{include file="bitpackage:contact/list_clients.tpl" client_list=$gContent->mInfo.client_list}
-			{/jstab}
-		{/if}
 	{/jstabs}
 	{include file="bitpackage:contact/fisheye_fixed_grid_contact.tpl"}
 	</div> {* end .body *}
