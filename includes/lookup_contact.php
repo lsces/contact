@@ -19,7 +19,9 @@ if( !$gBitUser->hasPermission( 'p_contact_view' ) ) {
 	exit;
 }
 
-$q = trim( $_GET['q'] ?? '' );
+// setup_inc.php runs every $_GET value through htmlspecialchars() (KernelTools::detoxify), so a typed "B & Q" arrives as
+// "B &amp; Q" and matches no title. Undo that for the search text: it only ever goes to the database as a bound parameter.
+$q = trim( htmlspecialchars_decode( $_GET['q'] ?? '', ENT_NOQUOTES ) );
 if( strlen( $q ) < 2 ) {
 	header( 'Content-Type: application/json' );
 	echo '[]';
